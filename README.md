@@ -27,6 +27,7 @@ Run this code by using the following command in terminal/command prompt
 For example:
 
 `python image_download.py -f images.csv -o occurrences.csv -l specimen_images`
+
 `python image_download.py -f lyco_images.csv -o lyco_occurrences.csv -l lyco_images`
 
 or if the CSVs are in a folder inside the workspace:
