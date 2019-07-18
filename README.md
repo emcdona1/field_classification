@@ -31,6 +31,7 @@ For example:
 `python image_download.py -f lyco_images.csv -o lyco_occurrences.csv -l lyco_images`
 
 or if the CSVs are in a folder inside the workspace:
+
 `python image_download.py -f lyco_csvs/lyco_images.csv -o lyco_csvs/lyco_occurrences.csv -l lyco_images`
 
 Because of efficiency purposes, the program first looks in the 'identifier' column for the image. If it's not found, it will then look in the 'goodQualityAccessURI' column. If neither produce a useable image, the program will output a CSV with the missing images in the folder you input that lists the barcodes and core id numbers.
