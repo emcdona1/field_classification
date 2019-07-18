@@ -8,9 +8,9 @@ The goal of this file is to download images from the Pteridophyte Portal. Before
 4. Fill in your search parameters and hit 'List Display'
 5. In the top right, click the little download button (it looks like a down arrow into a open box)
 6. Choose the following parameters:
-  *Structure: Darwin Core
-  *Data Extensions: Keep both boxes selected
-  *File Format: Comma Delimited (CSV)
-  *Character Set: UTF-8 (Unicode)
-  *Compression: Check this box
+  *Structure: Darwin Core 
+  *Data Extensions: Keep both boxes selected 
+  *File Format: Comma Delimited (CSV) 
+  *Character Set: UTF-8 (Unicode) 
+  *Compression: Check this box 
 7. Hit 'Download Data'
