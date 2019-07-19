@@ -27,7 +27,7 @@ def download_images_from_csv(csv_local_name, occ_file_name, download_location):
                 image_url = image_rows.goodQualityAccessURI[i]
                 result = requests.get(image_url)
             if (result.status_code == 200):
-                with open(download_location+'/'+str(barcode)+'_'+str(coreid)+'.png', 'wb') as download:
+                with open(download_location+'/'+str(barcode)+'_'+str(coreid)+'.jpg', 'wb') as download:
                     download.write(result.content)
             else: #when both links don't work give up oh well
                 num_not_found = num_not_found + 1

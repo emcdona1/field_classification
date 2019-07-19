@@ -12,8 +12,8 @@ import os, sys
 #         img_resized = img.resize((256,256))
 #         img_resized.save(file_name+'_rsz.jpg', img_resized.format)
 
-def make_square(file_name, dest_path):
-    img = cv2.imread(file_name, -1)
+def make_square(file_name, dest_path, dir_path):
+    img = cv2.imread(dir_path + '/' + file_name, -1)
     try:
         img_rsz = cv2.resize(img, (256,256), interpolation = cv2.INTER_AREA)
         file_name=file_name.replace('.jpg','')
@@ -25,9 +25,11 @@ def make_square(file_name, dest_path):
 
 def resize_folder(dir_path, dest_path):
     all_images = os.listdir(dir_path)
-    print(all_images[0])
     for i in range(len(all_images)):
-        make_square(all_images[i], dest_path)
+        # print(all_images[i])
+        make_square(all_images[i], dest_path, dir_path)
+        if i % 500 == 0:
+            print (i, " images resized")
 
 if __name__== '__main__':
     parser = argparse.ArgumentParser('data to be imported')
@@ -35,5 +37,5 @@ if __name__== '__main__':
     parser.add_argument('-f', '--folder', help="Path to folder where original images are stored")
     parser.add_argument('-d', '--destination', default='', help='Folder/path where you want image saved')
     args = parser.parse_args()
-    #resize_folder(args.folder, args.destination)
-    make_square(args.image,args.destination)
+    resize_folder(args.folder, args.destination)
+    #make_square(args.image,args.destination)
