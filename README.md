@@ -36,7 +36,8 @@ or if the CSVs are in a folder inside the workspace:
 
 Because of efficiency purposes, the program first looks in the 'identifier' column for the image. If it's not found, it will then look in the 'goodQualityAccessURI' column. If neither produce a useable image, the program will output a CSV with the missing images in the folder you input that lists the barcodes and core id numbers.
 
-#Using image_resize.py
+# Using image_resize.py
+
 The purpose of this file is to take the raw downloaded files and convert them into squares of the same size using an image processing package called OpenCV for Python. To install the package, check out [this website](https://pypi.org/project/opencv-python/) 
 
 The program takes in the folder with all the original images, the destination for the resultant images, and the "label" for all these images (for example: the family of plant, article of clothing all these images are, etc). In addition to resizing all the images, it outputs a CSV into the destination folder that lists all the images with the corresponding label. 
