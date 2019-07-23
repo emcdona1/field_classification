@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 DATA_DIR = 'data'
 # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
-CATEGORIES = ['lyco_test_hundred', 'sela_test_hundred']
+CATEGORIES = ['lyco_sample_8_hundred', 'sela_sample_8_hundred']
 IMG_SIZE = 256 #pixels
 
 # Open up those pickle files
@@ -18,6 +18,7 @@ labels = pickle.load(open("labels.pickle","rb"))
 # normalize data
 features = features/255.0
 
+print("Files loaded")
 # build the model? let's give this a shot lol
 model = Sequential()
 
@@ -45,28 +46,28 @@ model.add(MaxPooling2D(pool_size=(2,2), strides=2))
 model.add(Conv2D(40, (5, 5)))
 # Output shape: 40 x 122 x 122
 
-#6. Batch Normalization Layer
+# 6. Batch Normalization Layer
 model.add(BatchNormalization())
 # Output shape: 40 x 122 x 122
 
-# Activation Layer: Same as above
+# 7. Activation Layer: Same as above
 model.add(Activation("relu"))
 # Output shape: 40 x 122 x 122
 
-#Pooling again will decrease "image shape" by half since stride = 2
+# 8. Pooling again will decrease "image shape" by half since stride = 2
 model.add(MaxPooling2D(pool_size=(2,2), strides =2))
 # Output shape: 40 x 61 x 61
 
+# ----------Hidden layers-----------
 
-
-# 2 hidden layers
+# 9. Flattening Layer: Make pooled layers (that look like stacks of grids) into one "column" to feed into ANN
 model.add(Flatten())
-model.add(Dropout(0.25))
 
-model.add(Dense(128))
-model.add(Activation("relu"))
+# 10. Dropout Layer: In Mathematica Dropout[] has a rate of dropping 50% of elements and multiply rest by 2
+# !!!!!!! Currently trying to figure out how to do the multiply by 2 but moving on for now !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+model.add(Dropout(0.5))
 
-model.add(Dense(128))
+model.add(Dense(500))
 model.add(Activation("relu"))
 
 # The output layer with 2 neurons, for 2 classes
@@ -78,7 +79,8 @@ model.compile(loss="sparse_categorical_crossentropy",
 				optimizer="adam",
 				metrics=["accuracy"])
 
-# Training the model, with 40 iterations
+print("Model created")
+# Training the model, with 10 iterations
 # validation_split corresponds to the percentage of images used for the validation phase compared to all the images
 history = model.fit(features, labels, batch_size=32, epochs=10, validation_split=0.1)
 
