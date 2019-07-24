@@ -7,7 +7,7 @@ import pickle
 
 DATA_DIR = 'data'
 # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
-CATEGORIES = ['lyco_test_hundred', 'sela_test_hundred']
+CATEGORIES = ['lyco_sample_8_hundred', 'sela_sample_8_hundred']
 IMG_SIZE = 256 #pixels
 
 #create an array that holds two items: arrays for each pixel in each image and the label for that image

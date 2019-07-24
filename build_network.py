@@ -4,7 +4,9 @@ from tensorflow.keras.layers import BatchNormalization, Dense, Dropout, Activati
 import pickle
 from keras.models import model_from_json
 from keras.models import load_model
+from keras import optimizers
 import matplotlib.pyplot as plt
+import cv2
 
 DATA_DIR = 'data'
 # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
@@ -14,6 +16,11 @@ IMG_SIZE = 256 #pixels
 # Open up those pickle files
 features = pickle.load(open("features.pickle","rb"))
 labels = pickle.load(open("labels.pickle","rb"))
+
+test_img=features[0]
+cv2.imshow(str(labels[0]),test_img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
 # normalize data
 features = features/255.0
@@ -75,9 +82,8 @@ model.add(Dense(2))
 model.add(Activation("softmax"))
 
 # Compiling the model using some basic parameters
-model.compile(loss="sparse_categorical_crossentropy",
-				optimizer="adam",
-				metrics=["accuracy"])
+opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 
 print("Model created")
 # Training the model, with 10 iterations
