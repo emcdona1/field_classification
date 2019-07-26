@@ -91,14 +91,14 @@ model.add(Dense(2))
 model.add(Activation("softmax"))
 
 # Compiling the model using some basic parameters
-model.compile(loss="sparse_categorical_crossentropy",
-				optimizer="adam",
-				metrics=["accuracy"])
+# learning rate start at 0.0001 in the Smithsonian paper as well
+opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 
 print("Model created")
 # Training the model, with 10 iterations
 # validation_split corresponds to the percentage of images used for the validation phase compared to all the images
-history = model.fit(features, labels, batch_size=32, epochs=10, validation_split=0.2)
+history = model.fit(features, labels, batch_size=32, epochs=15, validation_split=0.2)
 
 # Saving the model
 model_json = model.to_json()
