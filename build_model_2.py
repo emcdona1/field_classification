@@ -6,11 +6,18 @@ from keras.models import model_from_json
 from keras.models import load_model
 import matplotlib.pyplot as plt
 import cv2
+from input_data import *
+
 
 DATA_DIR = 'data'
 # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
 CATEGORIES = ['lyco_sample_8_hundred', 'sela_sample_8_hundred']
 IMG_SIZE = 256 #pixels
+
+# use functions from input_data.py to shuffle data and store it
+training_data= []
+training_data = create_training_data(training_data)
+store_training_data(training_data)
 
 # Open up those pickle files
 features = pickle.load(open("features.pickle","rb"))
@@ -47,7 +54,7 @@ model.add(Activation("relu"))
 # Output shape: 10 x 252 x 252
 
 # 4. Pooling function: from the paper, it didn't specify function, but looking online, it seems that the default is Max so we are a-okay here
-model.add(MaxPooling2D(pool_size=(2,2), strides=2))
+model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2)))
 # Output shape: 10 x 126 x 126
 
 #-------------Next Set of Layers--------------
@@ -64,7 +71,7 @@ model.add(Activation("relu"))
 # Output shape: 40 x 122 x 122
 
 # 8. Pooling again will decrease "image shape" by half since stride = 2
-model.add(MaxPooling2D(pool_size=(2,2), strides=2))
+model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2)))
 # Output shape: 40 x 61 x 61
 
 # ----------Hidden layers-----------
@@ -74,7 +81,7 @@ model.add(Flatten())
 
 # 10. Dropout Layer: In Mathematica Dropout[] has a rate of dropping 50% of elements and multiply rest by 2
 # !!!!!!! Currently trying to figure out how to do the multiply by 2 but moving on for now !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-model.add(Dropout(0.25)) # was 0.5
+model.add(Dropout(0.5))
 
 model.add(Dense(500))
 model.add(Activation("relu"))
@@ -91,7 +98,7 @@ model.compile(loss="sparse_categorical_crossentropy",
 print("Model created")
 # Training the model, with 10 iterations
 # validation_split corresponds to the percentage of images used for the validation phase compared to all the images
-history = model.fit(features, labels, batch_size=32, epochs=10, validation_split=0.1)
+history = model.fit(features, labels, batch_size=32, epochs=10, validation_split=0.2)
 
 # Saving the model
 model_json = model.to_json()
