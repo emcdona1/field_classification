@@ -16,8 +16,9 @@ IMG_SIZE = 256 #pixels
 
 # use functions from input_data.py to shuffle data and store it
 training_data= []
-training_data = create_training_data(training_data)
-store_training_data(training_data)
+testing_data = []
+training_data = split_data(training_data,testing_data, 0.1)
+store_training_data(training_data, 0.1)
 
 # Open up those pickle files
 features = pickle.load(open("features.pickle","rb"))
@@ -98,7 +99,7 @@ model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["a
 print("Model created")
 # Training the model, with 10 iterations
 # validation_split corresponds to the percentage of images used for the validation phase compared to all the images
-history = model.fit(features, labels, batch_size=32, epochs=15, validation_split=0.2)
+history = model.fit(features, labels, batch_size=32, epochs=15, validation_split=0.22) #.22 of the .9 is .2 of the total
 
 # Saving the model
 model_json = model.to_json()
