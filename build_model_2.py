@@ -4,6 +4,7 @@ from tensorflow.keras.layers import BatchNormalization, Dense, Dropout, Activati
 import pickle
 from keras.models import model_from_json
 from keras.models import load_model
+from keras import regularizers
 import matplotlib.pyplot as plt
 import cv2
 from input_data import *
@@ -84,11 +85,11 @@ model.add(Flatten())
 # !!!!!!! Currently trying to figure out how to do the multiply by 2 but moving on for now !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 model.add(Dropout(0.5))
 
-model.add(Dense(500))
+model.add(Dense(500,kernel_regularizer=regularizers.l2(0.01)))
 model.add(Activation("relu"))
 
 # The output layer with 2 neurons, for 2 classes
-model.add(Dense(2))
+model.add(Dense(2,kernel_regularizer=regularizers.l2(0.01)))
 model.add(Activation("softmax"))
 
 # Compiling the model using some basic parameters
