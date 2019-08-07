@@ -1,5 +1,7 @@
 # fern_classifications
 
+The code here creates and tests a CNN model using Tensorflow and Keras that takes images of two morphologically similar plant families (Lycopodieaceae and Selaginellaceae) and trains the model to identify which is which. 
+
 # Using image_download.py
 The goal of this file is to download images from the Pteridophyte Portal. Before running the file, please follow the steps below:
 1. Go to [The Pteridophyte Collections Consortium](http://www.pteridoportal.org/portal/)
