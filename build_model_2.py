@@ -12,13 +12,13 @@ from input_data import *
 
 DATA_DIR = 'data'
 # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
-CATEGORIES = ['lyco_sample_8_hundred', 'sela_sample_8_hundred']
+# CATEGORIES = ['lyco_train', 'sela_train']
 IMG_SIZE = 256 #pixels
 
 # use functions from input_data.py to shuffle data and store it
 training_data= []
 testing_data = []
-training_data = split_data(training_data,testing_data, 0.1)
+training_data = split_data(training_data,testing_data)
 store_training_data(training_data, 0.1)
 
 # Open up those pickle files
@@ -94,12 +94,13 @@ model.add(Activation("softmax"))
 
 # Compiling the model using some basic parameters
 # learning rate start at 0.0001 in the Smithsonian paper as well
-opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=0.00001, decay=0.0, amsgrad=False)
 model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 
 print("Model created")
 # Training the model, with 10 iterations
 # validation_split corresponds to the percentage of images used for the validation phase compared to all the images
+# history = model.fit(features, labels, batch_size=16, epochs=15, validation_split=0.22) #.22 of the .9 is .2 of the total
 history = model.fit(features, labels, batch_size=32, epochs=15, validation_split=0.22) #.22 of the .9 is .2 of the total
 
 # Saving the model

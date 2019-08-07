@@ -8,7 +8,7 @@ import math
 
 DATA_DIR = 'data'
 # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
-CATEGORIES = ['lyco_sample_8_hundred', 'sela_sample_8_hundred']
+CATEGORIES = ['lyco_train', 'sela_train']
 IMG_SIZE = 256 #pixels
 
 #create an array that holds two items: arrays for each pixel in each image and the label for that image
@@ -31,7 +31,7 @@ IMG_SIZE = 256 #pixels
 #     training_data = all_data
 #     print("Loaded and shuffled data")
 
-def split_data(training_data, testing_data, percent_test): #percent_test is how much of the data goes to testing data
+def split_data(training_data, testing_data): 
     for category in CATEGORIES:
         path=os.path.join(DATA_DIR,category) #look at each folder of images
         class_index = CATEGORIES.index(category)
@@ -46,7 +46,10 @@ def split_data(training_data, testing_data, percent_test): #percent_test is how 
     return training_data
 
 #use pickle to export the data
-def store_training_data(training_data, percent_test):
+def store_training_data(training_data, percent_test): #percent_test is how much of the data goes to testing data
+    if (percent_test > 1):
+        print("Invalid percent")
+        return
     features = []
     labels = []
     img_names = []
