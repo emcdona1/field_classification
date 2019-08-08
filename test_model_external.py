@@ -8,8 +8,13 @@ import os
 import random
 import pickle
 
+# I went through a lot of batches of images to test, these are just all the past ones
 # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
-CATEGORIES = ['lyco_sample_test', 'sela_sample_test']
+# CATEGORIES = ['lyco_sample_test', 'sela_sample_test']
+# CATEGORIES = ['lyco_small_test', 'sela_small_test']
+# CATEGORIES = ['lyco_back_test', 'sela_back_test']
+CATEGORIES = ['Lycopodiaceae_remaining_testing', 'Selaginellaceae_remaining_testing']
+
 IMG_SIZE = 256
 root = 'data'
 
@@ -21,6 +26,7 @@ root = 'data'
 test_data = []
 df = pd.DataFrame()
 model = tf.keras.models.load_model("CNN.model") #, custom_objects={'custom_activation':Activation(custom_activation)})
+
 for category in CATEGORIES:
     path = os.path.join(root, category)
     for img in os.listdir(path):

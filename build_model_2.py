@@ -18,8 +18,8 @@ IMG_SIZE = 256 #pixels
 # use functions from input_data.py to shuffle data and store it
 training_data= []
 testing_data = []
-training_data = split_data(training_data,testing_data)
-store_training_data(training_data, 0.1)
+training_data = split_data(training_data) #,testing_data)
+store_training_data(training_data, 0.0)
 
 # Open up those pickle files
 features = pickle.load(open("features.pickle","rb"))
@@ -89,7 +89,7 @@ model.add(Dense(500,kernel_regularizer=regularizers.l2(0.01)))
 model.add(Activation("relu"))
 
 # The output layer with 2 neurons, for 2 classes
-model.add(Dense(2,kernel_regularizer=regularizers.l2(0.01)))
+model.add(Dense(2,kernel_regularizer=regularizers.l2(0.05)))
 model.add(Activation("softmax"))
 
 # Compiling the model using some basic parameters

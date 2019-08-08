@@ -5,11 +5,21 @@ from shutil import copyfile
 root="data"
 # divide_all will take all the images of class A and put num_training of them in 1 folder and the remaining in another where people can pull from for sampling
 # the images are chosen at approximately even intervals to allow for distribution of images
-def divide_all(folder_name, num_training):
+# store_remaining is a boolean. If true, stores remaining images in the remaining path
+def divide_all(folder_name, num_training, store_remaining):
+    print("CAUTION!!!")
+    print("If you're using this function on a destination folder with images already in it, CLEAR IT.")
+    print("Otherwise it just doesn't work out my friend")
     src_path = os.path.join(root, folder_name)
     src = os.listdir(src_path)
-    selected_path = os.path.join(root,folder_name+"_train_selected") 
-    remaining_path = os.path.join(root,folder_name+"_test_selected") 
+    # Use following paths when choosing training data
+    # selected_path = os.path.join(root,folder_name+"_selected") 
+    # remaining_path = os.path.join(root,folder_name+"_remaining") 
+
+    # Use following paths for test data (store_remaining should be set to FALSE)
+    selected_path = os.path.join(root,folder_name+"_testing")
+    remaining_path = ""
+
     num_images = len(src)
     incr_decimal = 1.0*num_images/num_training
     low_skip = math.floor(incr_decimal)
@@ -23,11 +33,14 @@ def divide_all(folder_name, num_training):
         if i%cur_skip == 0:
             copyfile(os.path.join(src_path,image), os.path.join(selected_path, image))
         else:
-            copyfile(os.path.join(src_path,image), os.path.join(remaining_path, image))
+            if store_remaining:
+                copyfile(os.path.join(src_path,image), os.path.join(remaining_path, image))
 
         if i > num_low_skip:
             cur_skip = high_skip
         i+=1
 
-# divide_all("Lycopodiaceae",1000)
-divide_all("Selaginellaceae",1000)
+# divide_all("Lycopodiaceae", 800, True)
+# divide_all("Selaginellaceae", 800, True)
+divide_all("Selaginellaceae_remaining", 200, False)
+divide_all("Lycopodiaceae_remaining", 200, False)

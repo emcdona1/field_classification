@@ -8,11 +8,11 @@ import math
 
 DATA_DIR = 'data'
 # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
-CATEGORIES = ['lyco_train', 'sela_train']
+CATEGORIES = ['Lycopodiaceae_selected', 'Selaginellaceae_selected']
 IMG_SIZE = 256 #pixels
 
 # create an array that holds two items: arrays for each pixel in each image and the label for that image
-def split_data(training_data, testing_data): #percent_test is how much of the data goes to testing data
+def split_data(training_data): #percent_test is how much of the data goes to testing data
     all_data = []
     for category in CATEGORIES:
         path=os.path.join(DATA_DIR,category) #look at each folder of images
@@ -20,10 +20,11 @@ def split_data(training_data, testing_data): #percent_test is how much of the da
         for img in os.listdir(path): # look at each image
             try:
                 img_array = cv2.imread(os.path.join(path,img), -1) #-1 means image is read as color
-                all_data.append([img_array, class_index,img])
+                training_data.append([img_array, class_index,img])
             except Exception as e:
                 pass
     random.shuffle(training_data)
+    print("Images imported and data shuffled")
     return training_data
 
 # def split_data(training_data, testing_data): 
