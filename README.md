@@ -6,7 +6,11 @@ The code here creates and tests a CNN model using Tensorflow and Keras that take
 
 # File Descriptions
 **build_model_2.py:** opens data from pickle files, builds model architecture, and trains model. Where most of the change are made
-
+**build_network.py:** old version of **build_model_2.py**. Planning on deleting later.
+**image_download.py:** using CSVs from the Pteridophyte Portal, downloads the desired specimen images onto the computer
+**image_resize.py:** takes all images in a folder and resizes them to 256 px by 256 px
+**input_data.py:** holds functions that take the appropriately resized photos and store them as numpy arrays in pickle files. These photos are then used for training/validation by **build_model_2.py**
+**input_data_split.py:** is a file I was working on for a time
 
 # Using image_download.py
 The goal of this file is to download images from the Pteridophyte Portal. Before running the file, please follow the steps below:
