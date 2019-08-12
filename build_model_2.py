@@ -1,3 +1,9 @@
+# imports for reproducible results
+from numpy.random import seed
+seed(1)
+from tensorflow.compat.v1 import set_random_seed
+set_random_seed(2)
+
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import BatchNormalization, Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
@@ -5,6 +11,7 @@ import pickle
 from keras.models import model_from_json
 from keras.models import load_model
 from keras import regularizers
+from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 import cv2
 from input_data import *
@@ -18,8 +25,9 @@ IMG_SIZE = 256 #pixels
 # use functions from input_data.py to shuffle data and store it
 training_data= []
 testing_data = []
-training_data = split_data(training_data) #,testing_data)
-store_training_data(training_data, 0.0)
+
+# training_data = split_data(training_data) #,testing_data)
+# store_training_data(training_data, 0.0)
 
 # Open up those pickle files
 features = pickle.load(open("features.pickle","rb"))
@@ -85,11 +93,11 @@ model.add(Flatten())
 # !!!!!!! Currently trying to figure out how to do the multiply by 2 but moving on for now !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 model.add(Dropout(0.5))
 
-model.add(Dense(500,kernel_regularizer=regularizers.l2(0.01)))
+model.add(Dense(500,activity_regularizer=regularizers.l2(0.05), kernel_regularizer=regularizers.l2(0.05))) # kernel_regularizer=regularizers.l2(0.1)))
 model.add(Activation("relu"))
 
 # The output layer with 2 neurons, for 2 classes
-model.add(Dense(2,kernel_regularizer=regularizers.l2(0.05)))
+model.add(Dense(2,activity_regularizer=regularizers.l2(0.05), kernel_regularizer=regularizers.l2(0.05)))
 model.add(Activation("softmax"))
 
 # Compiling the model using some basic parameters
@@ -100,8 +108,10 @@ model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["a
 print("Model created")
 # Training the model, with 10 iterations
 # validation_split corresponds to the percentage of images used for the validation phase compared to all the images
+# es_callback = EarlyStopping(monitor = 'val_loss', patience = 3, restore_best_weights = True)
 # history = model.fit(features, labels, batch_size=16, epochs=15, validation_split=0.22) #.22 of the .9 is .2 of the total
-history = model.fit(features, labels, batch_size=32, epochs=15, validation_split=0.22) #.22 of the .9 is .2 of the total
+# history = model.fit(features, labels, batch_size=32, epochs=15, callbacks=[es_callback], validation_split=0.22) #.22 of the .9 is .2 of the total
+history = model.fit(features, labels, batch_size=32, epochs = 25, validation_split=0.22) #.22 of the .9 is .2 of the total
 
 # Saving the model
 model_json = model.to_json()
@@ -120,6 +130,15 @@ plt.plot(history.history['acc'])
 plt.plot(history.history['val_acc'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'validation'], loc='upper left')
+plt.show()
+
+plt.figure(2)
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
 plt.show()
