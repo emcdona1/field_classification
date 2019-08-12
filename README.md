@@ -5,6 +5,7 @@ The code here creates and tests a CNN model using Tensorflow and Keras that take
 ---
 
 # File Descriptions
+**build_model_2.py:** opens data from pickle files, builds model architecture, and trains model. Where most of the change are made
 
 
 # Using image_download.py
