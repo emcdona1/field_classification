@@ -113,7 +113,7 @@ print("Model created")
 # es_callback = EarlyStopping(monitor = 'val_loss', patience = 3, restore_best_weights = True)
 # history = model.fit(features, labels, batch_size=16, epochs=15, validation_split=0.22) #.22 of the .9 is .2 of the total
 # history = model.fit(features, labels, batch_size=32, epochs=15, callbacks=[es_callback], validation_split=0.22) #.22 of the .9 is .2 of the total
-history = model.fit(features, labels, batch_size=32, epochs = 20, validation_split=0.22) #.22 of the .9 is .2 of the total
+history = model.fit(features, labels, batch_size=32, epochs = 30, validation_split=0.22) #.22 of the .9 is .2 of the total
 
 # Saving the model
 model_json = model.to_json()
