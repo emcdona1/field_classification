@@ -5,47 +5,30 @@ import cv2
 import random
 import pickle
 import math
+import argparse
 
 DATA_DIR = 'data'
 # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
-CATEGORIES = ['Lycopodiaceae_selected', 'Selaginellaceae_selected']
+# CATEGORIES = ['lyco_train', 'sela_train']
 IMG_SIZE = 256 #pixels
 
 # create an array that holds two items: arrays for each pixel in each image and the label for that image
-def split_data(training_data): #percent_test is how much of the data goes to testing data
+def split_data(categories):
     all_data = []
-    for category in CATEGORIES:
+    for category in categories:
         path=os.path.join(DATA_DIR,category) #look at each folder of images
-        class_index = CATEGORIES.index(category)
+        class_index = categories.index(category)
         for img in os.listdir(path): # look at each image
             try:
                 img_array = cv2.imread(os.path.join(path,img), -1) #-1 means image is read as color
                 training_data.append([img_array, class_index,img])
             except Exception as e:
                 pass
-    random.shuffle(training_data)
-    print("Images imported and data shuffled")
-    return training_data
-
-# def split_data(training_data, testing_data): 
-#     for category in CATEGORIES:
-#         path=os.path.join(DATA_DIR,category) #look at each folder of images
-#         class_index = CATEGORIES.index(category)
-#         for img in os.listdir(path): # look at each image
-#             try:
-#                 img_array = cv2.imread(os.path.join(path,img), -1) #-1 means image is read as color
-#                 training_data.append([img_array, class_index,img])
-#             except Exception as e:
-#                 pass
-#     random.shuffle(training_data)
-#     print("Loaded and shuffled data")
-#     return training_data
+    random.shuffle(all_data)
+    return all_data
 
 #use pickle to export the data
-def store_training_data(training_data, percent_test): #percent_test is how much of the data goes to testing data
-    # if (percent_test > 1):
-    #     print("Invalid percent")
-    #     return
+def store_training_data(training_data): 
     features = []
     labels = []
     img_names = []
@@ -61,41 +44,24 @@ def store_training_data(training_data, percent_test): #percent_test is how much 
     num_training = math.floor((1.0-percent_test)*len(features))
 
     #use pickle for image features
-    training_features = features[:num_training]
-    # test_features = features[num_training:]
     pickle_out = open("features.pickle", "wb") #wb = write binary
-    pickle.dump(training_features, pickle_out) #(output file, source)
+    pickle.dump(features, pickle_out) #(output file, source)
     pickle_out.close()
-    # pickle_out = open("test_features.pickle", "wb") #wb = write binary
-    # pickle.dump(test_features, pickle_out) #(output file, source)
-    # pickle_out.close()
 
     #use pickle for image labels
-    training_labels = labels[:num_training]
-    # test_labels = labels[num_training:]
     pickle_out = open("labels.pickle", "wb")
-    pickle.dump(training_labels, pickle_out)
+    pickle.dump(labels, pickle_out)
     pickle_out.close()
-    # pickle_out = open("test_labels.pickle", "wb") #wb = write binary
-    # pickle.dump(test_labels, pickle_out) #(output file, source)
-    # pickle_out.close()
 
-    training_names = img_names[:num_training]
-    # test_names = img_names[num_training:]
     pickle_out = open("img_names.pickle","wb")
-    pickle.dump(training_names, pickle_out)
+    pickle.dump(img_names, pickle_out)
     pickle_out.close()
-    # pickle_out = open("test_img_names.pickle","wb")
-    # pickle.dump(test_names, pickle_out)
-    # pickle_out.close()
     print("Data stored in pickle files")
 
-
-# training_data= []
-# training_data = create_training_data(training_data)
-# store_training_data(training_data)
-
-# # just checking that we all good
-# pickle_in = open("features.pickle", "rb")
-# X = pickle.load(pickle_in)
-# print('hi')
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser('images to import')
+    parser.add_argument('-c1', '--category_1', default='lyco_train', help='folder where images of class A are')
+    parser.add_argument('-c2', '--category-2', default='sela_train', help='folder where images of class B are')
+    args = parser.parse_args()
+    categories = [args.category_1, args.category_2]
+    
