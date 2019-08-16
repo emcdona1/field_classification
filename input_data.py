@@ -5,18 +5,19 @@ import cv2
 import random
 import pickle
 import math
+import argparse
 
 DATA_DIR = 'data'
 # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
-CATEGORIES = ['lyco_train', 'sela_train']
+# CATEGORIES = ['lyco_train', 'sela_train']
 IMG_SIZE = 256 #pixels
 
 # create an array that holds two items: arrays for each pixel in each image and the label for that image
-def split_data(training_data, testing_data): #percent_test is how much of the data goes to testing data
+def split_data(training_data, testing_data, categories):
     all_data = []
-    for category in CATEGORIES:
+    for category in categories:
         path=os.path.join(DATA_DIR,category) #look at each folder of images
-        class_index = CATEGORIES.index(category)
+        class_index = categories.index(category)
         for img in os.listdir(path): # look at each image
             try:
                 img_array = cv2.imread(os.path.join(path,img), -1) #-1 means image is read as color
@@ -57,3 +58,10 @@ def store_training_data(training_data):
     pickle_out.close()
     print("Data stored in pickle files")
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser('images to import')
+    parser.add_argument('-c1', '--category_1', default='lyco_train', help='folder where images of class A are')
+    parser.add_argument('-c2', '--category-2', default='sela_train', help='folder where images of class B are')
+    args = parser.parse_args()
+    categories = [args.category_1, args.category_2]
+    
