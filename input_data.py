@@ -27,10 +27,7 @@ def split_data(training_data, testing_data): #percent_test is how much of the da
     return training_data
 
 #use pickle to export the data
-def store_training_data(training_data, percent_test): #percent_test is how much of the data goes to testing data
-    # if (percent_test > 1):
-    #     print("Invalid percent")
-    #     return
+def store_training_data(training_data): 
     features = []
     labels = []
     img_names = []
@@ -46,20 +43,17 @@ def store_training_data(training_data, percent_test): #percent_test is how much 
     num_training = math.floor((1.0-percent_test)*len(features))
 
     #use pickle for image features
-    training_features = features[:num_training]
     pickle_out = open("features.pickle", "wb") #wb = write binary
-    pickle.dump(training_features, pickle_out) #(output file, source)
+    pickle.dump(features, pickle_out) #(output file, source)
     pickle_out.close()
 
     #use pickle for image labels
-    training_labels = labels[:num_training]
     pickle_out = open("labels.pickle", "wb")
-    pickle.dump(training_labels, pickle_out)
+    pickle.dump(labels, pickle_out)
     pickle_out.close()
 
-    training_names = img_names[:num_training]
     pickle_out = open("img_names.pickle","wb")
-    pickle.dump(training_names, pickle_out)
+    pickle.dump(img_names, pickle_out)
     pickle_out.close()
     print("Data stored in pickle files")
 
