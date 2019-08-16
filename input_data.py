@@ -26,20 +26,6 @@ def split_data(training_data, testing_data): #percent_test is how much of the da
     random.shuffle(training_data)
     return training_data
 
-# def split_data(training_data, testing_data): 
-#     for category in CATEGORIES:
-#         path=os.path.join(DATA_DIR,category) #look at each folder of images
-#         class_index = CATEGORIES.index(category)
-#         for img in os.listdir(path): # look at each image
-#             try:
-#                 img_array = cv2.imread(os.path.join(path,img), -1) #-1 means image is read as color
-#                 training_data.append([img_array, class_index,img])
-#             except Exception as e:
-#                 pass
-#     random.shuffle(training_data)
-#     print("Loaded and shuffled data")
-#     return training_data
-
 #use pickle to export the data
 def store_training_data(training_data, percent_test): #percent_test is how much of the data goes to testing data
     # if (percent_test > 1):
@@ -61,40 +47,19 @@ def store_training_data(training_data, percent_test): #percent_test is how much 
 
     #use pickle for image features
     training_features = features[:num_training]
-    # test_features = features[num_training:]
     pickle_out = open("features.pickle", "wb") #wb = write binary
     pickle.dump(training_features, pickle_out) #(output file, source)
     pickle_out.close()
-    # pickle_out = open("test_features.pickle", "wb") #wb = write binary
-    # pickle.dump(test_features, pickle_out) #(output file, source)
-    # pickle_out.close()
 
     #use pickle for image labels
     training_labels = labels[:num_training]
-    # test_labels = labels[num_training:]
     pickle_out = open("labels.pickle", "wb")
     pickle.dump(training_labels, pickle_out)
     pickle_out.close()
-    # pickle_out = open("test_labels.pickle", "wb") #wb = write binary
-    # pickle.dump(test_labels, pickle_out) #(output file, source)
-    # pickle_out.close()
 
     training_names = img_names[:num_training]
-    # test_names = img_names[num_training:]
     pickle_out = open("img_names.pickle","wb")
     pickle.dump(training_names, pickle_out)
     pickle_out.close()
-    # pickle_out = open("test_img_names.pickle","wb")
-    # pickle.dump(test_names, pickle_out)
-    # pickle_out.close()
     print("Data stored in pickle files")
 
-
-# training_data= []
-# training_data = create_training_data(training_data)
-# store_training_data(training_data)
-
-# # just checking that we all good
-# pickle_in = open("features.pickle", "rb")
-# X = pickle.load(pickle_in)
-# print('hi')
