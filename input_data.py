@@ -13,7 +13,7 @@ DATA_DIR = 'data'
 IMG_SIZE = 256 #pixels
 
 # create an array that holds two items: arrays for each pixel in each image and the label for that image
-def split_data(training_data, testing_data, categories):
+def split_data(categories):
     all_data = []
     for category in categories:
         path=os.path.join(DATA_DIR,category) #look at each folder of images
@@ -24,8 +24,8 @@ def split_data(training_data, testing_data, categories):
                 all_data.append([img_array, class_index,img])
             except Exception as e:
                 pass
-    random.shuffle(training_data)
-    return training_data
+    random.shuffle(all_data)
+    return all_data
 
 #use pickle to export the data
 def store_training_data(training_data): 
