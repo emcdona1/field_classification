@@ -21,7 +21,7 @@ def split_data(categories):
         for img in os.listdir(path): # look at each image
             try:
                 img_array = cv2.imread(os.path.join(path,img), -1) #-1 means image is read as color
-                all_data.append([img_array, class_index,img])
+                training_data.append([img_array, class_index,img])
             except Exception as e:
                 pass
     random.shuffle(all_data)
