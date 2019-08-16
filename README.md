@@ -78,3 +78,17 @@ If you are using one then switch to using the other, be careful! Half the pickle
 # build_model.py
 
 This file is where the architecture of the model is created. It imports the pickle files where images and labels are stored, builds the model, and trains it. Here you can change parameters such as the number of epochs, learning rate, regularizers, etc. At the end, the final model is saved and graphs of validation accuracy and loss pop up (1 at a time) so you can get a general idea of the trends of the model on images it does *not* train on.
+
+# test_model.py and test_model_external.py
+
+These two scripts have the same goal of testing the model on a completely new batch of images. The difference is that the test_model.py will test images from the testing pickle files exported by input_data_split.py. On the other hand, test_model_external.py allows you to input 2 folders with the test images manually. Both scripts export a CSV with each image name, the true label, and the predicted label.
+
+# Extra Folders
+
+## frullania
+
+This folder contains adapations of the model that we want to use to train for 2 completely new classes: frullania rostrata and frullania coastal. This application is new to science because there is speculation that these two are different species and hopefully we can train a model to identify morphological differences between the two.
+
+## cross_validation
+
+This folder implements k-fold cross validation to improve the robustness and accuracy of the model.
