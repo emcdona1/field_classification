@@ -75,3 +75,6 @@ Similarly, input_data_split.py takes in two folders but exports 6 pickle files, 
 
 If you are using one then switch to using the other, be careful! Half the pickle files from input_data_split.py have the same file names as the exported files from input_data.py.
 
+# build_model.py
+
+This file is where the architecture of the model is created. It imports the pickle files where images and labels are stored, builds the model, and trains it. Here you can change parameters such as the number of epochs, learning rate, regularizers, etc. At the end, the final model is saved and graphs of validation accuracy and loss pop up (1 at a time) so you can get a general idea of the trends of the model on images it does *not* train on.
