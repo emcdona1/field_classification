@@ -1,3 +1,4 @@
+# splits training and testing data into separate pickle files
 import numpy as np
 import os
 from matplotlib import pyplot as plt
