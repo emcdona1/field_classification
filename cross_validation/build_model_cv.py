@@ -23,6 +23,8 @@ import os
 import argparse
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
+from sklearn.model_selection import StratifiedKFold
+
 
 
 #from stratify_import_and_split_img import *
@@ -105,19 +107,18 @@ def build_model(img_size): # create model architecture and compile it
 
 
 def plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc):
-    plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
-             color='r', label='Random Chance', alpha=.8)
-    plt.plot(mean_fpr, mean_tpr, color='blue',
-             label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc),
-             lw=2, alpha=.8)
-    plt.xlim([-0.05, 1.05])
-    plt.ylim([-0.05, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver operating characteristic example')
-    plt.legend(loc="lower right")
-	plt.savefig('graphs/mean_ROC.png')
-    plt.show()
+	plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
+				color='r', label='Random Chance', alpha=.8)
+	plt.plot(mean_fpr, mean_tpr, color='blue',
+				label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc),
+				lw=2, alpha=.8)
+	plt.xlim([-0.05, 1.05])
+	plt.ylim([-0.05, 1.05])
+	plt.xlabel('False Positive Rate')
+	plt.ylabel('True Positive Rate')
+	plt.title('Receiver operating characteristic')
+	plt.legend(loc="lower right")
+	plt.show()
 
 def train_cross_validate(n_folds):
 	skf = StratifiedKFold(n_splits = n_folds, shuffle = True, random_state = SEED)

@@ -12,7 +12,8 @@ import pickle
 from sklearn.model_selection import StratifiedKFold
 from numpy.random import seed
 
-def import_images(all_data, data_dir, categories, image_size): 
+def import_images(data_dir, categories, image_size): 
+    all_data = []
     for category in categories:
         path=os.path.join(data_dir,category) #look at each folder of images
         class_index = categories.index(category)
@@ -66,4 +67,4 @@ if __name__== '__main__':
     parser.add_argument('-n', '--num_groups', default = '10', help="Number of groups for cross validation")
     args = parser.parse_args()
     categories = [args.category1, args.category2]
-    import_images(all_data, args.directory, categories, args.image_size)
+    import_images(args.directory, categories, int(args.image_size))
