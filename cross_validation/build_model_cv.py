@@ -1,8 +1,10 @@
+# --- CONSTANTS ---
+SEED = 1
 # imports for reproducible results
 from numpy.random import seed
-seed(1)
+seed(SEED)
 from tensorflow.compat.v1 import set_random_seed
-set_random_seed(2)
+set_random_seed(SEED)
 
 # the ML stuff
 import tensorflow as tf
@@ -21,21 +23,23 @@ import os
 import argparse
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
-from stratify_import_and_split_img import *
+
+
+#from stratify_import_and_split_img import *
 
 # returns a numpy array with all the data
-def groups_to_arrays(pickle_data_dir, num_groups):
-	sets = []
-	for i in range(num_groups):
-		features = pickle.load(open(os.path.join(pickle_data_dir,str(i)+"_features.pickle"),"rb"))
-		# normalize data
-		features = features/255.0
-		labels = pickle.load(open(os.path.join(pickle_data_dir,str(i)+"_labels.pickle"),"rb"))
-		#names = pickle.load(open(os.path.join(pickle_data_dir,str(i)+"_names.pickle"),"rb"))
+# def groups_to_arrays(pickle_data_dir, num_groups):
+# 	sets = []
+# 	for i in range(num_groups):
+# 		features = pickle.load(open(os.path.join(pickle_data_dir,str(i)+"_features.pickle"),"rb"))
+# 		# normalize data
+# 		features = features/255.0
+# 		labels = pickle.load(open(os.path.join(pickle_data_dir,str(i)+"_labels.pickle"),"rb"))
+# 		#names = pickle.load(open(os.path.join(pickle_data_dir,str(i)+"_names.pickle"),"rb"))
 
-		one_group = [features, labels]
-		sets.append(one_group)
-	return sets
+# 		one_group = [features, labels]
+# 		sets.append(one_group)
+# 	return sets
 
 def build_model(img_size): # create model architecture and compile it
 	model = Sequential()
@@ -99,26 +103,6 @@ def build_model(img_size): # create model architecture and compile it
 	model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 	return model
 
-# def train_cross_validate(model, grouped_data,img_size):
-# 	for i in range(len(grouped_data)):
-# 		validation_features = grouped_data[i][0]
-# 		validation_labels = grouped_data[i][1]
-# 		validation_group = i
-# 		if i == len(grouped_data)-1: # last group to avoid out of bounds
-# 			testing_features = grouped_data[0][0]
-# 			testing_labels = grouped_data[0][1]
-# 			testing_group = 0
-# 		else:
-# 			testing_features = grouped_data[i+1][0]
-# 			testing_labels = grouped_data[i+1][0]
-# 			testing_group = i + 1
-
-# 		training_features = np.empty((0, img_size, img_size, 3))
-# 		for j in range(len(grouped_data)):
-# 			if j==validation_group or j==testing_group:
-# 				continue
-# 			else:
-# 				training_features = np.concatenate((training_features, grouped_data[j][0]))
 
 def plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc):
     plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
@@ -135,8 +119,8 @@ def plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.savefig('graphs/mean_ROC.png')
     plt.show()
 
-def train_cross_validate():
-	skf = StratifiedKFold(n_splits = 2, shuffle = True, random_state = 1)
+def train_cross_validate(n_folds):
+	skf = StratifiedKFold(n_splits = n_folds, shuffle = True, random_state = SEED)
 	features = pickle.load(open("features.pickle","rb"))
 	labels = pickle.load(open("labels.pickle","rb"))
 	img_names = pickle.load(open("img_names.pickle","rb"))
@@ -216,7 +200,7 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 	# divided_data = groups_to_arrays(args.pickle_dir, args.number_groups)
 	#model = build_model(args.img_size)
-	train_cross_validate()
+	train_cross_validate(10)
 
 # DATA_DIR = 'data'
 # # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
