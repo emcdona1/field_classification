@@ -19,6 +19,9 @@ import cv2
 import numpy as np
 import os
 import argparse
+from scipy import interp
+from sklearn.metrics import roc_curve, auc
+from stratify_import_and_split_img import *
 
 # returns a numpy array with all the data
 def groups_to_arrays(pickle_data_dir, num_groups):
@@ -34,7 +37,7 @@ def groups_to_arrays(pickle_data_dir, num_groups):
 		sets.append(one_group)
 	return sets
 
-def build_model(img_size): # create model architecture
+def build_model(img_size): # create model architecture and compile it
 	model = Sequential()
 
 	# Image input shape: 256 x 256 x 3
@@ -91,28 +94,118 @@ def build_model(img_size): # create model architecture
 	model.add(Dense(2, activation="linear", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05)))
 	model.add(Dense(2, activation="softmax", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05)))
 	# model.add(Activation("softmax"))
+
+	opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=0.00001, decay=0.0, amsgrad=False)
+	model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 	return model
 
-def train_cross_validate(model, grouped_data,img_size):
-	for i in range(len(grouped_data)):
-		validation_features = grouped_data[i][0]
-		validation_labels = grouped_data[i][1]
-		validation_group = i
-		if i == len(grouped_data)-1: # last group to avoid out of bounds
-			testing_features = grouped_data[0][0]
-			testing_labels = grouped_data[0][1]
-			testing_group = 0
-		else:
-			testing_features = grouped_data[i+1][0]
-			testing_labels = grouped_data[i+1][0]
-			testing_group = i + 1
+# def train_cross_validate(model, grouped_data,img_size):
+# 	for i in range(len(grouped_data)):
+# 		validation_features = grouped_data[i][0]
+# 		validation_labels = grouped_data[i][1]
+# 		validation_group = i
+# 		if i == len(grouped_data)-1: # last group to avoid out of bounds
+# 			testing_features = grouped_data[0][0]
+# 			testing_labels = grouped_data[0][1]
+# 			testing_group = 0
+# 		else:
+# 			testing_features = grouped_data[i+1][0]
+# 			testing_labels = grouped_data[i+1][0]
+# 			testing_group = i + 1
 
-		training_features = np.empty((0, img_size, img_size, 3))
-		for j in range(len(grouped_data)):
-			if j==validation_group or j==testing_group:
-				continue
-			else:
-				training_features = np.concatenate((training_features, grouped_data[j][0]))
+# 		training_features = np.empty((0, img_size, img_size, 3))
+# 		for j in range(len(grouped_data)):
+# 			if j==validation_group or j==testing_group:
+# 				continue
+# 			else:
+# 				training_features = np.concatenate((training_features, grouped_data[j][0]))
+
+def plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc):
+    plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
+             color='r', label='Random Chance', alpha=.8)
+    plt.plot(mean_fpr, mean_tpr, color='blue',
+             label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc),
+             lw=2, alpha=.8)
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver operating characteristic example')
+    plt.legend(loc="lower right")
+	plt.savefig('graphs/mean_ROC.png')
+    plt.show()
+
+def train_cross_validate():
+	skf = StratifiedKFold(n_splits = 2, shuffle = True, random_state = 1)
+	features = pickle.load(open("features.pickle","rb"))
+	labels = pickle.load(open("labels.pickle","rb"))
+	img_names = pickle.load(open("img_names.pickle","rb"))
+
+	# for roc plotting
+	tprs = []
+	aucs = []
+	mean_fpr = np.linspace(0, 1, 100)
+
+	for index, (train_indices, val_indices) in enumerate(skf.split(features, labels)):
+		print("Training on fold " + str(index + 1) + "/10")
+		train_features, val_features = features[train_indices], features[val_indices]
+		train_labels, val_labels = labels[train_indices], labels[val_indices]
+
+		# Create new model each time
+		model = None
+		model = build_model(256)
+
+		history = model.fit(train_features, train_labels, batch_size=32, epochs = 3, validation_data = (val_features, val_labels))
+		# model_json = model.to_json()
+		# with open("model.json", "w") as json_file :
+		# 	json_file.write(model_json)
+
+		# model.save_weights("model.h5")
+		# print("Saved model to disk")
+
+		model.save('saved_models/CNN_' + str(index + 1) + '.model')
+
+		# Printing a graph showing the accuracy changes during the training phase
+		print(history.history.keys())
+		plt.figure(1)
+		plt.plot(history.history['acc'])
+		plt.plot(history.history['val_acc'])
+		plt.title('model accuracy')
+		plt.ylabel('accuracy')
+		plt.xlabel('epoch')
+		plt.legend(['train', 'validation'], loc='upper left')
+		plt.savefig('graphs/val_accuracy_' + str(index) + '.png')
+		# plt.show()
+
+		plt.figure(2)
+		plt.plot(history.history['loss'])
+		plt.plot(history.history['val_loss'])
+		plt.title('model loss')
+		plt.ylabel('loss')
+		plt.xlabel('epoch')
+		plt.legend(['train', 'validation'], loc='upper left')
+		plt.savefig('graphs/val_loss' + str(index) + '.png')
+		# plt.show()
+
+		# roc curve stuff
+		probas_ = model.predict_proba(val_features)
+		# Compute ROC curve and area the curve
+		fpr, tpr, thresholds = roc_curve(val_labels, probas_[:, 1])
+		tprs.append(interp(mean_fpr, fpr, tpr))
+		tprs[-1][0] = 0.0
+		roc_auc = auc(fpr, tpr)
+		aucs.append(roc_auc)
+		# Plots ROC for each individual fold:
+		# plt.plot(fpr, tpr, lw=1, alpha=0.3,label='ROC fold %d (AUC = %0.2f)' % (index + 1, roc_auc))
+	# use the mean statistics to compare each model (that we train/test using 10-fold cv)
+	mean_tpr = np.mean(tprs, axis=0)
+	mean_tpr[-1] = 1.0
+	mean_auc = auc(mean_fpr, mean_tpr)
+	std_auc = np.std(aucs)
+
+	# plot the mean ROC curve and display AUC (mean/st dev)
+	plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc)
+	
 		
 
 if __name__ == '__main__':
@@ -121,76 +214,48 @@ if __name__ == '__main__':
 	parser.add_argument('-n', '--number_groups', default=10, help='Number of groups for cross validation')
 	parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
 	args = parser.parse_args()
-	divided_data = groups_to_arrays(args.pickle_dir, args.number_groups)
-	model = build_model(args.img_size)
-	train_cross_validate(model, divided_data, args.img_size)
+	# divided_data = groups_to_arrays(args.pickle_dir, args.number_groups)
+	#model = build_model(args.img_size)
+	train_cross_validate()
 
-DATA_DIR = 'data'
-# CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
-# CATEGORIES = ['lyco_train', 'sela_train']
-IMG_SIZE = 256 #pixels
+# DATA_DIR = 'data'
+# # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
+# # CATEGORIES = ['lyco_train', 'sela_train']
+# IMG_SIZE = 256 #pixels
 
-# use functions from input_data.py to shuffle data and store it
-training_data= []
-testing_data = []
-# training_data = split_data(training_data) #,testing_data)
-# store_training_data(training_data, 0.0)
+# # use functions from input_data.py to shuffle data and store it
+# training_data= []
+# testing_data = []
+# # training_data = split_data(training_data) #,testing_data)
+# # store_training_data(training_data, 0.0)
 
-# Open up those pickle files
-features = pickle.load(open("features.pickle","rb"))
-labels = pickle.load(open("labels.pickle","rb"))
+# # Open up those pickle files
+# features = pickle.load(open("features.pickle","rb"))
+# labels = pickle.load(open("labels.pickle","rb"))
 
-# checking that images are labeled correctly
-# for i in range(5):
-#     test_img=features[i]
-#     cv2.imshow(img_names[i] + ' ' + str(labels[i]),test_img)
-#     cv2.waitKey(0)
-#     cv2.destroyAllWindows()
+# # checking that images are labeled correctly
+# # for i in range(5):
+# #     test_img=features[i]
+# #     cv2.imshow(img_names[i] + ' ' + str(labels[i]),test_img)
+# #     cv2.waitKey(0)
+# #     cv2.destroyAllWindows()
 
-print("Files loaded")
-# build the model? let's give this a shot lol
+# print("Files loaded")
+# # build the model? let's give this a shot lol
 
 
 
-# Compiling the model using some basic parameters
-# learning rate start at 0.0001 in the Smithsonian paper as well
-opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=0.00001, decay=0.0, amsgrad=False)
-model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
+# # Compiling the model using some basic parameters
+# # learning rate start at 0.0001 in the Smithsonian paper as well
+# opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=0.00001, decay=0.0, amsgrad=False)
+# model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 
-print("Model created")
-# Training the model, with 10 iterations
-# validation_split corresponds to the percentage of images used for the validation phase compared to all the images
-# es_callback = EarlyStopping(monitor = 'val_loss', patience = 3, restore_best_weights = True)
-# history = model.fit(features, labels, batch_size=16, epochs=15, validation_split=0.22) #.22 of the .9 is .2 of the total
-# history = model.fit(features, labels, batch_size=32, epochs=15, callbacks=[es_callback], validation_split=0.22) #.22 of the .9 is .2 of the total
-history = model.fit(features, labels, batch_size=32, epochs = 30, validation_split=0.22) #.22 of the .9 is .2 of the total
+# print("Model created")
+# # Training the model, with 10 iterations
+# # validation_split corresponds to the percentage of images used for the validation phase compared to all the images
+# # es_callback = EarlyStopping(monitor = 'val_loss', patience = 3, restore_best_weights = True)
+# # history = model.fit(features, labels, batch_size=16, epochs=15, validation_split=0.22) #.22 of the .9 is .2 of the total
+# # history = model.fit(features, labels, batch_size=32, epochs=15, callbacks=[es_callback], validation_split=0.22) #.22 of the .9 is .2 of the total
+# history = model.fit(features, labels, batch_size=32, epochs = 30, validation_split=0.22) #.22 of the .9 is .2 of the total
 
-# Saving the model
-model_json = model.to_json()
-with open("model.json", "w") as json_file :
-	json_file.write(model_json)
-
-model.save_weights("model.h5")
-print("Saved model to disk")
-
-model.save('CNN.model')
-
-# Printing a graph showing the accuracy changes during the training phase
-print(history.history.keys())
-plt.figure(1)
-plt.plot(history.history['acc'])
-plt.plot(history.history['val_acc'])
-plt.title('model accuracy')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-plt.legend(['train', 'validation'], loc='upper left')
-plt.show()
-
-plt.figure(2)
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.title('model loss')
-plt.ylabel('loss')
-plt.xlabel('epoch')
-plt.legend(['train', 'validation'], loc='upper left')
-plt.show()
+# # Saving the model
