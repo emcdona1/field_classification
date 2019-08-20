@@ -118,12 +118,18 @@ def plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.ylabel('True Positive Rate')
 	plt.title('Receiver operating characteristic')
 	plt.legend(loc="lower right")
+	plt.savefig('graphs/mean_ROC.png')
 	plt.show()
 
 def train_cross_validate(n_folds):
+	# initialize stratifying k fold
 	skf = StratifiedKFold(n_splits = n_folds, shuffle = True, random_state = SEED)
-	features = pickle.load(open("features.pickle","rb"))
+
+	# open pickle files
+	features = pickle.load(open("features.pickle","rb")) #already reshaped as numpy array
+	features = features/255.0 
 	labels = pickle.load(open("labels.pickle","rb"))
+	labels = np.array(labels)
 	img_names = pickle.load(open("img_names.pickle","rb"))
 
 	# for roc plotting
@@ -132,15 +138,20 @@ def train_cross_validate(n_folds):
 	mean_fpr = np.linspace(0, 1, 100)
 
 	for index, (train_indices, val_indices) in enumerate(skf.split(features, labels)):
-		print("Training on fold " + str(index + 1) + "/10")
-		train_features, val_features = features[train_indices], features[val_indices]
-		train_labels, val_labels = labels[train_indices], labels[val_indices]
+		print("Training on fold " + str(index + 1) + "/" + str(n_folds))
+		train_features = features[train_indices]
+		train_labels = labels[train_indices]
+		print("Training data obtained")
+		val_features = features[val_indices]
+		val_labels = labels[val_indices]
+		print("Validation data obtained")
+		# train_labels, val_labels = labels[train_indices], labels[val_indices]
 
 		# Create new model each time
 		model = None
 		model = build_model(256)
 
-		history = model.fit(train_features, train_labels, batch_size=32, epochs = 3, validation_data = (val_features, val_labels))
+		history = model.fit(train_features, train_labels, batch_size=32, epochs = 20, validation_data = (val_features, val_labels))
 		# model_json = model.to_json()
 		# with open("model.json", "w") as json_file :
 		# 	json_file.write(model_json)
@@ -159,8 +170,9 @@ def train_cross_validate(n_folds):
 		plt.ylabel('accuracy')
 		plt.xlabel('epoch')
 		plt.legend(['train', 'validation'], loc='upper left')
-		plt.savefig('graphs/val_accuracy_' + str(index) + '.png')
+		plt.savefig('graphs/val_accuracy_' + str(index+1) + '.png')
 		# plt.show()
+		plt.clf()
 
 		plt.figure(2)
 		plt.plot(history.history['loss'])
@@ -169,8 +181,9 @@ def train_cross_validate(n_folds):
 		plt.ylabel('loss')
 		plt.xlabel('epoch')
 		plt.legend(['train', 'validation'], loc='upper left')
-		plt.savefig('graphs/val_loss' + str(index) + '.png')
+		plt.savefig('graphs/val_loss_' + str(index+1) + '.png')
 		# plt.show()
+		plt.clf()
 
 		# roc curve stuff
 		probas_ = model.predict_proba(val_features)
@@ -198,10 +211,12 @@ if __name__ == '__main__':
 	parser.add_argument('-p', '--pickle_dir', default='data_pickles', help='Folder for pickle files')
 	parser.add_argument('-n', '--number_groups', default=10, help='Number of groups for cross validation')
 	parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
+	parser.add_argument('-f', '--number_folds', default=10, help='Number of folds for cross validation')
+
 	args = parser.parse_args()
 	# divided_data = groups_to_arrays(args.pickle_dir, args.number_groups)
 	#model = build_model(args.img_size)
-	train_cross_validate(10)
+	train_cross_validate(int(args.number_folds))
 
 # DATA_DIR = 'data'
 # # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
