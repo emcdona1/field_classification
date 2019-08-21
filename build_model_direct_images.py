@@ -149,6 +149,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size):
 	data = import_images(data_dir, categories, image_size)
 	features = data[0]
 	labels = data[1]
+	print("Stored features and labels")
 	# for roc plotting
 	tprs = []
 	aucs = []
@@ -167,7 +168,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size):
 		# Create new model each time
 		model = None
 		model = build_model(256)
-
+		print("Training model")
 		history = model.fit(train_features, train_labels, batch_size=32, epochs = 25, validation_data = (val_features, val_labels))
 		# model_json = model.to_json()
 		# with open("model.json", "w") as json_file :
