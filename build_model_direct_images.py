@@ -123,7 +123,7 @@ def import_images(data_dir, categories, image_size):
 	img_names = []
 
 	#store the image features (array of RGB for each pixel) and labels into corresponding arrays
-	for data_feature, data_label, file_name in all_data:
+	for data_feature, data_label in all_data:
 		features.append(data_feature)
 		labels.append(data_label)
 		# img_names.append(file_name)
@@ -239,5 +239,5 @@ if __name__ == '__main__':
 	# divided_data = groups_to_arrays(args.pickle_dir, args.number_groups)
 	#model = build_model(args.img_size)
 	categories = [args.category1, args.category2]
-	train_cross_validate(int(args.number_folds),args.directory, categories, int(args.img_size))
+	train_cross_validate(int(args.number_folds), args.directory, categories, int(args.img_size))
 
