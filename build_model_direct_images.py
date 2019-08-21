@@ -169,7 +169,8 @@ def train_cross_validate(n_folds, data_dir, categories, image_size):
 		model = None
 		model = build_model(256)
 		print("Training model")
-		history = model.fit(train_features, train_labels, batch_size=32, epochs = 25, validation_data = (val_features, val_labels))
+		es_callback = EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
+		history = model.fit(train_features, train_labels, batch_size=32, epochs = 25, callbacks = [es_callback], validation_data = (val_features, val_labels))
 		# model_json = model.to_json()
 		# with open("model.json", "w") as json_file :
 		# 	json_file.write(model_json)
