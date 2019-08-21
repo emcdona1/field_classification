@@ -89,13 +89,13 @@ def build_model(img_size): # create model architecture and compile it
 
 	# 10. Dropout Layer: In Mathematica Dropout[] has a rate of dropping 50% of elements and multiply rest by 2
 	# !!!!!!! Currently trying to figure out how to do the multiply by 2 but moving on for now !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	model.add(Dropout(0.5))
+	model.add(Dropout(0.5, seed=SEED))
 
 	model.add(Dense(500, activation="linear", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05))) # kernel_regularizer=regularizers.l2(0.1)))
 	model.add(Dense(500, activation="relu", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05))) 
 	#model.add(Activation("relu"))
 
-	model.add(Dropout(0.25))
+	model.add(Dropout(0.25, seed=SEED))
 	# The output layer with 2 neurons, for 2 classes
 	model.add(Dense(2, activation="linear", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05)))
 	model.add(Dense(2, activation="softmax", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05)))
@@ -151,7 +151,7 @@ def train_cross_validate(n_folds):
 		model = None
 		model = build_model(256)
 
-		history = model.fit(train_features, train_labels, batch_size=32, epochs = 20, validation_data = (val_features, val_labels))
+		history = model.fit(train_features, train_labels, batch_size=32, epochs = 25, validation_data = (val_features, val_labels))
 		# model_json = model.to_json()
 		# with open("model.json", "w") as json_file :
 		# 	json_file.write(model_json)
