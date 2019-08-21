@@ -26,24 +26,6 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
 import random
 
-
-
-#from stratify_import_and_split_img import *
-
-# returns a numpy array with all the data
-# def groups_to_arrays(pickle_data_dir, num_groups):
-# 	sets = []
-# 	for i in range(num_groups):
-# 		features = pickle.load(open(os.path.join(pickle_data_dir,str(i)+"_features.pickle"),"rb"))
-# 		# normalize data
-# 		features = features/255.0
-# 		labels = pickle.load(open(os.path.join(pickle_data_dir,str(i)+"_labels.pickle"),"rb"))
-# 		#names = pickle.load(open(os.path.join(pickle_data_dir,str(i)+"_names.pickle"),"rb"))
-
-# 		one_group = [features, labels]
-# 		sets.append(one_group)
-# 	return sets
-
 def build_model(img_size): # create model architecture and compile it
 	model = Sequential()
 
@@ -105,9 +87,6 @@ def build_model(img_size): # create model architecture and compile it
 	opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=0.00001, decay=0.0, amsgrad=False)
 	model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 	return model
-	
-
-
 
 def plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
@@ -133,7 +112,7 @@ def import_images(data_dir, categories, image_size):
 			try:
 				img_array = cv2.imread(os.path.join(path,img), -1) #-1 means image is read as color
 				img_array = img_array/255.0
-				all_data.append([img_array, class_index, img])
+				all_data.append([img_array, class_index]) #, img])
 			except Exception as e:
 				pass
 	random.shuffle(all_data)
@@ -147,7 +126,7 @@ def import_images(data_dir, categories, image_size):
 	for data_feature, data_label, file_name in all_data:
 		features.append(data_feature)
 		labels.append(data_label)
-		img_names.append(file_name)
+		# img_names.append(file_name)
 
 	#reshape into numpy array
 	features = np.array(features).reshape(-1, image_size, image_size, 3) #3 bc three channels for RGB values
@@ -244,6 +223,8 @@ def train_cross_validate(n_folds, data_dir, categories, image_size):
 	
 		
 
+# BEFORE RUNNING
+# Make sure you have a folder called 'graphs' and a folder called 'saved_models' in the same folder as this file
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('import pickle files')
 	# parser.add_argument('-p', '--pickle_dir', default='data_pickles', help='Folder for pickle files')
