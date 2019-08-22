@@ -195,14 +195,14 @@ def train_cross_validate(n_folds):
 		aucs.append(roc_auc)
 		# Plots ROC for each individual fold:
 		# plt.plot(fpr, tpr, lw=1, alpha=0.3,label='ROC fold %d (AUC = %0.2f)' % (index + 1, roc_auc))
-	# use the mean statistics to compare each model (that we train/test using 10-fold cv)
-	mean_tpr = np.mean(tprs, axis=0)
-	mean_tpr[-1] = 1.0
-	mean_auc = auc(mean_fpr, mean_tpr)
-	std_auc = np.std(aucs)
+		# use the mean statistics to compare each model (that we train/test using 10-fold cv)
+		mean_tpr = np.mean(tprs, axis=0)
+		mean_tpr[-1] = 1.0
+		mean_auc = auc(mean_fpr, mean_tpr)
+		std_auc = np.std(aucs)
 
-	# plot the mean ROC curve and display AUC (mean/st dev)
-	plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc)
+		# plot the mean ROC curve and display AUC (mean/st dev)
+		plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc)
 	
 		
 
