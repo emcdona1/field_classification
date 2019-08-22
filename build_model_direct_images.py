@@ -228,8 +228,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size):
 	
 		
 
-# BEFORE RUNNING
-# Make sure you have a folder called 'graphs' and a folder called 'saved_models' in the same folder as this file
+
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('import pickle files')
 	# parser.add_argument('-p', '--pickle_dir', default='data_pickles', help='Folder for pickle files')
@@ -243,5 +242,11 @@ if __name__ == '__main__':
 	# divided_data = groups_to_arrays(args.pickle_dir, args.number_groups)
 	#model = build_model(args.img_size)
 	categories = [args.category1, args.category2]
+	
+	if not os.path.exists('graphs'):
+		os.makedirs('graphs')
+	if not os.path.exists('saved_models'):
+		os.makedir('saved_models')
+	
 	train_cross_validate(int(args.number_folds), args.directory, categories, int(args.img_size))
 
