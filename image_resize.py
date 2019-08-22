@@ -17,16 +17,16 @@ def make_square(file_name, dest_path, dir_path, img_size):
         print(file_name + " was unable to be resized")
     return output_name
 
-def resize_folder(dir_path, dest_path, label):
+def resize_folder(dir_path, dest_path, label, img_size):
     all_images = os.listdir(dir_path)
     df=pd.DataFrame()
     for i in range(len(all_images)):
-        output_name = make_square(all_images[i], dest_path, dir_path)
+        output_name = make_square(all_images[i], dest_path, dir_path, img_size)
         df = df.append([[output_name, label]])
         if i % 500 == 0:
             print (i, " images resized")
     df = df.rename({0: 'Image Name', 1: 'Family'}, axis='columns')
-    df.to_csv(dest_path + '/_label.csv', encoding= 'utf-8', index=False)
+    # df.to_csv(dest_path + '/_label.csv', encoding= 'utf-8', index=False)
 
 if __name__== '__main__':
     parser = argparse.ArgumentParser('data to be imported')
@@ -35,4 +35,4 @@ if __name__== '__main__':
     parser.add_argument('-t', '--tag', default = '', help="The label for all these images to be in the CSV File")
     parser.add_argument('-s', '--image_size', default=256, help='The new image height/width (assuming output is square)')
     args = parser.parse_args()
-    resize_folder(args.folder, args.destination, args.tag, args.image_size)
+    resize_folder(args.folder, args.destination, args.tag, int(args.image_size))
