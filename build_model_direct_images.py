@@ -5,6 +5,8 @@ from numpy.random import seed
 seed(SEED)
 from tensorflow.compat.v1 import set_random_seed
 set_random_seed(SEED)
+import random
+random.seed(SEED)
 
 # the ML stuff
 import tensorflow as tf
@@ -24,7 +26,7 @@ import argparse
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
-import random
+
 
 def build_model(img_size): # create model architecture and compile it
 	model = Sequential()
@@ -101,7 +103,8 @@ def plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.title('Receiver operating characteristic')
 	plt.legend(loc="lower right")
 	plt.savefig('graphs/mean_ROC.png')
-	plt.show()
+	plt.clf()
+	# plt.show()
 
 def import_images(data_dir, categories, image_size): 
 	all_data = []
@@ -167,7 +170,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size):
 
 		# Create new model each time
 		model = None
-		model = build_model(256)
+		model = build_model(image_size)
 		print("Training model")
 		es_callback = EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
 		history = model.fit(train_features, train_labels, batch_size=32, epochs = 25, callbacks = [es_callback], validation_data = (val_features, val_labels))
@@ -214,14 +217,14 @@ def train_cross_validate(n_folds, data_dir, categories, image_size):
 		aucs.append(roc_auc)
 		# Plots ROC for each individual fold:
 		# plt.plot(fpr, tpr, lw=1, alpha=0.3,label='ROC fold %d (AUC = %0.2f)' % (index + 1, roc_auc))
-	# use the mean statistics to compare each model (that we train/test using 10-fold cv)
-	mean_tpr = np.mean(tprs, axis=0)
-	mean_tpr[-1] = 1.0
-	mean_auc = auc(mean_fpr, mean_tpr)
-	std_auc = np.std(aucs)
+		# use the mean statistics to compare each model (that we train/test using 10-fold cv)
+		mean_tpr = np.mean(tprs, axis=0)
+		mean_tpr[-1] = 1.0
+		mean_auc = auc(mean_fpr, mean_tpr)
+		std_auc = np.std(aucs)
 
-	# plot the mean ROC curve and display AUC (mean/st dev)
-	plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc)
+		# plot the mean ROC curve and display AUC (mean/st dev)
+		plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc)
 	
 		
 
