@@ -137,7 +137,7 @@ def import_images(data_dir, categories, image_size):
 	return [features,labels]
 
 
-def train_cross_validate(n_folds, data_dir, categories, image_size):
+def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	# initialize stratifying k fold
 	skf = StratifiedKFold(n_splits = n_folds, shuffle = True, random_state = SEED)
 
@@ -148,6 +148,8 @@ def train_cross_validate(n_folds, data_dir, categories, image_size):
 	# labels = np.array(labels)
 	# img_names = pickle.load(open("img_names.pickle","rb"))
 
+	# data frame to save values of loss and validation after each fold
+	df = pd.DataFrame()
 	#obtain images
 	data = import_images(data_dir, categories, image_size)
 	features = data[0]
@@ -173,7 +175,9 @@ def train_cross_validate(n_folds, data_dir, categories, image_size):
 		model = build_model(image_size)
 		print("Training model")
 		es_callback = EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
-		history = model.fit(train_features, train_labels, batch_size=32, epochs = 25, callbacks = [es_callback], validation_data = (val_features, val_labels))
+		history = model.fit(train_features, train_labels, batch_size=32, epochs = num_epochs, callbacks = [es_callback], validation_data = (val_features, val_labels))
+		# save values of loss and accuracy into df
+		df = df.append([[index+1, history.history['loss'][num_epochs-1], history.history['acc'][num_epochs-1], history.history['val_loss'][num_epochs-1], history.history['val_acc'][num_epochs-1]]])
 		# model_json = model.to_json()
 		# with open("model.json", "w") as json_file :
 		# 	json_file.write(model_json)
@@ -225,6 +229,12 @@ def train_cross_validate(n_folds, data_dir, categories, image_size):
 
 		# plot the mean ROC curve and display AUC (mean/st dev)
 		plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc)
+	df = df.rename({0: 'Fold Number',\
+					1: 'Training Loss',\
+					2: 'Training Accuracy',\
+					3: 'Validation Loss', \
+					4: 'Validation Accuracy'}, axis='columns')
+	df.to_csv(os.path.join('graphs','final_acc_loss.csv'), encoding='utf-8', index=False)
 	
 		
 
@@ -237,6 +247,7 @@ if __name__ == '__main__':
 	parser.add_argument('-c2', '--category2', default='sela_train', help='Folder of class 2')
 	parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
 	parser.add_argument('-n', '--number_folds', default=10, help='Number of folds for cross validation')
+	parser.add_argument('-e', '--number_epochs', default=25, help='Number of epochs')
 
 	args = parser.parse_args()
 	# divided_data = groups_to_arrays(args.pickle_dir, args.number_groups)
@@ -248,5 +259,5 @@ if __name__ == '__main__':
 	if not os.path.exists('saved_models'):
 		os.makedir('saved_models')
 	
-	train_cross_validate(int(args.number_folds), args.directory, categories, int(args.img_size))
+	train_cross_validate(int(args.number_folds), args.directory, categories, int(args.img_size), int(args.number_epochs))
 
