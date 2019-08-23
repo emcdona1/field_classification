@@ -256,7 +256,7 @@ if __name__ == '__main__':
 	if not os.path.exists('graphs'):
 		os.makedirs('graphs')
 	if not os.path.exists('saved_models'):
-		os.makedir('saved_models')
+		os.makedirs('saved_models')
 	
 	train_cross_validate(int(args.number_folds), args.directory, categories, int(args.img_size), int(args.number_epochs))
 
