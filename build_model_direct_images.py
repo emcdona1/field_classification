@@ -26,6 +26,7 @@ import argparse
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
+import pandas as pd
 
 
 def build_model(img_size): # create model architecture and compile it
@@ -175,7 +176,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		model = build_model(image_size)
 		print("Training model")
 		es_callback = EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
-		history = model.fit(train_features, train_labels, batch_size=32, epochs = num_epochs, callbacks = [es_callback], validation_data = (val_features, val_labels))
+		history = model.fit(train_features, train_labels, batch_size=64, epochs = num_epochs, callbacks = [es_callback], validation_data = (val_features, val_labels))
 		# save values of loss and accuracy into df
 		df = df.append([[index+1, history.history['loss'][num_epochs-1], history.history['acc'][num_epochs-1], history.history['val_loss'][num_epochs-1], history.history['val_acc'][num_epochs-1]]])
 		# model_json = model.to_json()
@@ -236,9 +237,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 					4: 'Validation Accuracy'}, axis='columns')
 	df.to_csv(os.path.join('graphs','final_acc_loss.csv'), encoding='utf-8', index=False)
 	
-		
-
-
+	
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser('import pickle files')
 	# parser.add_argument('-p', '--pickle_dir', default='data_pickles', help='Folder for pickle files')
