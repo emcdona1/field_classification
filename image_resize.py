@@ -35,4 +35,7 @@ if __name__== '__main__':
     parser.add_argument('-t', '--tag', default = '', help="The label for all these images to be in the CSV File")
     parser.add_argument('-s', '--image_size', default=256, help='The new image height/width (assuming output is square)')
     args = parser.parse_args()
+    # if the destination folder doesn't exist yet, create it
+    if not os.path.exists(args.destination):
+        os.makedirs(args.destination)
     resize_folder(args.folder, args.destination, args.tag, int(args.image_size))
