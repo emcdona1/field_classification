@@ -175,9 +175,11 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	for index in range(n_folds):
 		boot = resample(data, replace = True, n_samples = len(data), random_state = SEED)
 		booted_imgs = set([])
+		train_features = []
+		train_labels = []
 		for entry in boot:
-			train_features = entry[0]
-			train_labels = entry[1]
+			train_features.append(entry[0])
+			train_labels.append(entry[1])
 			booted_imgs.add(entry[2])
 
 		val_features = []
@@ -188,6 +190,11 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 				val_features.append(entry[0])
 				val_labels.append(entry[1])
 
+		#reshape into numpy array
+		train_features = np.array(train_features).reshape(-1, image_size, image_size, 3) #3 bc three channels for RGB values
+		train_labels = np.array(train_labels)
+		val_features = np.array(val_features).reshape(-1, image_size, image_size, 3) #3 bc three channels for RGB values
+		val_labels = np.array(val_labels)
 		# Create new model each time
 		model = None
 		model = build_model(image_size)
