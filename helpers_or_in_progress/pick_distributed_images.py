@@ -13,14 +13,6 @@ def divide_all(src_path, num_training, store_remaining, selected_path, remaining
     print("Otherwise it just doesn't work out my friend")
 
     src = os.listdir(src_path)
-    # Use following paths when choosing training data
-    # selected_path = os.path.join(root,folder_name+"_selected") 
-    # remaining_path = os.path.join(root,folder_name+"_remaining") 
-
-    # Use following paths for test data (store_remaining should be set to FALSE)
-    # selected_path = os.path.join(root,folder_name+"_testing")
-    # selected_path = dest_path
-    # remaining_path = ""
 
     num_images = len(src)
     incr_decimal = 1.0*num_images/num_training
@@ -41,12 +33,6 @@ def divide_all(src_path, num_training, store_remaining, selected_path, remaining
         if i > num_low_skip:
             cur_skip = high_skip
         i+=1
-
-# root="data"
-# divide_all("Lycopodiaceae", 1250, True)
-# divide_all("Selaginellaceae", 1250, True)
-# divide_all("Lycopodiaceae", 1000, False)
-# divide_all("Selaginellaceae", 2400, False)
 
 if __name__== '__main__':
     parser = argparse.ArgumentParser('data to be imported')
