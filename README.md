@@ -3,23 +3,7 @@
 The code here creates and tests a CNN model using Tensorflow and Keras that takes images of two morphologically similar plant families (Lycopodieaceae and Selaginellaceae) and trains the model to identify which is which. 
 
 ---
-# Folder Descriptions
 
-### archive
-
-This folder holds the files to build a model using the data from images stored in pickle files. As of August 27, 2019, it is an older model and would have to be updated to match **build_model_k_fold_cv.py** if you would like to use it. This folder contains 3 files: 
-* build_model.py
-* input_data.py
-* input_data_split.py
-
-Input_data and input_data_split are very similar except that input_data_split exports a pickle file for the features, labels, and image names for training and testing respectively (so a total of 6 pickle files). Input_data.py on the other hand does NOT export separate pickle files for testing and would have to be divided in the build_model file. Currently build_model.py is not written to take in pickle files for both testing and training.
-
-### helpers_or_in_progress
-
-This folder contains files for side projects under the machine learning umbrella and possibly helper functions that may help the user.
-A description of the files and folders inside are below.
-* **activation_visualization.py** is to create activation maps that can show what each layer is detecting in each image. Currently not running.
-* **pick_distributed_images.py** this file 
 # File Descriptions
 * **build_model.py:** opens data from pickle files, builds model architecture, and trains model. Where most of the change are made
 * **image_download.py:** using CSVs from the Pteridophyte Portal, downloads the desired specimen images onto the computer
@@ -99,6 +83,26 @@ This file is where the architecture of the model is created. It imports the pick
 
 These two scripts have the same goal of testing the model on a completely new batch of images. The difference is that the test_model.py will test images from the testing pickle files exported by input_data_split.py. On the other hand, test_model_external.py allows you to input 2 folders with the test images manually. Both scripts export a CSV with each image name, the true label, and the predicted label.
 
+# Folder Descriptions
+
+### archive
+
+This folder holds the files to build a model using the data from images stored in pickle files. As of August 27, 2019, it is an older model and would have to be updated to match **build_model_k_fold_cv.py** if you would like to use it. This folder contains 3 files: 
+* build_model.py
+* input_data.py
+* input_data_split.py
+
+Input_data and input_data_split are very similar except that input_data_split exports a pickle file for the features, labels, and image names for training and testing respectively (so a total of 6 pickle files). Input_data.py on the other hand does NOT export separate pickle files for testing and would have to be divided in the build_model file. Currently build_model.py is not written to take in pickle files for both testing and training.
+
+### helpers_or_in_progress
+
+This folder contains files for side projects under the machine learning umbrella and possibly helper functions that may help the user.
+A description of the files and folders inside are below.
+* **activation_visualization.py (unfinished)** is to create activation maps that can show what each layer is detecting in each image. Currently not running.
+* **pick_distributed_images.py** this file allows users to select images from a folder that are spread out. For example, if your folder has 500 images, but you only want 300, using this python file will select 300 images that are approximately evenly spaced out in the folder. It helps ensure that your resulting selection of 300 is (hopefully) representative of the whole. Additionally, you can choose whether or not to keep the remaining (in this case, 200) images in a separate folder or not. The original folder remains untouched.
+* **resume_training.py** allows user to load a model, the features and labels pickle files and resume training at the epoch they left off at. Honestly, I didn't use this file that much and didn't bother creating an argument parse. If you want to change anything with the number of epochs, edit it on line 14. The initial epoch should actually be the epoch you want to start at - 1. So if last training completed 20 epochs, set initial_epoch = 20. The epochs = ## is the total number of epochs that the model will have trained. So if initial_epochs = 20 and epochs = 30, the model will train for 10 more epochs and save (*not* 30 more epochs).
+* **test_model.py** tests the model on images that are already saved in pickle files. To be used with **build_model.py** in the archive folder.
+* **test_model_external.py** takes in two folders and will test the model on these images. Eliminates need for pickle files.
 # Extra Folders
 
 ## frullania
