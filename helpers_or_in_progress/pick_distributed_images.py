@@ -56,4 +56,8 @@ if __name__== '__main__':
     parser.add_argument('-k', '--keep_remaining', default= '' , help = 'Keep the remaining images in another folder? EMPTY STRING for false, anything else for true')
     parser.add_argument('-r', '--remaining_folder', default= '', help = 'Folder for remaining images IF k is True')
     args = parser.parse_args()
+    if not os.path.exists(args.destination_folder):
+        os.makedirs(args.destination_folder)
+    if args.keep_remaining and not os.path.exists(args.remaining_folder):
+        os.makedirs(args.remaining_folder)
     divide_all(args.folder, int(args.number_images), args.keep_remaining, args.destination_folder, args.remaining_folder)
