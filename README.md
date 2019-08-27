@@ -14,6 +14,12 @@ This folder holds the files to build a model using the data from images stored i
 
 Input_data and input_data_split are very similar except that input_data_split exports a pickle file for the features, labels, and image names for training and testing respectively (so a total of 6 pickle files). Input_data.py on the other hand does NOT export separate pickle files for testing and would have to be divided in the build_model file. Currently build_model.py is not written to take in pickle files for both testing and training.
 
+### helpers_or_in_progress
+
+This folder contains files for side projects under the machine learning umbrella and possibly helper functions that may help the user.
+A description of the files and folders inside are below.
+* **activation_visualization.py** is to create activation maps that can show what each layer is detecting in each image. Currently not running.
+* **pick_distributed_images.py** this file 
 # File Descriptions
 * **build_model.py:** opens data from pickle files, builds model architecture, and trains model. Where most of the change are made
 * **image_download.py:** using CSVs from the Pteridophyte Portal, downloads the desired specimen images onto the computer
