@@ -7,62 +7,46 @@ import pandas as pd
 import os
 import random
 import pickle
-
-# I went through a lot of batches of images to test, these are just all the past ones
-# CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
-# CATEGORIES = ['lyco_sample_test', 'sela_sample_test']
-# CATEGORIES = ['lyco_small_test', 'sela_small_test']
-# CATEGORIES = ['lyco_back_test', 'sela_back_test']
-CATEGORIES = ['Lycopodiaceae_remaining_testing', 'Selaginellaceae_remaining_testing']
+import argparse
 
 IMG_SIZE = 256
 root = 'data'
 
-# test_features = pickle.load(open("test_features.pickle","rb"))
-# test_features = test_features/255.0
-# test_labels = pickle.load(open("test_labels.pickle","rb"))
-# test_names = pickle.load(open("test_img_names.pickle","rb"))
+def test_model(model_path, cat_root, categories, img_size)
+    test_data = []
+    df = pd.DataFrame()
+    model = tf.keras.models.load_model(model_path) #, custom_objects={'custom_activation':Activation(custom_activation)})
 
-test_data = []
-df = pd.DataFrame()
-model = tf.keras.models.load_model("CNN.model") #, custom_objects={'custom_activation':Activation(custom_activation)})
+    for category in categories:
+        path = os.path.join(cat_root, category)
+        for img in os.listdir(path):
+                img_name = os.path.join(path,img)
+                img_array = cv2.imread(img_name, -1) #-1 means image is read as color
+                img_array = np.array(img_array).reshape(-1, img_size, img_size, 3) #3 bc three channels for RGB values
+                img_array = img_array/255.0
+                test_data.append([img,img_array,category])
+    random.shuffle(test_data)
 
-for category in CATEGORIES:
-    path = os.path.join(root, category)
-    for img in os.listdir(path):
-            img_name = os.path.join(path,img)
-            img_array = cv2.imread(img_name, -1) #-1 means image is read as color
-            img_array = np.array(img_array).reshape(-1, IMG_SIZE, IMG_SIZE, 3) #3 bc three channels for RGB values
-            img_array = img_array/255.0
-            test_data.append([img,img_array,category])
-random.shuffle(test_data)
+    for entry in test_data:
+        try:
+            prediction = model.predict(entry[1])
+            prediction = list(prediction[0])
+            final_prediction = categories[prediction.index(max(prediction))]
+            df = df.append([[entry[0],entry[2],final_prediction]])
+        except Exception as e:
+                pass
 
-for entry in test_data:
-    try:
-        prediction = model.predict(entry[1])
-        prediction = list(prediction[0])
-        final_prediction = CATEGORIES[prediction.index(max(prediction))]
-        df = df.append([[entry[0],entry[2],final_prediction]])
-    except Exception as e:
-            pass
+    df = df.rename({0:'Image Name', 1: 'True Label', 2:'Predicted Label'}, axis='columns')
+    df.to_csv(cat_root+'/test_results.csv', encoding= 'utf-8', index=False)
+    print("done")
 
-# for i in range(len(test_features)):
-#     img_arr = np.array(test_features[i]).reshape(1, IMG_SIZE, IMG_SIZE,3)    
-#     try:
-#         prediction = model.predict(img_arr)
-#         prediction = list(prediction[0])
-#         final_prediction = CATEGORIES[prediction.index(max(prediction))]
-#         df = df.append([[test_names[i],CATEGORIES[test_labels[i]],final_prediction]])
-#     except Exception as e:
-#             pass
-df = df.rename({0:'Image Name', 1: 'True Label', 2:'Predicted Label'}, axis='columns')
-df.to_csv(root+'/test_results.csv', encoding= 'utf-8', index=False)
-print("done")
-
-# random.shuffle(test_data)
-# image = "C0611522F_23738_rsz.jpg"
-# img_array = cv2.imread(image, -1) #-1 means image is read as color
-# img_array = np.array(img_array).reshape(-1, IMG_SIZE, IMG_SIZE, 3) #3 bc three channels for RGB values
-# prediction = model.predict([img_array])
-# prediction = list(prediction[0])
-# print(CATEGORIES[prediction.index(max(prediction))])
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser('test the model')
+    parser.add_argument('-m', '--model_path', default='CNN.model', help='path to model including the .model')
+    parser.add_argument('-r', '--category_root', default='', help = 'go to folder holding category/image folders')
+    parser.add_argument('-c1', '--category_1', help='first category')
+    parser.add_argument('-c2', '--category_2', help='second category')
+    parser.add_argument('-s', '--image_size', default=256, help='image size')
+    args = parser.parse_args()
+    categories = [args.category_1, args.category_2]
+    test_model(args.model_path, args.category_root, categories, args.image_size)
