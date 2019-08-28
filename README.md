@@ -9,7 +9,7 @@ The main files used for acquiring images, building the model, and training it ar
 
 ---
 
-# Using image_download.py
+## Using image_download.py
 The goal of this file is to download images from the Pteridophyte Portal. Before running the file, please follow the steps below:
 1. Go to [The Pteridophyte Collections Consortium](http://www.pteridoportal.org/portal/)
 2. Click Search > Collections > Deselect All > Choose your source (we chose 'Field Museum of Natural History Pteridophyte Collection')
@@ -45,7 +45,7 @@ or if the CSVs are in a folder inside the workspace:
 
 Because of efficiency purposes, the program first looks in the 'identifier' column of the first csv for the image. If it's not found, it will then look in the 'goodQualityAccessURI' column. If neither produce a useable image, the program will output a CSV with the missing images in the folder you input that lists the barcodes and core id numbers.
 
-# Using image_resize.py
+## Using image_resize.py
 
 The purpose of this file is to take the raw downloaded files and convert them into squares of the same size using an image processing package called OpenCV for Python. To install the package, check out [this website](https://pypi.org/project/opencv-python/) 
 
@@ -58,7 +58,7 @@ To use the file, follow this format in the command line terminal:
 For example:
 `python image_resize.py -f orig_images -d smaller_images -t cats -s 256`
 
-# build_model_k_fold_cv.py
+## build_model_k_fold_cv.py
 
 This file is where the architecture of the model is created. It takes in images directly (*not* from pickle files) and performs k-fold cross validation. This file can be called from the terminal with arguments for path to category folders, the category folder names, image size, number of folds, and number of epochs. Look at lines 242-249 for the "keys" for each input. 
 
@@ -66,7 +66,7 @@ Note that the first argument (-d or --directory) is the path from current locati
 
 If there are any other parameters that you would like to change in the model, you'd have to directly change the code.
 
-# test_model.py and test_model_external.py
+## test_model.py and test_model_external.py
 
 These two scripts have the same goal of testing the model on a completely new batch of images. The difference is that the test_model.py will test images from the testing pickle files exported by input_data_split.py. On the other hand, test_model_external.py allows you to input 2 folders with the test images manually. Both scripts export a CSV with each image name, the true label, and the predicted label.
 
@@ -79,7 +79,7 @@ This folder holds the files to build a model using the data from images stored i
 * input_data.py
 * input_data_split.py
 
-# input_data.py and input_data_split.py
+## input_data.py and input_data_split.py
 
 Both these files have a similar goal, they just differ in how they work. input_data.py takes in two folders of images and will export a 3 pickle files with the images from both folders shuffled together. The pickle files hold the following:
 
