@@ -13,14 +13,6 @@ def divide_all(src_path, num_training, store_remaining, selected_path, remaining
     print("Otherwise it just doesn't work out my friend")
 
     src = os.listdir(src_path)
-    # Use following paths when choosing training data
-    # selected_path = os.path.join(root,folder_name+"_selected") 
-    # remaining_path = os.path.join(root,folder_name+"_remaining") 
-
-    # Use following paths for test data (store_remaining should be set to FALSE)
-    # selected_path = os.path.join(root,folder_name+"_testing")
-    # selected_path = dest_path
-    # remaining_path = ""
 
     num_images = len(src)
     incr_decimal = 1.0*num_images/num_training
@@ -42,12 +34,6 @@ def divide_all(src_path, num_training, store_remaining, selected_path, remaining
             cur_skip = high_skip
         i+=1
 
-# root="data"
-# divide_all("Lycopodiaceae", 1250, True)
-# divide_all("Selaginellaceae", 1250, True)
-# divide_all("Lycopodiaceae", 1000, False)
-# divide_all("Selaginellaceae", 2400, False)
-
 if __name__== '__main__':
     parser = argparse.ArgumentParser('data to be imported')
     parser.add_argument('-f', '--folder', default= '', help='path to folder with all images')
@@ -56,4 +42,8 @@ if __name__== '__main__':
     parser.add_argument('-k', '--keep_remaining', default= '' , help = 'Keep the remaining images in another folder? EMPTY STRING for false, anything else for true')
     parser.add_argument('-r', '--remaining_folder', default= '', help = 'Folder for remaining images IF k is True')
     args = parser.parse_args()
+    if not os.path.exists(args.destination_folder):
+        os.makedirs(args.destination_folder)
+    if args.keep_remaining and not os.path.exists(args.remaining_folder):
+        os.makedirs(args.remaining_folder)
     divide_all(args.folder, int(args.number_images), args.keep_remaining, args.destination_folder, args.remaining_folder)
