@@ -94,6 +94,8 @@ This folder holds the files to build a model using the data from images stored i
 
 Input_data and input_data_split are very similar except that input_data_split exports a pickle file for the features, labels, and image names for training and testing respectively (so a total of 6 pickle files). Input_data.py on the other hand does NOT export separate pickle files for testing and would have to be divided in the build_model file. Currently build_model.py is not written to take in pickle files for both testing and training.
 
+---
+
 ### helpers_or_in_progress
 
 This folder contains files for side projects under the machine learning umbrella and possibly helper functions that may help the user.
@@ -101,14 +103,17 @@ A description of the files and folders inside are below.
 * **activation_visualization.py (unfinished)** is to create activation maps that can show what each layer is detecting in each image. Currently not running.
 * **pick_distributed_images.py** this file allows users to select images from a folder that are spread out. For example, if your folder has 500 images, but you only want 300, using this python file will select 300 images that are approximately evenly spaced out in the folder. It helps ensure that your resulting selection of 300 is (hopefully) representative of the whole. Additionally, you can choose whether or not to keep the remaining (in this case, 200) images in a separate folder or not. The original folder remains untouched.
 * **resume_training.py** allows user to load a model, the features and labels pickle files and resume training at the epoch they left off at. Honestly, I didn't use this file that much and didn't bother creating an argument parse. If you want to change anything with the number of epochs, edit it on line 14. The initial epoch should actually be the epoch you want to start at - 1. So if last training completed 20 epochs, set initial_epoch = 20. The epochs = ## is the total number of epochs that the model will have trained. So if initial_epochs = 20 and epochs = 30, the model will train for 10 more epochs and save (*not* 30 more epochs).
-* **test_model.py** tests the model on images that are already saved in pickle files. To be used with **build_model.py** in the archive folder.
+* **test_model.py** tests the model on images that are already saved in pickle files. To be used with **build_model.py** in the archive folder. Because this file is not as popular, there is also **no** argument parser. To change the pickle files, edit lines 14, 16, 17. to change where the model is being loaded from, edit the path in line 21.
 * **test_model_external.py** takes in two folders and will test the model on these images. Eliminates need for pickle files.
-# Extra Folders
 
-## frullania
+#### Folders in helpers_or_in_progress
+
+##### frullania
 
 This folder contains adapations of the model that we want to use to train for 2 completely new classes: frullania rostrata and frullania coastal. This application is new to science because there is speculation that these two are different species and hopefully we can train a model to identify morphological differences between the two.
+Files:
+* **frullania_model.py** currently takes images directly and uses bootstrapping to select the training and testing. Will train the model 10 times on 
 
-## cross_validation
+##### cross_validation
 
 This folder implements k-fold cross validation to improve the robustness and accuracy of the model.
