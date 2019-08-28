@@ -4,13 +4,10 @@ The code here creates and tests a CNN model using Tensorflow and Keras that take
 
 ---
 
-# File Descriptions
-* **build_model.py:** opens data from pickle files, builds model architecture, and trains model. Where most of the change are made
-* **image_download.py:** using CSVs from the Pteridophyte Portal, downloads the desired specimen images onto the computer
-* **image_resize.py:** takes all images in a folder and resizes them to 256 px by 256 px
-* **input_data.py:** holds functions that take the appropriately resized photos and store them as numpy arrays in pickle files. These photos are then used for training/validation by **build_model.py**
-* **input_data_split.py:** is a file I was working on for a time
-* **build_model_direct_images.py:** I created this file because there was a point when we had too many images to store into pickle files. This python file bypasses that extra steps and directly loads the images into the model. I think it takes a little longer than opening pickle files. Starting on August 20, 2019 and after, all model changes were made on this file.
+# Repository layout
+The main files used for acquiring images, building the model, and training it are not in any folders. 'Archive' contains an older version of the model and method of uploading images into the model that may still be explored in the future. 'Helpers_or_in_progress' contains just that: files that may be helpful for specific tasks or work that is still in progress and not yet functional. The in progress files, however, are *not* necessary for the model to run. For more details, scroll down
+
+---
 
 # Using image_download.py
 The goal of this file is to download images from the Pteridophyte Portal. Before running the file, please follow the steps below:
@@ -61,23 +58,13 @@ To use the file, follow this format in the command line terminal:
 For example:
 `python image_resize.py -f orig_images -d smaller_images -t cats -s 256`
 
-# input_data.py and input_data_split.py
+# build_model_k_fold_cv.py
 
-Both these files have a similar goal, they just differ in how they work. input_data.py takes in two folders of images and will export a 3 pickle files with the images from both folders shuffled together. The pickle files hold the following:
+This file is where the architecture of the model is created. It takes in images directly (*not* from pickle files) and performs k-fold cross validation. This file can be called from the terminal with arguments for path to category folders, the category folder names, image size, number of folds, and number of epochs. Look at lines 242-249 for the "keys" for each input. 
 
-1. The features
-2. The labels (ex: class A or class B)
-3. Names of the images
+Note that the first argument (-d or --directory) is the path from current location to the folder **holding the two class folders**. If the class folders are in the current folder, leave it blank!
 
-The three files will hold the data in the same order. In other words, the 10th array of features corresponds to the the class of the 10th element in the labels files and the 10th name in the names file.
-
-Similarly, input_data_split.py takes in two folders but exports 6 pickle files, 2 groups. 1 group will be used for training data and the other group is used for testing. Which images get sent to which group is done randomly.
-
-If you are using one then switch to using the other, be careful! Half the pickle files from input_data_split.py have the same file names as the exported files from input_data.py.
-
-# build_model.py
-
-This file is where the architecture of the model is created. It imports the pickle files where images and labels are stored, builds the model, and trains it. Here you can change parameters such as the number of epochs, learning rate, regularizers, etc. At the end, the final model is saved and graphs of validation accuracy and loss pop up (1 at a time) so you can get a general idea of the trends of the model on images it does *not* train on.
+If there are any other parameters that you would like to change in the model, you'd have to directly change the code.
 
 # test_model.py and test_model_external.py
 
@@ -92,7 +79,19 @@ This folder holds the files to build a model using the data from images stored i
 * input_data.py
 * input_data_split.py
 
-Input_data and input_data_split are very similar except that input_data_split exports a pickle file for the features, labels, and image names for training and testing respectively (so a total of 6 pickle files). Input_data.py on the other hand does NOT export separate pickle files for testing and would have to be divided in the build_model file. Currently build_model.py is not written to take in pickle files for both testing and training.
+# input_data.py and input_data_split.py
+
+Both these files have a similar goal, they just differ in how they work. input_data.py takes in two folders of images and will export a 3 pickle files with the images from both folders shuffled together. The pickle files hold the following:
+
+1. The features
+2. The labels (ex: class A or class B)
+3. Names of the images
+
+The three files will hold the data in the same order. In other words, the 10th array of features corresponds to the the class of the 10th element in the labels files and the 10th name in the names file.
+
+Similarly, input_data_split.py takes in two folders but exports 6 pickle files, 2 groups. 1 group will be used for training data and the other group is used for testing. Which images get sent to which group is done randomly.
+
+If you are using one then switch to using the other, be careful! Half the pickle files from input_data_split.py have the same file names as the exported files from input_data.py. Currently build_model.py is not written to take in pickle files for both testing and training.
 
 ---
 
