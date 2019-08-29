@@ -12,7 +12,7 @@ import argparse
 IMG_SIZE = 256
 root = 'data'
 
-def test_model(model_path, cat_root, categories, img_size)
+def test_model(model_path, cat_root, categories, img_size):
     test_data = []
     df = pd.DataFrame()
     model = tf.keras.models.load_model(model_path) #, custom_objects={'custom_activation':Activation(custom_activation)})
@@ -49,4 +49,4 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--image_size', default=256, help='image size')
     args = parser.parse_args()
     categories = [args.category_1, args.category_2]
-    test_model(args.model_path, args.category_root, categories, args.image_size)
+    test_model(args.model_path, args.category_root, categories, int(args.image_size))
