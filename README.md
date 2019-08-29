@@ -66,10 +66,6 @@ Note that the first argument (-d or --directory) is the path from current locati
 
 If there are any other parameters that you would like to change in the model, you'd have to directly change the code.
 
-## test_model.py and test_model_external.py
-
-These two scripts have the same goal of testing the model on a completely new batch of images. The difference is that the test_model.py will test images from the testing pickle files exported by input_data_split.py. On the other hand, test_model_external.py allows you to input 2 folders with the test images manually. Both scripts export a CSV with each image name, the true label, and the predicted label.
-
 # Folder Descriptions
 
 ### adiantum_blechnum
@@ -109,6 +105,8 @@ A description of the files and folders inside are below.
 * **roc_crossfold_example.py** is a very simple ML model where we were able to get code from regarding plotting ROC curves at the end of all the folds. (Thank you Beth McDonald for finding this and helping implement!)
 * **test_model.py** tests the model on images that are already saved in pickle files. To be used with **build_model.py** in the archive folder. Because this file is not as popular, there is also **no** argument parser. To change the pickle files, edit lines 14, 16, 17. to change where the model is being loaded from, edit the path in line 21.
 * **test_model_external.py** takes in two folders and will test the model on these images. Eliminates need for pickle files.
+
+Both test_model.py and test_model-external.py export a CSV with each image name, the true label, and the predicted label.
 
 #### Folders in helpers_or_in_progress
 
