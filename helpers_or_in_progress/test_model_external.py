@@ -37,7 +37,7 @@ def test_model(model_path, cat_root, categories, img_size):
                 pass
 
     df = df.rename({0:'Image Name', 1: 'True Label', 2:'Predicted Label'}, axis='columns')
-    df.to_csv(cat_root+'/test_results.csv', encoding= 'utf-8', index=False)
+    df.to_csv(os.path.join(cat_root,'/test_results.csv'), encoding= 'utf-8', index=False)
     print("done")
 
 if __name__ == '__main__':
