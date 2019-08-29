@@ -72,6 +72,10 @@ These two scripts have the same goal of testing the model on a completely new ba
 
 # Folder Descriptions
 
+### adiantum_blechnum
+
+This was a side branch of the project where we trained the model in this folder to distinguish between two genera that from the human eye already look pretty different. The purpose was to see if our model architecture was even fit for something of this task, and considering this reached 97% accuracy, we think distinguishing between Lycopodium and Selaginella should reach something similar as well. The images this was trained on can be found [here](https://drive.google.com/drive/folders/1Wa58rPV6Z5cbFlN2_Ld9r-8S4OZxiv8l?usp=sharing).
+
 ### archive
 
 This folder holds the files to build a model using the data from images stored in pickle files. As of August 27, 2019, it is an older model and would have to be updated to match **build_model_k_fold_cv.py** if you would like to use it. This folder contains 3 files: 
