@@ -37,7 +37,7 @@ def build_model(img_size): # create model architecture and compile it
 	# Image input shape: 256 x 256 x 3
 
 	# 1. Convolution Layer: 10 filters of 5px by 5px
-	model.add(Conv2D(10, (5, 5), input_shape = (img_size, img_size, 3))) 
+	model.add(Conv2D(10, (5, 5), input_shape = (img_size, img_size, 3), kernel_regularizer=regularizers.l2(0.1))) 
 	# Output shape: 10 x 252 x 252
 
 	# 2. Batch Normalization: Normalizes previous layer to have mean near 0 and S.D. near 1
@@ -55,7 +55,7 @@ def build_model(img_size): # create model architecture and compile it
 
 	#-------------Next Set of Layers--------------
 	# 5. Convolution Layer: 40 filters of 5px by 5px
-	model.add(Conv2D(40, (5, 5)))
+	model.add(Conv2D(40, (5, 5), kernel_regularizer=regularizers.l2(0.1)))
 	# Output shape: 40 x 122 x 122
 
 	# 6. Batch Normalization Layer
@@ -79,14 +79,14 @@ def build_model(img_size): # create model architecture and compile it
 	# !!!!!!! Currently trying to figure out how to do the multiply by 2 but moving on for now !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	model.add(Dropout(0.5, seed=SEED))
 
-	model.add(Dense(500, activation="linear", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05))) # kernel_regularizer=regularizers.l2(0.1)))
-	model.add(Dense(500, activation="relu", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05))) 
+	model.add(Dense(500, activation="linear", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.1))) # kernel_regularizer=regularizers.l2(0.1)))
+	model.add(Dense(500, activation="relu", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.1))) 
 	#model.add(Activation("relu"))
 
 	model.add(Dropout(0.25, seed=SEED))
 	# The output layer with 2 neurons, for 2 classes
-	model.add(Dense(2, activation="linear", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05)))
-	model.add(Dense(2, activation="softmax", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05)))
+	model.add(Dense(2, activation="linear", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.1)))
+	model.add(Dense(2, activation="softmax", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.1)))
 	# model.add(Activation("softmax"))
 
 	opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=0.00001, decay=0.0, amsgrad=False)
@@ -173,7 +173,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	# 	print("Validation data obtained")
 		# train_labels, val_labels = labels[train_indices], labels[val_indices]
 	for index in range(n_folds):
-		boot = resample(data, replace = True, n_samples = len(data), random_state = SEED)
+		boot = resample(data, replace = True, n_samples = len(data)) #, random_state = SEED)
 		booted_imgs = set([])
 		train_features = []
 		train_labels = []
@@ -196,6 +196,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		val_features = np.array(val_features).reshape(-1, image_size, image_size, 3) #3 bc three channels for RGB values
 		val_labels = np.array(val_labels)
 		# Create new model each time
+		print("Training on fold " + str(index + 1) + "/" + str(n_folds))
 		model = None
 		model = build_model(image_size)
 		print("Training model")
