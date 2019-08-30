@@ -79,14 +79,14 @@ def build_model(img_size): # create model architecture and compile it
 	# !!!!!!! Currently trying to figure out how to do the multiply by 2 but moving on for now !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	model.add(Dropout(0.5, seed=SEED))
 
-	model.add(Dense(500, activation="linear", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.1))) # kernel_regularizer=regularizers.l2(0.1)))
-	model.add(Dense(500, activation="relu", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.1))) 
+	model.add(Dense(500, activation="linear", activity_regularizer=regularizers.l2(0.05), kernel_regularizer=regularizers.l2(0.1))) # kernel_regularizer=regularizers.l2(0.1)))
+	model.add(Dense(500, activation="relu", activity_regularizer=regularizers.l2(0.05), kernel_regularizer=regularizers.l2(0.1))) 
 	#model.add(Activation("relu"))
 
 	model.add(Dropout(0.25, seed=SEED))
 	# The output layer with 2 neurons, for 2 classes
-	model.add(Dense(2, activation="linear", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.1)))
-	model.add(Dense(2, activation="softmax", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.1)))
+	model.add(Dense(2, activation="linear", activity_regularizer=regularizers.l2(0.05), kernel_regularizer=regularizers.l2(0.1)))
+	model.add(Dense(2, activation="softmax", activity_regularizer=regularizers.l2(0.05), kernel_regularizer=regularizers.l2(0.1)))
 	# model.add(Activation("softmax"))
 
 	opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=0.00001, decay=0.0, amsgrad=False)
