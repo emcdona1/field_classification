@@ -173,7 +173,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	# 	print("Validation data obtained")
 		# train_labels, val_labels = labels[train_indices], labels[val_indices]
 	for index in range(n_folds):
-		boot = resample(data, replace = True, n_samples = len(data)) #, random_state = SEED)
+		boot = resample(data, replace = True, n_samples = len(data), random_state = index)
 		booted_imgs = set([])
 		train_features = []
 		train_labels = []
