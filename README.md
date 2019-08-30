@@ -105,6 +105,7 @@ A description of the files and folders inside are below.
 * **roc_crossfold_example.py** is a very simple ML model where we were able to get code from regarding plotting ROC curves at the end of all the folds. (Thank you Beth McDonald for finding this and helping implement!)
 * **test_model.py** tests the model on images that are already saved in pickle files. To be used with **build_model.py** in the archive folder. Because this file is not as popular, there is also **no** argument parser. To change the pickle files, edit lines 14, 16, 17. to change where the model is being loaded from, edit the path in line 21.
 * **test_model_external.py** takes in two folders and will test the model on these images. Eliminates need for pickle files.
+* **test_cv_model_external.py** similar to test_model_external.py but instead of telling the file the model, you tell the file where the *folder* of models is. It will go through the folder, load all the models, and test them on the folders of images you feed in. Good because cross validated models actually consist of more than one model and you want to take them all into consideration. Uses the probabilities outputted by the final layer.
 
 Both test_model.py and test_model-external.py export a CSV with each image name, the true label, and the predicted label.
 
