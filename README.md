@@ -98,8 +98,6 @@ A description of the files and folders inside are below.
 * **test_model_external.py** takes in two folders and will test the model on these images. Eliminates need for pickle files.
 * **test_cv_model_external.py** similar to test_model_external.py but instead of telling the file the model, you tell the file where the *folder* of models is. It will go through the folder, load all the models, and test them on the folders of images you feed in. Good because cross validated models actually consist of more than one model and you want to take them all into consideration. Uses the probabilities outputted by the final layer.
 
-Both test_model.py and test_model-external.py export a CSV with each image name, the true label, and the predicted label.
-
 ---
 
 ## Contributors and licensing

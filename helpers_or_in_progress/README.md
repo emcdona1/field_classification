@@ -1,5 +1,8 @@
 # helpers_or_in_progress folder
 
+Both test_model.py and test_model-external.py export a CSV with each image name, the true label, and the predicted label.
+
+
 Information about sub folders:
 
 ### frullania folder
