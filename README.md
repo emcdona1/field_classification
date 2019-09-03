@@ -126,4 +126,4 @@ This folder implements k-fold cross validation to improve the robustness and acc
 
 
 ## Contributors and licensing
-This code base has been built by Allison Chen (@allisonchen23) and Beth McDonald (@emcdona1). This code base has been constructed for the Field Museum Gantz Family Collections Center, under the direction of Dr. Matt von Konrat, Head of Botanical Collections at the Field.  Please contact him for licensing inquiries.
+This code base has been built by Allison Chen ([allisonchen23](https://github.com/allisonchen23)) and Beth McDonald ([emcdona1](https://github.com/emcdona1)). This code base has been constructed for the Field Museum Gantz Family Collections Center, under the direction of Dr. Matt von Konrat, Head of Botanical Collections at the Field.  Please contact him for licensing inquiries.
