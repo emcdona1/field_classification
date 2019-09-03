@@ -8,6 +8,8 @@ set_random_seed(SEED)
 import random
 random.seed(SEED)
 
+global directory, folders, img_length, n_folds, n_epochs
+
 # data/file management imports
 import os
 import argparse
@@ -30,13 +32,13 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
 
 
-def build_model(img_size): # create model architecture and compile it
+def build_model(): # create model architecture and compile it
 	model = Sequential()
 
 	# Image input shape: 256 x 256 x 3
 
 	# 1. Convolution Layer: 10 filters of 5px by 5px
-	model.add(Conv2D(10, (5, 5), input_shape = (img_size, img_size, 3))) 
+	model.add(Conv2D(10, (5, 5), input_shape = (img_length, img_length, 3))) 
 	# Output shape: 10 x 252 x 252
 
 	# 2. Batch Normalization: Normalizes previous layer to have mean near 0 and S.D. near 1
@@ -108,11 +110,11 @@ def plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.clf()
 	# plt.show()
 
-def import_images(data_dir, categories, image_size): 
+def import_images():
 	all_data = []
-	for category in categories:
-		path=os.path.join(data_dir,category) #look at each folder of images
-		class_index = categories.index(category)
+	for category in folders:
+		path=os.path.join(directory,category) #look at each folder of images
+		class_index = folders.index(category)
 		for img in os.listdir(path): # look at each image
 			try:
 				img_array = cv2.imread(os.path.join(path,img), -1) #-1 means image is read as color
@@ -125,7 +127,7 @@ def import_images(data_dir, categories, image_size):
 
 	features = []
 	labels = []
-	img_names = []
+	# img_names = []
 
 	#store the image features (array of RGB for each pixel) and labels into corresponding arrays
 	for data_feature, data_label in all_data:
@@ -134,12 +136,12 @@ def import_images(data_dir, categories, image_size):
 		# img_names.append(file_name)
 
 	#reshape into numpy array
-	features = np.array(features).reshape(-1, image_size, image_size, 3) #3 bc three channels for RGB values
+	features = np.array(features).reshape(-1, img_length, img_length, 3) #3 bc three channels for RGB values
 	labels = np.array(labels)
 	return [features,labels]
 
 
-def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
+def train_cross_validate():
 	# initialize stratifying k fold
 	skf = StratifiedKFold(n_splits = n_folds, shuffle = True, random_state = SEED)
 
@@ -149,11 +151,11 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	# labels = pickle.load(open("labels.pickle","rb"))
 	# labels = np.array(labels)
 	# img_names = pickle.load(open("img_names.pickle","rb"))
-
+	
 	# data frame to save values of loss and validation after each fold
 	df = pd.DataFrame()
 	#obtain images
-	data = import_images(data_dir, categories, image_size)
+	data = import_images()
 	features = data[0]
 	labels = data[1]
 	print("Stored features and labels")
@@ -174,12 +176,12 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 
 		# Create new model each time
 		model = None
-		model = build_model(image_size)
+		model = build_model()
 		print("Training model")
 		es_callback = EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
-		history = model.fit(train_features, train_labels, batch_size=64, epochs = num_epochs, callbacks = [es_callback], validation_data = (val_features, val_labels))
+		history = model.fit(train_features, train_labels, batch_size=64, epochs = n_epochs, callbacks = [es_callback], validation_data = (val_features, val_labels))
 		# save values of loss and accuracy into df
-		df = df.append([[index+1, history.history['loss'][num_epochs-1], history.history['acc'][num_epochs-1], history.history['val_loss'][num_epochs-1], history.history['val_acc'][num_epochs-1]]])
+		df = df.append([[index+1, history.history['loss'][n_epochs-1], history.history['acc'][n_epochs-1], history.history['val_loss'][n_epochs-1], history.history['val_acc'][n_epochs-1]]])
 		# model_json = model.to_json()
 		# with open("model.json", "w") as json_file :
 		# 	json_file.write(model_json)
@@ -231,6 +233,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 
 		# plot the mean ROC curve and display AUC (mean/st dev)
 		plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc)
+	
 	df = df.rename({0: 'Fold Number',\
 					1: 'Training Loss',\
 					2: 'Training Accuracy',\
@@ -240,24 +243,31 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	
 	
 if __name__ == '__main__':
+	""" Import folders of images and create, train, and validate CNN models using k-fold cross validation.
+
+	"""
 	parser = argparse.ArgumentParser(description='Settings for images and model.')
 	# parser.add_argument('-p', '--pickle_dir', default='data_pickles', help='Folder for pickle files')
 	parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')	
-	parser.add_argument('-c1', '--category1', default='lyco_train', help='Folder of class 1')
-	parser.add_argument('-c2', '--category2', default='sela_train', help='Folder of class 2')
-	parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
+	parser.add_argument('-f1', '--folder1', default='lyco_train', help='Folder of class 1')
+	parser.add_argument('-f2', '--folder2', default='sela_train', help='Folder of class 2')
+	parser.add_argument('-i', '--img_length', default=256, help='Image dimension in pixels (square image)')
 	parser.add_argument('-n', '--number_folds', default=10, help='Number of folds for cross validation')
 	parser.add_argument('-e', '--number_epochs', default=25, help='Number of epochs')
 
 	args = parser.parse_args()
 	# divided_data = groups_to_arrays(args.pickle_dir, args.number_groups)
-	#model = build_model(args.img_size)
-	categories = [args.category1, args.category2]
+
+	directory = args.directory
+	folders = [args.folder1, args.folder2]
+	img_length = int(args.img_length)
+	n_folds = int(args.number_folds)
+	n_epochs = int(args.number_epochs)
+
 	
 	if not os.path.exists('graphs'):
 		os.makedirs('graphs')
 	if not os.path.exists('saved_models'):
 		os.makedirs('saved_models')
 	
-	train_cross_validate(int(args.number_folds), args.directory, categories, int(args.img_size), int(args.number_epochs))
-
+	train_cross_validate()
