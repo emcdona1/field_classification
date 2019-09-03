@@ -8,11 +8,10 @@ set_random_seed(SEED)
 import random
 random.seed(SEED)
 
-global directory, folders, img_length, n_folds, n_epochs
-
 # data/file management imports
 import os
 import argparse
+import logging
 import pickle
 import cv2
 import numpy as np
@@ -30,6 +29,11 @@ from tensorflow.keras.callbacks import EarlyStopping
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
+
+#setup
+global directory, folders, img_length, n_folds, n_epochs
+logging.basicConfig(filename='program.log', level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s', )
+
 
 
 def build_model(): # create model architecture and compile it
@@ -212,19 +216,15 @@ def train_cross_validate():
 		plt.xlabel('epoch')
 		plt.legend(['train', 'validation'], loc='upper left')
 		plt.savefig('graphs/val_loss_' + str(index+1) + '.png')
-		# plt.show()
 		plt.clf()
 
-		# roc curve stuff
-		probas_ = model.predict_proba(val_features)
 		# Compute ROC curve and area the curve
+		probas_ = model.predict_proba(val_features)
 		fpr, tpr, thresholds = roc_curve(val_labels, probas_[:, 1])
 		tprs.append(interp(mean_fpr, fpr, tpr))
 		tprs[-1][0] = 0.0
 		roc_auc = auc(fpr, tpr)
 		aucs.append(roc_auc)
-		# Plots ROC for each individual fold:
-		# plt.plot(fpr, tpr, lw=1, alpha=0.3,label='ROC fold %d (AUC = %0.2f)' % (index + 1, roc_auc))
 		# use the mean statistics to compare each model (that we train/test using 10-fold cv)
 		mean_tpr = np.mean(tprs, axis=0)
 		mean_tpr[-1] = 1.0
