@@ -1,11 +1,16 @@
 # field_classification
 
-The code here creates and tests a CNN model using Tensorflow and Keras that takes images of two morphologically similar plant families (Lycopodieaceae and Selaginellaceae) and trains the model to identify which is which. 
+The code here creates and tests a CNN model using Tensorflow and Keras that takes images of two morphologically similar plant families (*Lycopodieaceae* and *Selaginellaceae*) and trains the model to identify which is which. 
 
 ---
 
 # Repository layout
-The main files used for acquiring images, building the model, and training it are not in any folders. 'Archive' contains an older version of the model and method of uploading images into the model that may still be explored in the future. 'Helpers_or_in_progress' contains just that: files that may be helpful for specific tasks or work that is still in progress and not yet functional. The in progress files, however, are *not* necessary for the model to run. For more details, scroll down
+For full details, see section Folder Descriptions below.
+
+- The main files in the root are used for acquiring images, building the model, and training it.
+- *Adiantum_blechnum* contains a side project of using the same CNN architecture on two genera (*Adiantum* and *Blechnum*) which are more visually distinct than *Lycopodieaceae* and *Selaginellaceae*).
+- *Archive/* contains an older version of the model and method of uploading images into the model that may still be explored in the future.
+- *Helpers_or_in_progress/* contains files that may be helpful for specific tasks or work that is still in progress and not yet functional.
 
 ---
 
@@ -126,4 +131,4 @@ This folder implements k-fold cross validation to improve the robustness and acc
 
 
 ## Contributors and licensing
-This code base has been built by Allison Chen ([allisonchen23](https://github.com/allisonchen23)) and Beth McDonald ([emcdona1](https://github.com/emcdona1)). This code base has been constructed for the Field Museum Gantz Family Collections Center, under the direction of Dr. Matt von Konrat, Head of Botanical Collections at the Field.  Please contact him for licensing inquiries.
+This code base has been built by Allison Chen ([allisonchen23](https://github.com/allisonchen23)) and Beth McDonald ([emcdona1](https://github.com/emcdona1)), under the guidance of Dr. Francisco Iacobelli ([fiacobelli](https://github.com/fiacobelli)), Dr. Matt von Konrat, and Dr. Tom Campbell. This code base has been constructed for the Field Museum Gantz Family Collections Center, under the direction of Dr. Matt von Konrat, Head of Botanical Collections at the Field.  Please contact him for licensing inquiries.
