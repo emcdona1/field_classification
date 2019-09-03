@@ -240,7 +240,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	
 	
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser('import pickle files')
+	parser = argparse.ArgumentParser(description='Settings for images and model.')
 	# parser.add_argument('-p', '--pickle_dir', default='data_pickles', help='Folder for pickle files')
 	parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')	
 	parser.add_argument('-c1', '--category1', default='lyco_train', help='Folder of class 1')
