@@ -13,6 +13,7 @@ For full details, see section Folder Descriptions below.
 - *Helpers_or_in_progress/* contains files that may be helpful for specific tasks or work that is still in progress and not yet functional.
 
 ---
+# Downloading and processing images, and training the model
 
 ## Using image_download.py
 The goal of this file is to download images from the Pteridophyte Portal. Before running the file, please follow the steps below:
