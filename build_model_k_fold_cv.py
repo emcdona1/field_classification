@@ -95,7 +95,9 @@ def build_model(): # create model architecture and compile it
 	# model.add(Activation("softmax"))
 
 	opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=0.00001, decay=0.0, amsgrad=False)
+	logging.info("Generated model.")
 	model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
+	logging.info("Compiled model.")
 	return model
 
 def plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc):
@@ -124,8 +126,8 @@ def import_images():
 				img_array = cv2.imread(os.path.join(path,img), -1) #-1 means image is read as color
 				img_array = img_array/255.0
 				all_data.append([img_array, class_index]) #, img])
-			except Exception as e:
-				pass
+			except TypeError:
+				logging.warning('Image file "' + img + '" not found.')
 	random.shuffle(all_data)
 	print("Loaded and shuffled data")
 
