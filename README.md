@@ -1,4 +1,4 @@
-# ml_classifications
+# field_classification
 
 The code here creates and tests a CNN model using Tensorflow and Keras that takes images of two morphologically similar plant families (Lycopodieaceae and Selaginellaceae) and trains the model to identify which is which. 
 
@@ -123,3 +123,7 @@ Files:
 ### cross_validation
 
 This folder implements k-fold cross validation to improve the robustness and accuracy of the model.
+
+
+## Contributors and licensing
+This code base has been built by Allison Chen (@allisonchen23) and Beth McDonald (@emcdona1). This code base has been constructed for the Field Museum Gantz Family Collections Center, under the direction of Dr. Matt von Konrat, Head of Botanical Collections at the Field.  Please contact him for licensing inquiries.
