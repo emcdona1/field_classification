@@ -8,25 +8,26 @@ set_random_seed(SEED)
 import random
 random.seed(SEED)
 
-# the ML stuff
+# data/file management imports
+import os
+import argparse
+import pickle
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# machine learning/metrics imports
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import BatchNormalization, Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
-import pickle
 from keras.models import model_from_json
 from keras.models import load_model
 from keras import regularizers
 from tensorflow.keras.callbacks import EarlyStopping
-import matplotlib.pyplot as plt
-
-import cv2
-import numpy as np
-import os
-import argparse
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
-import pandas as pd
 
 
 def build_model(img_size): # create model architecture and compile it
