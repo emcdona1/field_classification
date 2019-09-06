@@ -99,8 +99,11 @@ def build_model(): # create model architecture and compile it
 	return model
 
 def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
+	# TODO: add plt.figure(3) to this after checking veracity
+
 	plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
 				color='r', label='Random Chance', alpha=.8)
+	# TODO: Plot label update to "Mean ROC after fold #"
 	plt.plot(mean_fpr, mean_tpr, color='blue',
 				label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc),
 				lw=2, alpha=.8)
@@ -112,7 +115,6 @@ def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.legend(loc="lower right")
 	plt.savefig('graphs/mean_ROC.png')
 	plt.clf()
-	# plt.show()
 
 def import_images():
 	all_data = []
@@ -131,7 +133,6 @@ def import_images():
 
 	features = []
 	labels = []
-	# img_names = []
 
 	#store the image features (array of RGB for each pixel) and labels into corresponding arrays
 	for data_feature, data_label in all_data:
@@ -169,7 +170,6 @@ def train_cross_validate():
 		val_features = features[val_indices]
 		val_labels = labels[val_indices]
 		print("Validation data obtained")
-		# train_labels, val_labels = labels[train_indices], labels[val_indices]
 
 		# Create new model each time
 		model = None
@@ -178,16 +178,17 @@ def train_cross_validate():
 		es_callback = EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
 		history = model.fit(train_features, train_labels, batch_size=64, epochs = n_epochs, callbacks = [es_callback], validation_data = (val_features, val_labels))
 		# save values of loss and accuracy into df
-		df = df.append([[index+1, history.history['loss'][n_epochs-1], history.history['acc'][n_epochs-1], history.history['val_loss'][n_epochs-1], history.history['val_acc'][n_epochs-1]]])
-		# model_json = model.to_json()
-		# with open("model.json", "w") as json_file :
-		# 	json_file.write(model_json)
-
-		# model.save_weights("model.h5")
-		# print("Saved model to disk")
+		df = df.append([[ index+1, history.history['loss'][n_epochs-1], \
+			history.history['acc'][n_epochs-1], \
+			history.history['val_loss'][n_epochs-1], \
+			history.history['val_acc'][n_epochs-1] ]])
+		# TODO: Append tpr, fpr, thresholds, auc (lines 211-216) onto this df
+		# TODO: Rename df to "fold_results"
+		# TODO: Add additional column names at end of this method (lines 228-232)
 
 		model.save('saved_models/CNN_' + str(index + 1) + '.model')
 
+		# TODO: Break this out into a function
 		# Printing a graph showing the accuracy changes during the training phase
 		print(history.history.keys())
 		plt.figure(1)
@@ -198,7 +199,6 @@ def train_cross_validate():
 		plt.xlabel('epoch')
 		plt.legend(['train', 'validation'], loc='upper left')
 		plt.savefig('graphs/val_accuracy_' + str(index+1) + '.png')
-		# plt.show()
 		plt.clf()
 
 		plt.figure(2)
