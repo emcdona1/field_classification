@@ -3,8 +3,8 @@ SEED = 1
 # imports for reproducible results
 from numpy.random import seed
 seed(SEED)
-from tensorflow.compat.v1 import set_random_seed
-set_random_seed(SEED)
+import tensorflow as tf
+tf.random.set_random_seed(SEED)
 import random
 random.seed(SEED)
 
@@ -19,7 +19,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # machine learning/metrics imports
-import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import BatchNormalization, Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 from keras.models import model_from_json
@@ -31,7 +30,7 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
 
 #setup
-global directory, folders, img_length, n_folds, n_epochs
+global img_directory, folders, img_length, n_folds, n_epochs
 logging.basicConfig(filename='program.log', level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s', )
 
 
@@ -100,7 +99,7 @@ def build_model(): # create model architecture and compile it
 	logging.info("Compiled model.")
 	return model
 
-def plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc):
+def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
 				color='r', label='Random Chance', alpha=.8)
 	plt.plot(mean_fpr, mean_tpr, color='blue',
@@ -119,7 +118,7 @@ def plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 def import_images():
 	all_data = []
 	for category in folders:
-		path=os.path.join(directory,category) #look at each folder of images
+		path=os.path.join(img_directory,category) #look at each folder of images
 		class_index = folders.index(category)
 		for img in os.listdir(path): # look at each image
 			try:
@@ -234,7 +233,7 @@ def train_cross_validate():
 		std_auc = np.std(aucs)
 
 		# plot the mean ROC curve and display AUC (mean/st dev)
-		plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc)
+		plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc)
 	
 	df = df.rename({0: 'Fold Number',\
 					1: 'Training Loss',\
@@ -250,7 +249,7 @@ if __name__ == '__main__':
 	"""
 	parser = argparse.ArgumentParser(description='Settings for images and model.')
 	# parser.add_argument('-p', '--pickle_dir', default='data_pickles', help='Folder for pickle files')
-	parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')	
+	parser.add_argument('-d', '--directory', default='', help='Folder holding image folders')	
 	parser.add_argument('-f1', '--folder1', default='lyco_train', help='Folder of class 1')
 	parser.add_argument('-f2', '--folder2', default='sela_train', help='Folder of class 2')
 	parser.add_argument('-i', '--img_length', default=256, help='Image dimension in pixels (square image)')
@@ -260,7 +259,7 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 	# divided_data = groups_to_arrays(args.pickle_dir, args.number_groups)
 
-	directory = args.directory
+	img_directory = args.directory
 	folders = [args.folder1, args.folder2]
 	img_length = int(args.img_length)
 	n_folds = int(args.number_folds)
