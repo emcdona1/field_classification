@@ -12,7 +12,6 @@ random.seed(SEED)
 import os
 import argparse
 import logging
-import pickle
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -149,13 +148,6 @@ def import_images():
 def train_cross_validate():
 	# initialize stratifying k fold
 	skf = StratifiedKFold(n_splits = n_folds, shuffle = True, random_state = SEED)
-
-	# open pickle files
-	# features = pickle.load(open("features.pickle","rb")) #already reshaped as numpy array
-	# features = features/255.0 
-	# labels = pickle.load(open("labels.pickle","rb"))
-	# labels = np.array(labels)
-	# img_names = pickle.load(open("img_names.pickle","rb"))
 	
 	# data frame to save values of loss and validation after each fold
 	df = pd.DataFrame()
@@ -248,7 +240,6 @@ if __name__ == '__main__':
 
 	"""
 	parser = argparse.ArgumentParser(description='Settings for images and model.')
-	# parser.add_argument('-p', '--pickle_dir', default='data_pickles', help='Folder for pickle files')
 	parser.add_argument('-d', '--directory', default='', help='Folder holding image folders')	
 	parser.add_argument('-f1', '--folder1', default='lyco_train', help='Folder of class 1')
 	parser.add_argument('-f2', '--folder2', default='sela_train', help='Folder of class 2')
@@ -257,7 +248,6 @@ if __name__ == '__main__':
 	parser.add_argument('-e', '--number_epochs', default=25, help='Number of epochs')
 
 	args = parser.parse_args()
-	# divided_data = groups_to_arrays(args.pickle_dir, args.number_groups)
 
 	img_directory = args.directory
 	folders = [args.folder1, args.folder2]
