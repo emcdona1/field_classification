@@ -27,7 +27,7 @@ logging.basicConfig(filename='program.log', level=logging.DEBUG, format='%(ascti
 global img_directory, folders, img_length, n_folds, n_epochs
 SEED = 1
 seed(SEED)
-tf.random.set_random_seed(SEED)
+tf.compat.v1.random.set_random_seed(SEED)
 random.seed(SEED)
 
 
