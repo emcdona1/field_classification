@@ -1,2 +1,6 @@
 *.code-workspace
 *test.py
+/saved_models/
+/graphs/
+/Smithsonian/
+/Smithsoniantest/
