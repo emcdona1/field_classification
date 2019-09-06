@@ -23,7 +23,7 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
 
 # setup
-logging.basicConfig(filename='program.log', level=logging.DEBUG, format='%(asctime)s : %(levelname)s : %(message)s', )
+logging.basicConfig(filename='cnn_run.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
 global img_directory, folders, img_length, n_folds, n_epochs
 SEED = 1
 seed(SEED)
