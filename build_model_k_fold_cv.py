@@ -1,37 +1,34 @@
-# --- CONSTANTS ---
-SEED = 1
-# imports for reproducible results
-from numpy.random import seed
-seed(SEED)
-import tensorflow as tf
-tf.random.set_random_seed(SEED)
-import random
-random.seed(SEED)
+# TODO: Turn all print statements into logs
+# TODO: Discuss with Iacobelli about where to log, and levels of logging
 
-# data/file management imports
 import os
 import argparse
 import logging
+import random
 import cv2
 import numpy as np
+from numpy.random import seed
 import matplotlib.pyplot as plt
 import pandas as pd
-
-# machine learning/metrics imports
+import logging
+import tensorflow as tf
+from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import BatchNormalization, Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
+from keras import regularizers
 from keras.models import model_from_json
 from keras.models import load_model
-from keras import regularizers
-from tensorflow.keras.callbacks import EarlyStopping
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
 
-#setup
+# setup
+logging.basicConfig(filename='program.log', level=logging.DEBUG, format='%(asctime)s : %(levelname)s : %(message)s', )
 global img_directory, folders, img_length, n_folds, n_epochs
-logging.basicConfig(filename='program.log', level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s', )
-
+SEED = 1
+seed(SEED)
+tf.random.set_random_seed(SEED)
+random.seed(SEED)
 
 
 def build_model(): # create model architecture and compile it
@@ -157,6 +154,7 @@ def train_cross_validate():
 	features = data[0]
 	labels = data[1]
 	print("Stored features and labels")
+	# TODO: fold below into df
 	# for roc plotting
 	tprs = []
 	aucs = []
