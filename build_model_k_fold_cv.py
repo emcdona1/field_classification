@@ -23,7 +23,8 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
 
 # setup
-logging.basicConfig(filename='cnn_run.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
+logging.basicConfig(filename='cnn_run.log', level=logging.DEBUG) #, format='%(asctime)s %(levelname)s %(message)s')
+logger = logging.getLogger(__name__)
 global img_directory, folders, img_length, n_folds, n_epochs
 SEED = 1
 seed(SEED)
@@ -90,9 +91,9 @@ def build_model(): # create model architecture and compile it
 	# model.add(Activation("softmax"))
 
 	opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=0.00001, decay=0.0, amsgrad=False)
-	logging.info("Generated model.")
+	logger.info("Generated model.")
 	model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
-	logging.info("Compiled model.")
+	logger.info("Compiled model.")
 	return model
 
 def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
@@ -124,7 +125,7 @@ def import_images():
 				img_array = img_array/255.0
 				all_data.append([img_array, class_index]) #, img])
 			except TypeError:
-				logging.warning('Image file "' + img + '" not found.')
+				logger.warning('Image file "' + img + '" not found.')
 	random.shuffle(all_data)
 	print("Loaded and shuffled data")
 
