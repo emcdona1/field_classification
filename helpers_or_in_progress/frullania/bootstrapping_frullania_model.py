@@ -1,34 +1,35 @@
-# --- CONSTANTS ---
-SEED = 1
-# imports for reproducible results
-from numpy.random import seed
-seed(SEED)
-from tensorflow.compat.v1 import set_random_seed
-set_random_seed(SEED)
-import random
-random.seed(SEED)
+# TODO: Turn all print statements into logs
+# TODO: Discuss with Iacobelli about where to log, and levels of logging
 
-# the ML stuff
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import BatchNormalization, Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
-import pickle
-from keras.models import model_from_json
-from keras.models import load_model
-from keras import regularizers
-from tensorflow.keras.callbacks import EarlyStopping
-import matplotlib.pyplot as plt
-
-import cv2
-import numpy as np
 import os
 import argparse
+import logging
+import random
+import cv2
+import numpy as np
+from numpy.random import seed
+import matplotlib.pyplot as plt
+import pandas as pd
+import logging
+import tensorflow as tf
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import BatchNormalization, Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
+from keras import regularizers
+from keras.models import model_from_json
+from keras.models import load_model
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
-from sklearn.utils import resample
-import pandas as pd
-# from sets import Set
+
+# setup
+logging.basicConfig(filename='cnn_run.log', level=logging.DEBUG) #, format='%(asctime)s %(levelname)s %(message)s')
+logger = logging.getLogger(__name__)
+global img_directory, folders, img_size, n_folds, n_epochs
+SEED = 1
+seed(SEED)
+tf.compat.v1.random.set_random_seed(SEED)
+random.seed(SEED)
 
 
 def build_model(img_size): # create model architecture and compile it
@@ -265,24 +266,30 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	
 	
 if __name__ == '__main__':
+	""" Import folders of images and create, train, and validate CNN models using k-fold cross validation.
+
+	"""
 	parser = argparse.ArgumentParser('import pickle files')
-	# parser.add_argument('-p', '--pickle_dir', default='data_pickles', help='Folder for pickle files')
 	parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')	
-	parser.add_argument('-c1', '--category1', default='coastal_rsz', help='Folder of class 1')
-	parser.add_argument('-c2', '--category2', default='rostrata_rsz', help='Folder of class 2')
+	parser.add_argument('-c1', '--category1', default='lyco_train', help='Folder of class 1')
+	parser.add_argument('-c2', '--category2', default='sela_train', help='Folder of class 2')
 	parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
 	parser.add_argument('-n', '--number_folds', default=10, help='Number of folds for cross validation')
 	parser.add_argument('-e', '--number_epochs', default=25, help='Number of epochs')
 
 	args = parser.parse_args()
-	# divided_data = groups_to_arrays(args.pickle_dir, args.number_groups)
-	#model = build_model(args.img_size)
-	categories = [args.category1, args.category2]
+
+	img_directory = args.directory
+	folders = [args.folder1, args.folder2]
+	img_size = int(args.img_size)
+	n_folds = int(args.number_folds)
+	n_epochs = int(args.number_epochs)
+
 	
 	if not os.path.exists('graphs'):
 		os.makedirs('graphs')
 	if not os.path.exists('saved_models'):
 		os.makedirs('saved_models')
 	
-	train_cross_validate(int(args.number_folds), args.directory, categories, int(args.img_size), int(args.number_epochs))
+	train_cross_validate(n_folds, img_directory.directory, folders, img_size, n_epochs)
 
