@@ -99,7 +99,6 @@ def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.figure(3)
 	plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
 				color='r', label='Random Chance', alpha=.8)
-	# TODO: Plot label update to "Mean ROC after fold #"
 	plt.plot(mean_fpr, mean_tpr, color='blue',
 				label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc),
 				lw=2, alpha=.8)
@@ -107,7 +106,7 @@ def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.ylim([-0.05, 1.05])
 	plt.xlabel('False Positive Rate')
 	plt.ylabel('True Positive Rate')
-	plt.title('Receiver operating characteristic')
+	plt.title('Receiver operating characteristic (ROC) curve')
 	plt.legend(loc="lower right")
 	plt.savefig('graphs/mean_ROC.png')
 	plt.clf()
