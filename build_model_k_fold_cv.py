@@ -259,7 +259,7 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	img_directory = args.directory
-	folders = [args.folder1, args.folder2]
+	folders = [args.category1, args.category2]
 	img_size = int(args.img_size)
 	n_folds = int(args.number_folds)
 	n_epochs = int(args.number_epochs)
@@ -270,4 +270,4 @@ if __name__ == '__main__':
 	if not os.path.exists('saved_models'):
 		os.makedirs('saved_models')
 	
-	train_cross_validate(n_folds, img_directory.directory, folders, img_size, n_epochs)
+	train_cross_validate(n_folds, img_directory, folders, img_size, n_epochs)
