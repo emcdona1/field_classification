@@ -96,6 +96,28 @@ def build_model(img_size): # create model architecture and compile it
 
 
 def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
+	""" Update and save mean ROC plot after each fold.
+
+	Parameters:
+	------
+	mean_fpr : float
+	false positive rate (mean from all folds run so far)
+
+	mean_tpr : float
+	true postive rate (mean from all folds run so far)
+
+	mean_auc : float
+	area under ROC curve (mean from all folds run so far)
+
+	std_auc : float
+	standard deviation of AUC (mean from all folds run so far)
+
+	Output:
+	------
+	none
+
+	Saves plot as `mean_ROC.png` in /graphs/ folder.
+	"""
 	plt.figure(3)
 	plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
 				color='r', label='Random Chance', alpha=.8)
