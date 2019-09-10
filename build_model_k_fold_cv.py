@@ -31,7 +31,6 @@ seed(SEED)
 tf.compat.v1.random.set_random_seed(SEED)
 random.seed(SEED)
 
-
 def build_model(): # create model architecture and compile it
 	""" Creates layers for model and compiles model.
 	Parameters:
@@ -102,7 +101,6 @@ def build_model(): # create model architecture and compile it
 	opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=0.00001, decay=0.0, amsgrad=False)
 	model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 	return model
-
 
 def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	""" Update and save mean ROC plot after each fold.
@@ -191,8 +189,6 @@ def import_images():
 		# -1 means "numpy figure out this dimension," so the new nparray has the dimensions of: [#_of_images rows, img_size, img_size, 3] 
 	labels = np.array(labels)
 	return [features,labels]
-
-
 
 def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	# initialize stratifying k fold
@@ -286,9 +282,6 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	
 	
 if __name__ == '__main__':
-	""" Import folders of images and create, train, and validate CNN models using k-fold cross validation.
-
-	"""
 	parser = argparse.ArgumentParser('import pickle files')
 	parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')	
 	parser.add_argument('-c1', '--category1', default='lyco_train', help='Folder of class 1')
