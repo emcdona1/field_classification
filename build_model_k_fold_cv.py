@@ -195,7 +195,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	skf = StratifiedKFold(n_splits = n_folds, shuffle = True, random_state = SEED)
 
 	# data frame to save values of loss and validation after each fold
-	df = pd.DataFrame()
+	results = pd.DataFrame()
 	#obtain images
 	data = import_images()
 	features = data[0]
@@ -222,12 +222,12 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		print("Training model")
 		es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
 		history = model.fit(train_features, train_labels, batch_size=64, epochs = num_epochs, callbacks = [es_callback], validation_data = (val_features, val_labels))
+		
 		# save values of loss and accuracy into df
 		len_history = len(history.history['loss'])
-		df = df.append([[index+1, history.history['loss'][len_history-1], history.history['acc'][len_history-1], history.history['val_loss'][len_history-1], history.history['val_acc'][len_history-1]]])
+		results = results.append([[index+1, history.history['loss'][len_history-1], history.history['acc'][len_history-1], history.history['val_loss'][len_history-1], history.history['val_acc'][len_history-1]]])
 
 		# TODO: Append tpr, fpr, thresholds, auc (lines 211-216) onto this df
-		# TODO: Rename df to "fold_results"
 		# TODO: Add additional column names at end of this method (lines 228-232)
 
 		model.save('saved_models/CNN_' + str(index + 1) + '.model')
@@ -272,12 +272,12 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		# plot the mean ROC curve and display AUC (mean/st dev)
 		plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc)
 	
-	df = df.rename({0: 'Fold Number',\
+	results = results.rename({0: 'Fold Number',\
 					1: 'Training Loss',\
 					2: 'Training Accuracy',\
 					3: 'Validation Loss', \
 					4: 'Validation Accuracy'}, axis='columns')
-	df.to_csv(os.path.join('graphs','final_acc_loss.csv'), encoding='utf-8', index=False)
+	results.to_csv(os.path.join('graphs','final_acc_loss.csv'), encoding='utf-8', index=False)
 	
 	
 if __name__ == '__main__':
