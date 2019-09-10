@@ -203,7 +203,8 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		es_callback = EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
 		history = model.fit(train_features, train_labels, batch_size=64, epochs = num_epochs, callbacks = [es_callback], validation_data = (val_features, val_labels))
 		# save values of loss and accuracy into df
-		df = df.append([[index+1, history.history['loss'][num_epochs-1], history.history['acc'][num_epochs-1], history.history['val_loss'][num_epochs-1], history.history['val_acc'][num_epochs-1]]])
+		len_history = len(history.history['loss'])
+		df = df.append([[index+1, history.history['loss'][len_history-1], history.history['acc'][len_history-1], history.history['val_loss'][len_history-1], history.history['val_acc'][len_history-1]]])
 		# model_json = model.to_json()
 		# with open("model.json", "w") as json_file :
 		# 	json_file.write(model_json)
