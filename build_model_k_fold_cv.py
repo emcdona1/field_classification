@@ -234,7 +234,6 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 
 		# TODO: Break this out into a function
 		# Printing a graph showing the accuracy changes during the training phase
-		print(history.history.keys())
 		plt.figure(1)
 		plt.plot(history.history['acc'])
 		plt.plot(history.history['val_acc'])
