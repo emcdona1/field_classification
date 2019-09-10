@@ -102,6 +102,29 @@ def build_model(): # create model architecture and compile it
 	model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 	return model
 
+def plot_accuracy_and_loss(history, index):
+	# Save a graph of the testing/training accuracy during the training phase
+	plt.figure(1)
+	plt.plot(history.history['acc'])
+	plt.plot(history.history['val_acc'])
+	plt.title('model accuracy')
+	plt.ylabel('accuracy')
+	plt.xlabel('epoch')
+	plt.legend(['train', 'validation'], loc='upper left')
+	plt.savefig('graphs/val_accuracy_' + str(index+1) + '.png')
+	plt.clf()
+
+	# Save a graph of the testing/training loss during the training phase
+	plt.figure(2)
+	plt.plot(history.history['loss'])
+	plt.plot(history.history['val_loss'])
+	plt.title('model loss')
+	plt.ylabel('loss')
+	plt.xlabel('epoch')
+	plt.legend(['train', 'validation'], loc='upper left')
+	plt.savefig('graphs/val_loss_' + str(index+1) + '.png')
+	plt.clf()
+
 def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	""" Update and save mean ROC plot after each fold.
 
@@ -223,29 +246,8 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		history = model.fit(train_features, train_labels, batch_size=64, epochs = num_epochs, callbacks = [es_callback], validation_data = (val_features, val_labels))
 
 		model.save('saved_models/CNN_' + str(index + 1) + '.model')
-
-		# TODO: Break this out into a function
-		# Printing a graph showing the accuracy changes during the training phase
-		plt.figure(1)
-		plt.plot(history.history['acc'])
-		plt.plot(history.history['val_acc'])
-		plt.title('model accuracy')
-		plt.ylabel('accuracy')
-		plt.xlabel('epoch')
-		plt.legend(['train', 'validation'], loc='upper left')
-		plt.savefig('graphs/val_accuracy_' + str(index+1) + '.png')
-		# plt.show()
-		plt.clf()
-
-		plt.figure(2)
-		plt.plot(history.history['loss'])
-		plt.plot(history.history['val_loss'])
-		plt.title('model loss')
-		plt.ylabel('loss')
-		plt.xlabel('epoch')
-		plt.legend(['train', 'validation'], loc='upper left')
-		plt.savefig('graphs/val_loss_' + str(index+1) + '.png')
-		plt.clf()
+		
+		plot_accuracy_and_loss(history, index)
 
 		# Compute ROC curve and area the curve
 		probas = model.predict_proba(val_features)
