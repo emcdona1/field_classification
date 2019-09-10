@@ -96,8 +96,7 @@ def build_model(img_size): # create model architecture and compile it
 
 
 def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
-	# TODO: add plt.figure(3) to this after checking veracity
-
+	plt.figure(3)
 	plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
 				color='r', label='Random Chance', alpha=.8)
 	# TODO: Plot label update to "Mean ROC after fold #"
