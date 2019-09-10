@@ -94,7 +94,8 @@ def build_model(img_size): # create model architecture and compile it
 	model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 	return model
 
-def plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc):
+def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
+	plt.figure(3)
 	plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
 				color='r', label='Random Chance', alpha=.8)
 	plt.plot(mean_fpr, mean_tpr, color='blue',
@@ -104,11 +105,10 @@ def plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.ylim([-0.05, 1.05])
 	plt.xlabel('False Positive Rate')
 	plt.ylabel('True Positive Rate')
-	plt.title('Receiver operating characteristic')
+	plt.title('Receiver operating characteristic (ROC) curve')
 	plt.legend(loc="lower right")
 	plt.savefig('graphs/mean_ROC.png')
 	plt.clf()
-	# plt.show()
 
 def import_images(data_dir, categories, image_size): 
 	all_data = []
@@ -256,7 +256,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		std_auc = np.std(aucs)
 
 		# plot the mean ROC curve and display AUC (mean/st dev)
-		plotROCforKfold(mean_fpr, mean_tpr, mean_auc, std_auc)
+		plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc)
 	df = df.rename({0: 'Fold Number',\
 					1: 'Training Loss',\
 					2: 'Training Accuracy',\
