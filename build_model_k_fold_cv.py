@@ -32,7 +32,16 @@ tf.compat.v1.random.set_random_seed(SEED)
 random.seed(SEED)
 
 
-def build_model(img_size): # create model architecture and compile it
+def build_model(): # create model architecture and compile it
+	""" Creates layers for model and compiles model.
+	Parameters:
+	-----
+	none
+
+	Output:
+	-----
+	model : keras.Sequential
+	"""
 	model = Sequential()
 
 	# Image input shape: 256 x 256 x 3
