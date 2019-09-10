@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import logging
 import tensorflow as tf
-from tf.keras.callbacks import EarlyStopping
-from tf.keras.models import Sequential
-from tf.keras.layers import BatchNormalization, Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import BatchNormalization, Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 from keras import regularizers
 from keras.models import model_from_json
 from keras.models import load_model
@@ -217,9 +217,9 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 
 		# Create new model each time
 		model = None
-		model = build_model(image_size)
+		model = build_model()
 		print("Training model")
-		es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
+		es_callback = EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
 		history = model.fit(train_features, train_labels, batch_size=64, epochs = num_epochs, callbacks = [es_callback], validation_data = (val_features, val_labels))
 
 		# TODO: Add additional column names at end of this method (lines 228-232)
