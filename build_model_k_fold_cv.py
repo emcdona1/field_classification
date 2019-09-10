@@ -18,7 +18,7 @@ from keras import regularizers
 from keras.models import model_from_json
 from keras.models import load_model
 from scipy import interp
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, confusion_matrix, auc
 from sklearn.model_selection import StratifiedKFold
 
 # setup
@@ -276,9 +276,16 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		plot_accuracy_and_loss(history, index)
 
 		# Compute ROC curve and area the curve
-		probas = model.predict_proba(val_features)
+		probas = model.predict_proba(val_features)[:,1] # 0 = definitely c1, 1 = definitely c2
+		prob_classification = [round(a + 0.001) for a in probas]
 		# Compute ROC curve and area the curve
-		fpr, tpr, thresh = roc_curve(val_labels, probas[:, 1])
+		fpr, tpr, thresh = roc_curve(val_labels, probas)
+		tn, fp, fn, tp = confusion_matrix(val_labels, prob_classification).ravel()
+		print("True negatives: " + tn)
+		print("False negatives: " + fn)
+		print("True positives: " + tp)
+		print("False positives: " + fp)
+
 		tprs.append(interp(mean_fpr, fpr, tpr))
 		tprs[-1][0] = 0.0
 		roc_auc = auc(fpr, tpr)
@@ -298,9 +305,10 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 			history.history['acc'][len_history - 1], \
 			history.history['val_loss'][len_history - 1], \
 			history.history['val_acc'][len_history - 1], \
-			tpr,\
-			fpr,\
-			thresh]])
+			tpr, \
+			fpr, \
+			thresh, \
+			tn, fp, fn, tp]])
 	
 	results = results.rename({0: 'Fold Number',\
 					1: 'Training Loss',\
@@ -309,7 +317,9 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 					4: 'Validation Accuracy',\
 					5: 'True Positive Rate',
 					6: 'False Positive Rate',
-					7: 'Thresholds'}, axis='columns')
+					7: 'Thresholds',\
+					8: 'True Negatives', 9: 'False Positives', \
+					10: 'False Negatives', 11: 'True Positives'}, axis='columns')
 	results.to_csv(os.path.join('graphs','final_acc_loss.csv'), encoding='utf-8', index=False)
 	
 	
