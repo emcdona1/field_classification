@@ -111,19 +111,18 @@ def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.savefig('graphs/mean_ROC.png')
 	plt.clf()
 
-def import_images(data_dir, categories, image_size): 
+def import_images(): 
 	""" Import images from the file system and returns two numpy arrays containing the pixel information and classification.
 
-	Inputs: none.  Uses global variables of img_directory, folders, and img_size.
+	Inputs: none.  Uses global variables of img_directory, and folders (names of folders).
 	Outputs: features - numpy arrays containing RGB values for each image
 				(dimensions: # of images x image width x image height x 3),
-			labels - numpy array containing the class label of the corresponding image (# of rows = # of images, # of columns = 1)
-
+			labels - numpy array containing the class label (0/1) of the corresponding image (# of rows = # of images, # of columns = 1)
 	"""
 	all_data = []
-	for category in categories:
-		path=os.path.join(data_dir,category) #look at each folder of images
-		class_index = categories.index(category)
+	for category in folders:
+		path=os.path.join(img_directory,category) #look at each folder of images
+		class_index = folders.index(category)
 		for img in os.listdir(path): # look at each image
 			try:
 				img_array = cv2.imread(os.path.join(path,img), -1) #-1 means image is read as color
@@ -145,7 +144,8 @@ def import_images(data_dir, categories, image_size):
 		# img_names.append(file_name)
 
 	#reshape into numpy array
-	features = np.array(features).reshape(-1, image_size, image_size, 3) # 3 bc three channels for RGB values
+	features = np.array(features) #turns list into a numpy array
+	features = features.reshape(-1, img_size, img_size, 3) # 3 bc three channels for RGB values
 		# -1 means "numpy figure out this dimension," so the new nparray has the dimensions of: [#_of_images rows, img_size, img_size, 3] 
 	labels = np.array(labels)
 	return [features,labels]
@@ -166,7 +166,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	# data frame to save values of loss and validation after each fold
 	df = pd.DataFrame()
 	#obtain images
-	data = import_images(data_dir, categories, image_size)
+	data = import_images()
 	features = data[0]
 	labels = data[1]
 	print("Stored features and labels")
