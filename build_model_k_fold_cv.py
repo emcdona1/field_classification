@@ -111,6 +111,22 @@ def build_model(): # create model architecture and compile it
 	return model
 
 def plot_accuracy_and_loss(history, index):
+	''' Create plots of accuracy and loss, save to disk.
+
+	Parameters:
+	-----
+	history : History
+	History object of results, returned from the model.fit() method.
+
+	index : int
+	Current fold.
+
+	Output:
+	-----
+	none in Python
+
+	Two PNG files saved in /graphs/ folder
+	'''
 	# Save a graph of the testing/training accuracy during the training phase
 	plt.figure(1)
 	plt.plot(history.history['acc'])
