@@ -136,11 +136,21 @@ def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 def import_images(): 
 	""" Import images from the file system and returns two numpy arrays containing the pixel information and classification.
 
-	INPUTS: none.  Uses global variables of img_directory, and folders (names of folders).
+	Parameters:
+	-----
+	None
 	
-	OUTPUTS: features - numpy arrays containing RGB values for each image
-				(dimensions: # of images x image width x image height x 3),
-			labels - numpy array containing the class label (0/1) of the corresponding image (# of rows = # of images, # of columns = 1)
+	Uses global variables of img_directory, and folders (names of folders).
+	
+	Output:
+	-----
+	features : numpy arrays
+	Contains RGB values for each image
+	(dimensions: # of images x image width x image height x 3)
+	
+	labels : numpy array
+	Contains the class label (0/1) of the corresponding image
+	(# of rows = # of images, # of columns = 1)
 	"""
 	all_data = []
 	for category in folders:
