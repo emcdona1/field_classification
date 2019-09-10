@@ -1,5 +1,4 @@
 # TODO: Turn all print statements into logs
-# TODO: Discuss with Iacobelli about where to log, and levels of logging
 
 import os
 import argparse
@@ -59,7 +58,7 @@ def build_model(): # create model architecture and compile it
 	# Output shape: 10 x 252 x 252
 
 	# 4. Pooling function: from the paper, it didn't specify function, but looking online, it seems that the default is Max so we are a-okay here
-	model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2)))
+	model.add(MaxPooling2D(pool_size = (2, 2), strides = (2, 2)))
 	# Output shape: 10 x 126 x 126
 
 	#-------------Next Set of Layers--------------
@@ -76,7 +75,7 @@ def build_model(): # create model architecture and compile it
 	# Output shape: 40 x 122 x 122
 
 	# 8. Pooling again will decrease "image shape" by half since stride = 2
-	model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2)))
+	model.add(MaxPooling2D(pool_size = (2, 2), strides = (2, 2)))
 	# Output shape: 40 x 61 x 61
 
 	# ----------Hidden layers-----------
@@ -88,17 +87,26 @@ def build_model(): # create model architecture and compile it
 	# !!!!!!! Currently trying to figure out how to do the multiply by 2 but moving on for now !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	model.add(Dropout(0.5, seed=SEED))
 
-	model.add(Dense(500, activation="linear", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05))) # kernel_regularizer=regularizers.l2(0.1)))
-	model.add(Dense(500, activation="relu", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05))) 
+	model.add(Dense(500, activation = "linear", \
+				activity_regularizer = regularizers.l2(0.01), \
+				kernel_regularizer = regularizers.l2(0.05))) # kernel_regularizer=regularizers.l2(0.1)))
+	model.add(Dense(500, activation = "relu", \
+				activity_regularizer = regularizers.l2(0.01), \
+				kernel_regularizer = regularizers.l2(0.05))) 
 	#model.add(Activation("relu"))
 
-	model.add(Dropout(0.25, seed=SEED))
+	model.add(Dropout(0.25, seed = SEED))
 	# The output layer with 2 neurons, for 2 classes
-	model.add(Dense(2, activation="linear", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05)))
-	model.add(Dense(2, activation="softmax", activity_regularizer=regularizers.l2(0.01), kernel_regularizer=regularizers.l2(0.05)))
+	model.add(Dense(2, activation = "linear", \
+				activity_regularizer = regularizers.l2(0.01), \
+				kernel_regularizer = regularizers.l2(0.05)))
+	model.add(Dense(2, activation = "softmax", \
+				activity_regularizer = regularizers.l2(0.01), \
+				kernel_regularizer = regularizers.l2(0.05)))
 	# model.add(Activation("softmax"))
 
-	opt = tf.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=0.00001, decay=0.0, amsgrad=False)
+	opt = tf.keras.optimizers.Adam(lr = 0.0001, beta_1 = 0.9, beta_2 = 0.999, \
+		epsilon = 0.00001, decay = 0.0, amsgrad = False)
 	model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 	return model
 
@@ -111,7 +119,7 @@ def plot_accuracy_and_loss(history, index):
 	plt.ylabel('accuracy')
 	plt.xlabel('epoch')
 	plt.legend(['train', 'validation'], loc='upper left')
-	plt.savefig('graphs/val_accuracy_' + str(index+1) + '.png')
+	plt.savefig('graphs/val_accuracy_' + str(index + 1) + '.png')
 	plt.clf()
 
 	# Save a graph of the testing/training loss during the training phase
@@ -121,8 +129,8 @@ def plot_accuracy_and_loss(history, index):
 	plt.title('model loss')
 	plt.ylabel('loss')
 	plt.xlabel('epoch')
-	plt.legend(['train', 'validation'], loc='upper left')
-	plt.savefig('graphs/val_loss_' + str(index+1) + '.png')
+	plt.legend(['train', 'validation'], loc = 'upper left')
+	plt.savefig('graphs/val_loss_' + str(index + 1) + '.png')
 	plt.clf()
 
 def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
@@ -149,11 +157,11 @@ def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	Saves plot as `mean_ROC.png` in /graphs/ folder.
 	"""
 	plt.figure(3)
-	plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
-				color='r', label='Random Chance', alpha=.8)
-	plt.plot(mean_fpr, mean_tpr, color='blue',
-				label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc),
-				lw=2, alpha=.8)
+	plt.plot([0, 1], [0, 1], linestyle = '--', lw = 2,
+				color = 'r', label='Random Chance', alpha = 0.8)
+	plt.plot(mean_fpr, mean_tpr, color = 'blue',
+				label = r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc),
+				lw = 2, alpha = 0.8)
 	plt.xlim([-0.05, 1.05])
 	plt.ylim([-0.05, 1.05])
 	plt.xlabel('False Positive Rate')
@@ -243,7 +251,9 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		model = build_model()
 		print("Training model")
 		es_callback = EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
-		history = model.fit(train_features, train_labels, batch_size=64, epochs = num_epochs, callbacks = [es_callback], validation_data = (val_features, val_labels))
+		history = model.fit(train_features, train_labels, \
+			batch_size = 64, epochs = num_epochs, \
+			callbacks = [es_callback], validation_data = (val_features, val_labels))
 
 		model.save('saved_models/CNN_' + str(index + 1) + '.model')
 		
@@ -258,7 +268,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		roc_auc = auc(fpr, tpr)
 		aucs.append(roc_auc)
 		# use the mean statistics to compare each model (that we train/test using 10-fold cv)
-		mean_tpr = np.mean(tprs, axis=0)
+		mean_tpr = np.mean(tprs, axis = 0)
 		mean_tpr[-1] = 1.0
 		mean_auc = auc(mean_fpr, mean_tpr)
 		std_auc = np.std(aucs)
@@ -267,13 +277,14 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc)
 		
 		len_history = len(history.history['loss'])
-		results = results.append([[index+1, history.history['loss'][len_history-1], \
-				history.history['acc'][len_history-1], \
-				history.history['val_loss'][len_history-1], \
-				history.history['val_acc'][len_history-1], \
-				tpr,\
-				fpr,\
-				thresh]])
+		results = results.append([[index + 1, \
+			history.history['loss'][len_history - 1], \
+			history.history['acc'][len_history - 1], \
+			history.history['val_loss'][len_history - 1], \
+			history.history['val_acc'][len_history - 1], \
+			tpr,\
+			fpr,\
+			thresh]])
 	
 	results = results.rename({0: 'Fold Number',\
 					1: 'Training Loss',\
