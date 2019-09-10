@@ -25,7 +25,7 @@ from sklearn.model_selection import StratifiedKFold
 # setup
 logging.basicConfig(filename='cnn_run.log', level=logging.DEBUG) #, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
-global img_directory, folders, img_length, n_folds, n_epochs
+global img_directory, folders, img_size, n_folds, n_epochs
 SEED = 1
 seed(SEED)
 tf.compat.v1.random.set_random_seed(SEED)
@@ -256,7 +256,6 @@ if __name__ == '__main__':
 
 	"""
 	parser = argparse.ArgumentParser('import pickle files')
-	# parser.add_argument('-p', '--pickle_dir', default='data_pickles', help='Folder for pickle files')
 	parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')	
 	parser.add_argument('-c1', '--category1', default='lyco_train', help='Folder of class 1')
 	parser.add_argument('-c2', '--category2', default='sela_train', help='Folder of class 2')
@@ -265,13 +264,10 @@ if __name__ == '__main__':
 	parser.add_argument('-e', '--number_epochs', default=25, help='Number of epochs')
 
 	args = parser.parse_args()
-	# divided_data = groups_to_arrays(args.pickle_dir, args.number_groups)
-	#model = build_model(args.img_size)
-	categories = [args.category1, args.category2]
 
 	img_directory = args.directory
 	folders = [args.folder1, args.folder2]
-	img_length = int(args.img_length)
+	img_size = int(args.img_size)
 	n_folds = int(args.number_folds)
 	n_epochs = int(args.number_epochs)
 
@@ -281,4 +277,4 @@ if __name__ == '__main__':
 	if not os.path.exists('saved_models'):
 		os.makedirs('saved_models')
 	
-	train_cross_validate(int(args.number_folds), args.directory, categories, int(args.img_size), int(args.number_epochs))
+	train_cross_validate(n_folds, img_directory.directory, folders, img_size, n_epochs)
