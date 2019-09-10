@@ -157,13 +157,6 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	# initialize stratifying k fold
 	skf = StratifiedKFold(n_splits = n_folds, shuffle = True, random_state = SEED)
 
-	# open pickle files
-	# features = pickle.load(open("features.pickle","rb")) #already reshaped as numpy array
-	# features = features/255.0 
-	# labels = pickle.load(open("labels.pickle","rb"))
-	# labels = np.array(labels)
-	# img_names = pickle.load(open("img_names.pickle","rb"))
-
 	# data frame to save values of loss and validation after each fold
 	df = pd.DataFrame()
 	#obtain images
@@ -195,12 +188,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		# save values of loss and accuracy into df
 		len_history = len(history.history['loss'])
 		df = df.append([[index+1, history.history['loss'][len_history-1], history.history['acc'][len_history-1], history.history['val_loss'][len_history-1], history.history['val_acc'][len_history-1]]])
-		# model_json = model.to_json()
-		# with open("model.json", "w") as json_file :
-		# 	json_file.write(model_json)
 
-		# model.save_weights("model.h5")
-		# print("Saved model to disk")
 		# TODO: Append tpr, fpr, thresholds, auc (lines 211-216) onto this df
 		# TODO: Rename df to "fold_results"
 		# TODO: Add additional column names at end of this method (lines 228-232)
@@ -229,7 +217,6 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		plt.xlabel('epoch')
 		plt.legend(['train', 'validation'], loc='upper left')
 		plt.savefig('graphs/val_loss_' + str(index+1) + '.png')
-		# plt.show()
 		plt.clf()
 
 		# Compute ROC curve and area the curve
@@ -240,8 +227,6 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		tprs[-1][0] = 0.0
 		roc_auc = auc(fpr, tpr)
 		aucs.append(roc_auc)
-		# Plots ROC for each individual fold:
-		# plt.plot(fpr, tpr, lw=1, alpha=0.3,label='ROC fold %d (AUC = %0.2f)' % (index + 1, roc_auc))
 		# use the mean statistics to compare each model (that we train/test using 10-fold cv)
 		mean_tpr = np.mean(tprs, axis=0)
 		mean_tpr[-1] = 1.0
