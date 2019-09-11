@@ -1,4 +1,5 @@
 # TODO: Turn all print statements into logs
+# TODO: get rid of globals
 
 import os
 import argparse
@@ -30,7 +31,7 @@ seed(SEED)
 tf.compat.v1.random.set_random_seed(SEED)
 random.seed(SEED)
 
-def build_model(): # create model architecture and compile it
+def build_model(): # create model architecture and compile it # change so all of the parameters are passed in
 	""" Creates layers for model and compiles model.
 	Parameters:
 	-----
@@ -252,6 +253,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	tprs = []
 	aucs = []
 	mean_fpr = np.linspace(0, 1, 100)
+	cm_file = open('graphs\confusion_matrix.txt', 'w')
 
 	for index, (train_indices, val_indices) in enumerate(skf.split(features, labels)):
 		print("Training on fold " + str(index + 1) + "/" + str(n_folds))
@@ -281,10 +283,13 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		# Compute ROC curve and area the curve
 		fpr, tpr, thresh = roc_curve(val_labels, probas)
 		tn, fp, fn, tp = confusion_matrix(val_labels, prob_classification).ravel()
-		print("True negatives: " + tn)
-		print("False negatives: " + fn)
-		print("True positives: " + tp)
-		print("False positives: " + fp)
+		confusion_mat = '\t\t   Predicted\n\t\t  P\t    N\t\n\t\t  --------------\n\t\tP|  ' + str(tp)
+		confusion_mat += ' \t|  ' + str(fn)
+		confusion_mat += ' \t|\nActual\t  --------------\n\t\tN|  ' + str(fp)
+		confusion_mat += ' \t|  ' + str(tn)
+		confusion_mat += ' \t|\n\t\t  --------------\n'
+		print(confusion_mat)
+		cm_file.write(confusion_mat)
 
 		tprs.append(interp(mean_fpr, fpr, tpr))
 		tprs[-1][0] = 0.0
@@ -305,9 +310,6 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 			history.history['acc'][len_history - 1], \
 			history.history['val_loss'][len_history - 1], \
 			history.history['val_acc'][len_history - 1], \
-			tpr, \
-			fpr, \
-			thresh, \
 			tn, fp, fn, tp]])
 	
 	results = results.rename({0: 'Fold Number',\
@@ -315,12 +317,10 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 					2: 'Training Accuracy',\
 					3: 'Validation Loss', \
 					4: 'Validation Accuracy',\
-					5: 'True Positive Rate',
-					6: 'False Positive Rate',
-					7: 'Thresholds',\
-					8: 'True Negatives', 9: 'False Positives', \
-					10: 'False Negatives', 11: 'True Positives'}, axis='columns')
+					5: 'True Negatives', 6: 'False Positives', \
+					7: 'False Negatives', 8: 'True Positives'}, axis='columns')
 	results.to_csv(os.path.join('graphs','final_acc_loss.csv'), encoding='utf-8', index=False)
+	cm_file.close()
 	
 	
 if __name__ == '__main__':
@@ -329,7 +329,7 @@ if __name__ == '__main__':
 	parser.add_argument('-c1', '--category1', default='lyco_train', help='Folder of class 1')
 	parser.add_argument('-c2', '--category2', default='sela_train', help='Folder of class 2')
 	parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
-	parser.add_argument('-n', '--number_folds', default=10, help='Number of folds for cross validation')
+	parser.add_argument('-n', '--number_folds', default=10, help='Number of folds (minimum 2) for cross validation')
 	parser.add_argument('-e', '--number_epochs', default=25, help='Number of epochs')
 
 	args = parser.parse_args()
