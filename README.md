@@ -8,7 +8,8 @@ The code here creates and tests a CNN model using Tensorflow and Keras that take
 For full details, see section Folder Descriptions below.
 
 - The main files in the root are used for acquiring images, building the model, and training it.
-- *Archive/* contains an older version of the model and method of uploading images into the model that may still be explored in the future.
+- *archive/* contains an older version of the model and method of uploading images into the model that may still be explored in the future.
+- *image_processing/* contains two programs for downloading and prepping the Field Museum's images of the *Lycopodieaceae* and *Selaginellaceae* families from an online database.  See the folder for full instructions.
 
 ---
 
@@ -20,15 +21,6 @@ This file is where the architecture of the model is created. It takes in images 
 Note that the first argument (-d or --directory) is the path from current location to the folder **holding the two class folders**. If the class folders are in the current folder, leave it blank!
 
 If there are any other parameters that you would like to change in the model, you'd have to directly change the code.
-
-# Folder Descriptions
-
-### archive
-
-This folder holds the files to build a model using the data from images stored in pickle files. As of August 27, 2019, it is an older model and would have to be updated to match **build_model_k_fold_cv.py** if you would like to use it. This folder contains 3 files: 
-* build_model.py
-* input_data.py
-* input_data_split.py
 
 ---
 
