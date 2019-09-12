@@ -39,20 +39,26 @@ def import_images():
 
 if __name__ == '__main__':
     '''Currently this only works for hardcoding in the model used, and the frullania project.'''
-
+    # Load model
     model = tf.keras.models.load_model('.\\saved_models\\CNN_1.model')
-    pics, labels, img_names = import_images()
+
+    # Import images
+    pics, actual_class, img_names = import_images()
+    
+    # Predict classes of imported images
     predictions = model.predict(pics)
+
+    # Map class numbers to class labels
     maps = ['rostrata', 'coastal']
-    mapper = lambda t: maps[int(round(t))]
-    mfunc = np.vectorize(mapper)
-    pred_class = mfunc(predictions[:,[1]])
-    labels2 = mfunc(labels)
+    mfunc = np.vectorize(lambda t: maps[int(round(t))])
+    prediction_class_labels = mfunc(predictions[:,[1]])
+    actual_class_labels = mfunc(actual_class)
 
+    # Join all information into one nparray -> pd.DataFrame
     headers = ['filename', 'rostrata_pred', 'coastal_pred', 'class_pred', 'actual', 'actual_class']
-    pred_joined = np.c_[img_names, predictions, pred_class, labels, labels2]
-    pred_final = pd.DataFrame(pred_joined, columns=headers)
+    pred_joined = np.c_[img_names, predictions, prediction_class_labels, actual_class, actual_class_labels]
+    predictions_final = pd.DataFrame(pred_joined, columns=headers)
 
-    print(pred_final)
+    # save to file
     timestamp = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S')
-    pred_final.to_csv(os.path.join('predictions',timestamp+'predictions.csv'), encoding='utf-8',index=False)
+    predictions_final.to_csv(os.path.join('predictions',timestamp+'predictions.csv'), encoding='utf-8',index=False)
