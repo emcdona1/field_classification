@@ -347,3 +347,4 @@ if __name__ == '__main__':
 		os.makedirs('saved_models')
 	
 	train_cross_validate(n_folds, img_directory, folders, img_size, n_epochs)
+	print('c1: ' + folders[0] + ', c2: ' + folders[1])
