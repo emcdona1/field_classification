@@ -1,10 +1,10 @@
-import tensorflow as tf
-from tensorflow import keras
-import numpy as np
-import cv2
-import pandas as pd
 import os
 import datetime
+import cv2
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from tensorflow import keras
 
 def import_images():
     all_data = []
