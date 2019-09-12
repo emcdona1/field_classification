@@ -9,7 +9,7 @@ from tensorflow import keras
 def import_images():
     all_data = []
     folders = ['rostrata_micro', 'coastal_micro']
-    img_directory = ''
+    img_directory = '.\\images\\'
     for category in folders:
         path=os.path.join(img_directory,category) #look at each folder of images
         class_index = folders.index(category)
