@@ -1,5 +1,5 @@
 import os
-import datetime
+from datetime import datetime
 import cv2
 import numpy as np
 import pandas as pd
@@ -60,5 +60,5 @@ if __name__ == '__main__':
     predictions_final = pd.DataFrame(pred_joined, columns=headers)
 
     # save to file
-    timestamp = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S')
+    timestamp = datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
     predictions_final.to_csv(os.path.join('predictions',timestamp+'predictions.csv'), encoding='utf-8',index=False)
