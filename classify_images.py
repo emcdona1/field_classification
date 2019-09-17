@@ -8,7 +8,20 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow import keras
 
-def import_images(img_directory, folders):
+def import_images(img_directory, folders, img_size):
+    ''' Imports images from 2 folders into program
+
+    Parameters:
+    -----
+    img_directory : directory of images folders
+    folders : list of two strings; folders[0] is the folder of images with classification = 0, folders[1] is classification 1
+
+    Output:
+    -----
+    features : nparray (shape = #images x img_size x img_size x 3) of ints, containing the RGB pixel values for each image, i.e. the inputs for the model
+    labels : nparray (shape = #images x 1) of ints, containing actual classification (based on the image folder)
+    img_names : nparray (shape = #images x 1) of strings, contains all filenames
+    '''
     all_data = []
     for category in folders:
         path=os.path.join(img_directory,category) #look at each folder of images
@@ -32,7 +45,7 @@ def import_images(img_directory, folders):
 
     #reshape into numpy array
     features = np.array(features) #turns list into a numpy array
-    features = features.reshape(-1, 256, 256, 3) # 3 bc three channels for RGB values
+    features = features.reshape(-1, img_size, img_size, 3) # 3 bc three channels for RGB values
         # -1 means "numpy figure out this dimension," so the new nparray has the dimensions of: [#_of_images rows, img_size, img_size, 3] 
     labels = np.array(labels)
     return features, labels, img_names
@@ -78,10 +91,12 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--directory', default='images', help='Folder holding category folders')	
     parser.add_argument('-c1', '--category1', help='Folder of class 1')
     parser.add_argument('-c2', '--category2', help='Folder of class 2')
+	parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
     parser.add_argument('-m', '--model', help='Filepath of model to use')
     args = parser.parse_args()
     img_directory = args.directory
     folders = [args.category1, args.category2]
+    img_size = args.img_size
     model_directory = args.model
 
     # Load model
@@ -89,7 +104,7 @@ if __name__ == '__main__':
 
     # TODO: Better variable names & organization
     # Import images: returns
-    pics, actual_class, img_names = import_images(img_directory, folders)
+    pics, actual_class, img_names = import_images(img_directory, folders, img_size)
     # pics = pixels, actual_class = 0/1 labels of actual classification, img_names = file names
     
     # Predict classes of imported images
