@@ -145,13 +145,24 @@ def confusion_matrix(prediction_class_labels, actual_class_labels):
          
     return conf_mat
 
-def write_file(predictions_to_write):
-    ''' Writes the given DataFrame to a file. '''
-    timestamp = datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
-    filename = os.path.join('predictions',timestamp+'predictions.csv')
-    predictions_to_write.to_csv(filename, encoding='utf-8',index=False)
+def write_file(folder, filename, dataframe_to_write):
+    ''' Writes the given DataFrame to a file.
+    Parameters:
+    -----
+    @folder : String to designate folder in which to write file
+    @filename : String to add designation to filename -- file names are timestamp+filename
+    @dataframe_to_write : DataFrame to be written to CSV
 
-    return filename
+    Output:
+    -----
+    File path of the written file
+    '''
+    timestamp = datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
+    filename = timestamp + filename + '.csv'
+    filepath = os.path.join(folder, filename)
+    dataframe_to_write.to_csv(filepath, encoding = 'utf-8', index = False)
+
+    return filepath
 
 if __name__ == '__main__':
     # Start execution and parse arguments
@@ -171,7 +182,7 @@ if __name__ == '__main__':
     print('Predictions generated.')
 
     # Save to file
-    filename = write_file(predictions_to_write)
+    filename = write_file('predictions', 'predictions', predictions_to_write)
     print('File written to \'%s\'.' % filename)
 
     # Finish execution
