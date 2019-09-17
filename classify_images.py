@@ -36,6 +36,26 @@ def import_images(img_directory, folders):
     labels = np.array(labels)
     return features, labels, img_names
 
+def confusion_matrix(prediction_class_labels, actual_class_labels):
+    # columns: tp, fn, fp, tn
+    conf_mat = np.zeros((len(prediction_class_labels), 4))
+    
+    for idx, pred in enumerate(prediction_class_labels):
+        if pred == 1:
+            if pred == actual_class_labels[idx]:
+                conf_mat[idx][0] = 1 # true positive
+            else:
+                conf_mat[idx][2] = 1 # false positive
+        elif pred == 0:
+            if pred == actual_class_labels[idx]:
+                conf_mat[idx][3] = 1 # true negative
+            else:
+                conf_mat[idx][1] = 1 # false negative
+        else:
+            print('Invalid value for prediction class!')
+         
+    return conf_mat
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Import a model and classify images.')
     parser.add_argument('-d', '--directory', default='images', help='Folder holding category folders')	
@@ -50,21 +70,27 @@ if __name__ == '__main__':
     # Load model
     model = tf.keras.models.load_model(model_directory)
 
-    # Import images
+    # Import images: returns
     pics, actual_class, img_names = import_images(img_directory, folders)
+    # pics = pixels, actual_class = 0/1 labels of actual classification, img_names = file names
     
     # Predict classes of imported images
     predictions = model.predict(pics)
+    pfunc = np.vectorize(lambda t: int(round(t)))
+    prediction_class = pfunc(predictions[:,[1]]) # 0/1 labels of predictions
 
     # Map class numbers to class labels
     maps = [ folders[0].split('_')[0], folders[1].split('_')[0] ]
-    mfunc = np.vectorize(lambda t: maps[int(round(t))])
-    prediction_class_labels = mfunc(predictions[:,[1]])
-    actual_class_labels = mfunc(actual_class)
+    mfunc = np.vectorize(lambda t: maps[t])
+    prediction_class_labels = mfunc(prediction_class) # class name labels of predictions
+    actual_class_labels = mfunc(actual_class) # class name labels of actual classification
+
+    # Calculate confusion matrix: tp, fn, fp, tn
+    conf_matrix = confusion_matrix(prediction_class, actual_class)
 
     # Join all information into one nparray -> pd.DataFrame
-    headers = ['filename', maps[0] + '_pred', maps[1] + '_pred', 'class_pred', 'actual', 'actual_class']
-    pred_joined = np.c_[img_names, predictions, prediction_class_labels, actual_class, actual_class_labels]
+    headers =           ['filename', maps[0] + '_pred',  maps[1] + '_pred', 'class_pred',            'actual',      'actual_class',         'tp', 'fn', 'fp', 'tn']
+    pred_joined = np.c_ [img_names,  predictions,                           prediction_class_labels, actual_class,  actual_class_labels, conf_matrix]
     predictions_final = pd.DataFrame(pred_joined, columns=headers)
 
     # save to file
