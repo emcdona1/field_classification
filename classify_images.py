@@ -8,6 +8,22 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow import keras
 
+def process_input_arguments():
+    parser = argparse.ArgumentParser('Import a model and classify images.')
+    parser.add_argument('-d', '--directory', default='images', help='Folder holding category folders')	
+    parser.add_argument('-c1', '--category1', help='Folder of class 1')
+    parser.add_argument('-c2', '--category2', help='Folder of class 2')
+    parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
+    parser.add_argument('-m', '--model', help='Filepath of model to use')
+    args = parser.parse_args()
+
+    img_directory = args.directory
+    folders = [args.category1, args.category2]
+    img_size = args.img_size
+    model_directory = args.model
+
+    return img_directory, folders, img_size, model_directory
+
 def import_images(img_directory, folders, img_size):
     ''' Imports images from 2 folders into program
 
@@ -50,6 +66,27 @@ def import_images(img_directory, folders, img_size):
     labels = np.array(labels)
     return features, labels, img_names
 
+def make_predictions(pixel_values):
+    # Predict classes of imported images
+    predictions = model.predict(pixel_values)
+    prediction_integer_func = np.vectorize(lambda t: int(round(t)))
+    prediction_class = prediction_integer_func(predictions[:,[1]]) # 0/1 labels of predictions
+
+    # Map class numbers to class labels
+    class_labels = [ folders[0].split('_')[0], folders[1].split('_')[0] ]
+    prediction_label_func = np.vectorize(lambda t: class_labels[t])
+    pred_actual_class_labels = np.c_[prediction_label_func(prediction_class), prediction_label_func(actual_class)]
+    
+    # Calculate confusion matrix: tp, fn, fp, tn
+    conf_matrix = confusion_matrix(prediction_class, actual_class)
+
+    # Join all information into one nparray -> pd.DataFrame
+    headers = ['filename', class_labels[0] + '_pred', class_labels[1] + '_pred', 'pred_class', 'actual_class', 'pred_label', 'actual_label', 'tp', 'fn', 'fp', 'tn']
+    joined_arrays = np.c_ [img_filenames, predictions, prediction_class, actual_class, pred_actual_class_labels, conf_matrix]
+    predictions_to_write = pd.DataFrame(joined_arrays, columns=headers)
+
+    return predictions_to_write
+
 def confusion_matrix(prediction_class_labels, actual_class_labels):
     ''' Determines confusion matrix value for each tuple.
 
@@ -87,50 +124,26 @@ def confusion_matrix(prediction_class_labels, actual_class_labels):
 
 if __name__ == '__main__':
     start_time = time.time()
-    parser = argparse.ArgumentParser('Import a model and classify images.')
-    parser.add_argument('-d', '--directory', default='images', help='Folder holding category folders')	
-    parser.add_argument('-c1', '--category1', help='Folder of class 1')
-    parser.add_argument('-c2', '--category2', help='Folder of class 2')
-	parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
-    parser.add_argument('-m', '--model', help='Filepath of model to use')
-    args = parser.parse_args()
-    img_directory = args.directory
-    folders = [args.category1, args.category2]
-    img_size = args.img_size
-    model_directory = args.model
+
+    # Parse arguments
+    img_directory, folders, img_size, model_directory = process_input_arguments()
 
     # Load model
     model = tf.keras.models.load_model(model_directory)
+    print('Model loaded.')
 
-    # TODO: Better variable names & organization
     # Import images: returns
-    pics, actual_class, img_names = import_images(img_directory, folders, img_size)
-    # pics = pixels, actual_class = 0/1 labels of actual classification, img_names = file names
+    pixel_values, actual_class, img_filenames = import_images(img_directory, folders, img_size)
+    print('Images imported.')
     
-    # Predict classes of imported images
-    predictions = model.predict(pics)
-    pfunc = np.vectorize(lambda t: int(round(t)))
-    prediction_class = pfunc(predictions[:,[1]]) # 0/1 labels of predictions
-
-    # Map class numbers to class labels
-    maps = [ folders[0].split('_')[0], folders[1].split('_')[0] ]
-    mfunc = np.vectorize(lambda t: maps[t])
-    prediction_class_labels = mfunc(prediction_class) # class name labels of predictions
-    actual_class_labels = mfunc(actual_class) # class name labels of actual classification
-
-    # Calculate confusion matrix: tp, fn, fp, tn
-    conf_matrix = confusion_matrix(prediction_class, actual_class)
-
-    # Join all information into one nparray -> pd.DataFrame
-    headers =           ['filename', maps[0] + '_pred',  maps[1] + '_pred', 'class_pred',            'actual',      'actual_class',         'tp', 'fn', 'fp', 'tn']
-    pred_joined = np.c_ [img_names,  predictions,                           prediction_class_labels, actual_class,  actual_class_labels, conf_matrix]
-    predictions_final = pd.DataFrame(pred_joined, columns=headers)
+    predictions_to_write = make_predictions(pixel_values)
+    print('Predictions generated.')
 
     # save to file
     timestamp = datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
     filename = os.path.join('predictions',timestamp+'predictions.csv')
-    predictions_final.to_csv(filename, encoding='utf-8',index=False)
+    predictions_to_write.to_csv(filename, encoding='utf-8',index=False)
+    print('File written to \'%s\'.' % filename)
 
     end_time = time.time()
-    print('Ran in %s seconds' % (end_time - start_time))
-    print('Saved to %s' % filename)
+    print('Completed in %.1f seconds' % (end_time - start_time))
