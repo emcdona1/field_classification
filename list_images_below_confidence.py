@@ -1,17 +1,37 @@
 import pandas as pd
 import os
+import argparse
+import time
 import datetime
+from classify_images import write_file
 
-filename = input('File name for predictions: ')
-predictions = pd.read_csv('predictions\\' + filename)
+def process_input_arguments():
+    parser = argparse.ArgumentParser('Export predictions below a certain uncertainty.')
+    parser.add_argument('-p', '--predictions', help='Filename or file path for predictions CSV')	
+    parser.add_argument('-c', '--certainty', help='Threshold for certainty')
+    args = parser.parse_args()
 
-# sort by confidence level
-predictions = predictions.sort_values(by=['coastal_pred'])
+    filename = args.predictions
+    threshold = float(args.certainty)
 
-# get confidence threshold & filter 
-threshold = float(input('Desired confidence level [0,1]: '))
-below = predictions[predictions['coastal_pred'] < threshold]
+    return filename, threshold
 
-# save to file
-timestamp = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H-%M-%S')
-below.to_csv(os.path.join('predictions',timestamp+'predictions-' + str(threshold) + 'conf.csv'), encoding='utf-8',index=False)
+if __name__ == '__main__':
+    # Start execution and parse arguments
+    start_time = time.time()
+    filename, threshold = process_input_arguments()
+
+    # Read in predictions and sort by confidence level
+    predictions = pd.read_csv(filename)
+    predictions = predictions.sort_values(by=['rostrata_pred'])
+
+    # Get confidence threshold & filter 
+    below = predictions[predictions['rostrata_pred'] < threshold]
+
+    # Save to file
+    filepath = write_file('predictions', 'low_confidence', below)
+    print('Predictions saved to %s .' % filepath)
+
+    # Finish execution
+    end_time = time.time()
+    print('Completed in %.1f seconds' % (end_time - start_time))
