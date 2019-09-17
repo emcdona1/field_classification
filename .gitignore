@@ -1,4 +1,5 @@
 *.code-workspace
+.vscode\*
 *test.py
 /saved_models/
 /graphs/
