@@ -154,25 +154,26 @@ def write_file(predictions_to_write):
     return filename
 
 if __name__ == '__main__':
+    # Start execution and parse arguments
     start_time = time.time()
-
-    # Parse arguments
     img_directory, folders, img_size, model_directory = process_input_arguments()
 
     # Load model
     model = tf.keras.models.load_model(model_directory)
     print('Model loaded.')
 
-    # Import images: returns
+    # Import images
     pixel_values, actual_class, img_filenames = import_images(img_directory, folders, img_size)
     print('Images imported.')
     
+    # Generate predictions and organize results
     predictions_to_write = make_predictions(pixel_values, actual_class, img_filenames)
     print('Predictions generated.')
 
-    # save to file
+    # Save to file
     filename = write_file(predictions_to_write)
     print('File written to \'%s\'.' % filename)
 
+    # Finish execution
     end_time = time.time()
     print('Completed in %.1f seconds' % (end_time - start_time))
