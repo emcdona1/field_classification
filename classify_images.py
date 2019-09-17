@@ -1,6 +1,6 @@
 import os
 import argparse
-import icalendar.tests.test_timezoned
+import time
 from datetime import datetime
 import cv2
 import numpy as np
@@ -38,6 +38,21 @@ def import_images(img_directory, folders):
     return features, labels, img_names
 
 def confusion_matrix(prediction_class_labels, actual_class_labels):
+    ''' Determines confusion matrix value for each tuple.
+
+    PARAMATERS:
+    -----
+    prediction_class_labels: numpy array with 0/1 predicted classifications (shape = # of images x 1)
+    actual_class_labels: numpy array with 0/1 actual classifications (shape = # of images x 1)
+
+    OUTPUT:
+    -----
+    numpy array (shape = # of images x 4), where:
+    - col 1 = true positive
+    - col 2 = false negative
+    - col 3 = false positives
+    - col 4 = true negatives
+    '''
     # columns: 0=tp, 1=fn, 2=fp, 3=tn
     conf_mat = np.zeros((len(prediction_class_labels), 4))
     
