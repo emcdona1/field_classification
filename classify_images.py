@@ -66,7 +66,30 @@ def import_images(img_directory, folders, img_size):
     labels = np.array(labels)
     return features, labels, img_names
 
-def make_predictions(pixel_values):
+def make_predictions(pixel_values, actual_class, img_filenames):
+    ''' Model predicts classifications for all images, and organizes into a DataFrame
+
+    Parameters:
+    -----
+    @pixel_values : numpy array of RBG pixel values for each image
+    @actual_class : numpy array of 0/1's of actual classification of the images
+    @img_filenames : numpy array of the image filenames
+
+    Output:
+    -----
+    DataFrame with the following columns:
+    1. image filename (string)
+    2. prediction of class = 0 (float)
+    3. prediction of class = 1 (float)
+    4. class predition - argmax (int, 0 or 1)
+    5. actual class (int, 0 or 1)
+    6. predicted class label (string)
+    7. actual class label (string)
+    8. True Positive (1 if the image was correctly predicted to be class=1, 0 otherwise)
+    9. False Negative (1 if the image was incorrectly predicted to be class=1, 0 otherwise)
+    10. False Positive (1 if the image was incorrectly predicted to be class=0, 0 otherwise)
+    11. True Negative (1 if the image was correctly predicted to be class=0, 0 otherwise)
+    '''
     # Predict classes of imported images
     predictions = model.predict(pixel_values)
     prediction_integer_func = np.vectorize(lambda t: int(round(t)))
@@ -122,6 +145,14 @@ def confusion_matrix(prediction_class_labels, actual_class_labels):
          
     return conf_mat
 
+def write_file(predictions_to_write):
+    ''' Writes the given DataFrame to a file. '''
+    timestamp = datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
+    filename = os.path.join('predictions',timestamp+'predictions.csv')
+    predictions_to_write.to_csv(filename, encoding='utf-8',index=False)
+
+    return filename
+
 if __name__ == '__main__':
     start_time = time.time()
 
@@ -136,13 +167,11 @@ if __name__ == '__main__':
     pixel_values, actual_class, img_filenames = import_images(img_directory, folders, img_size)
     print('Images imported.')
     
-    predictions_to_write = make_predictions(pixel_values)
+    predictions_to_write = make_predictions(pixel_values, actual_class, img_filenames)
     print('Predictions generated.')
 
     # save to file
-    timestamp = datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
-    filename = os.path.join('predictions',timestamp+'predictions.csv')
-    predictions_to_write.to_csv(filename, encoding='utf-8',index=False)
+    filename = write_file(predictions_to_write)
     print('File written to \'%s\'.' % filename)
 
     end_time = time.time()
