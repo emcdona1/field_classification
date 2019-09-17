@@ -25,8 +25,11 @@ if __name__ == '__main__':
     predictions = pd.read_csv(filename)
     predictions = predictions.sort_values(by=['rostrata_pred'])
 
-    # Get confidence threshold & filter 
-    below = predictions[predictions['rostrata_pred'] < threshold]
+    # Select those tuples where BOTH predictions are below a certain threshold
+    # e.g. threshold = 0.6, and predictions[1] = 0.55 and predictions[2] = 0.45
+    col1 = predictions.columns[1]
+    col2 = predictions.columns[2]
+    below = predictions[(predictions[col1] < threshold) & (predictions[col2] < threshold)]
 
     # Save to file
     filepath = write_dataframe_to_CSV('predictions', 'low_confidence', below)
