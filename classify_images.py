@@ -1,5 +1,6 @@
 import os
 import argparse
+import icalendar.tests.test_timezoned
 from datetime import datetime
 import cv2
 import numpy as np
@@ -37,7 +38,7 @@ def import_images(img_directory, folders):
     return features, labels, img_names
 
 def confusion_matrix(prediction_class_labels, actual_class_labels):
-    # columns: tp, fn, fp, tn
+    # columns: 0=tp, 1=fn, 2=fp, 3=tn
     conf_mat = np.zeros((len(prediction_class_labels), 4))
     
     for idx, pred in enumerate(prediction_class_labels):
@@ -57,6 +58,7 @@ def confusion_matrix(prediction_class_labels, actual_class_labels):
     return conf_mat
 
 if __name__ == '__main__':
+    start_time = time.time()
     parser = argparse.ArgumentParser('Import a model and classify images.')
     parser.add_argument('-d', '--directory', default='images', help='Folder holding category folders')	
     parser.add_argument('-c1', '--category1', help='Folder of class 1')
@@ -70,6 +72,7 @@ if __name__ == '__main__':
     # Load model
     model = tf.keras.models.load_model(model_directory)
 
+    # TODO: Better variable names & organization
     # Import images: returns
     pics, actual_class, img_names = import_images(img_directory, folders)
     # pics = pixels, actual_class = 0/1 labels of actual classification, img_names = file names
@@ -95,4 +98,9 @@ if __name__ == '__main__':
 
     # save to file
     timestamp = datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
-    predictions_final.to_csv(os.path.join('predictions',timestamp+'predictions.csv'), encoding='utf-8',index=False)
+    filename = os.path.join('predictions',timestamp+'predictions.csv')
+    predictions_final.to_csv(filename, encoding='utf-8',index=False)
+
+    end_time = time.time()
+    print('Ran in %s seconds' % (end_time - start_time))
+    print('Saved to %s' % filename)
