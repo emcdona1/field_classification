@@ -3,7 +3,7 @@ import os
 import argparse
 import time
 import datetime
-from classify_images import write_file
+from classify_images import write_dataframe_to_CSV
 
 def process_input_arguments():
     parser = argparse.ArgumentParser('Export predictions below a certain uncertainty.')
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     below = predictions[predictions['rostrata_pred'] < threshold]
 
     # Save to file
-    filepath = write_file('predictions', 'low_confidence', below)
+    filepath = write_dataframe_to_CSV('predictions', 'low_confidence', below)
     print('Predictions saved to %s .' % filepath)
 
     # Finish execution

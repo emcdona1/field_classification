@@ -145,7 +145,7 @@ def confusion_matrix(prediction_class_labels, actual_class_labels):
          
     return conf_mat
 
-def write_file(folder, filename, dataframe_to_write):
+def write_dataframe_to_CSV(folder, filename, dataframe_to_write):
     ''' Writes the given DataFrame to a file.
     Parameters:
     -----
@@ -182,7 +182,7 @@ if __name__ == '__main__':
     print('Predictions generated.')
 
     # Save to file
-    filename = write_file('predictions', 'predictions', predictions_to_write)
+    filename = write_dataframe_to_CSV('predictions', 'predictions', predictions_to_write)
     print('File written to \'%s\'.' % filename)
 
     # Finish execution
