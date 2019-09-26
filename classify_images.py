@@ -8,6 +8,8 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow import keras
 
+THRESHOLD = 0.25
+
 def process_input_arguments():
     parser = argparse.ArgumentParser('Import a model and classify images.')
     parser.add_argument('-d', '--directory', default='images', help='Folder holding category folders')	
@@ -92,7 +94,7 @@ def make_predictions(pixel_values, actual_class, img_filenames):
     '''
     # Predict classes of imported images
     predictions = model.predict(pixel_values)
-    prediction_integer_func = np.vectorize(lambda t: int(round(t)))
+    prediction_integer_func = np.vectorize(lambda t: (1 if t > THRESHOLD else 0))
     prediction_class = prediction_integer_func(predictions[:,[1]]) # 0/1 labels of predictions
 
     # Map class numbers to class labels
