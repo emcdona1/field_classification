@@ -31,3 +31,6 @@ The three files will hold the data in the same order. In other words, the 10th a
 Similarly, input_data_split.py takes in two folders but exports 6 pickle files, 2 groups. 1 group will be used for training data and the other group is used for testing. Which images get sent to which group is done randomly.
 
 If you are using one then switch to using the other, be careful! Half the pickle files from input_data_split.py have the same file names as the exported files from input_data.py. Currently build_model.py is not written to take in pickle files for both testing and training.
+
+## list_images_confidence_threshold.py
+Abandoned idea of taking a list of images and "flagging" ones below (or above) a certain threshold for manual review.  This was abandoned in favor of changing the threshold (from 0.5 to ~0.74) which fixed the accuracy dramatically.
