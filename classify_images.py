@@ -8,7 +8,7 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow import keras
 
-THRESHOLD = 0.25
+THRESHOLD = (1 - 0.7395)
 
 def process_input_arguments():
     parser = argparse.ArgumentParser('Import a model and classify images.')
