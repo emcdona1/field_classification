@@ -132,13 +132,14 @@ def confusion_matrix(prediction_class_labels, actual_class_labels):
     conf_mat = np.zeros((len(prediction_class_labels), 4))
     
     for idx, pred in enumerate(prediction_class_labels):
+        actual = actual_class_labels[idx]
         if pred == 1:
-            if pred == actual_class_labels[idx]:
+            if pred == actual:
                 conf_mat[idx][0] = 1 # true positive
             else:
                 conf_mat[idx][2] = 1 # false positive
         elif pred == 0:
-            if pred == actual_class_labels[idx]:
+            if pred == actual:
                 conf_mat[idx][3] = 1 # true negative
             else:
                 conf_mat[idx][1] = 1 # false negative
