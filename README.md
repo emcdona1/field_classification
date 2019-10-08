@@ -4,7 +4,7 @@ The code here creates and tests a CNN model using Tensorflow and Keras that take
 
 ---
 
-# Repository layout
+## Repository layout
 For full details, see section Folder Descriptions below.
 
 - The main files in the root are used for acquiring images, building the model, and training it.
@@ -14,7 +14,7 @@ For full details, see section Folder Descriptions below.
 ---
 
 
-## create_models_with_cross_validation.py
+### create_models_with_cross_validation.py
 
 This file is where the architecture of the model is created and the model is trained and validated. It takes in images directly (*not* from pickle files) and performs k-fold cross validation. This file can be called from the terminal with arguments for path to category folders, the category folder names, image size, number of folds, and number of epochs. Look at lines 242-249 for the "keys" for each input. 
 
@@ -22,12 +22,12 @@ Note that the first argument (-d or --directory) is the path from current locati
 
 If there are any other parameters that you would like to change in the model, you'd have to directly change the code.
 
-## classify_images.py
+### classify_images.py
 
 After training model(s), you can use this program to classify folders of images (e.g. for testing).  It classifies images based on which folder they are in, i.e. you must have two folders of images (the output names the class based on the name of the folder), and can only be used to test one model at a time.
 The program outputs a CSV file containing the image names, classification, and confusion matrix values.
 
-## classify_images_by_vote.py
+### classify_images_by_vote.py
 
 Given a folder containing multiple models (e.g. from performing k-fold cross validation), this program takes in a folder of model files, generates predictions for each image from each model, and then takes a simple majority vote across all models in order to determine the classification.
 This program depends on functions from the classify_images.py program.
