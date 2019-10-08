@@ -68,7 +68,7 @@ def import_images(img_directory, folders, img_size):
     labels = np.array(labels)
     return features, labels, img_names
 
-def make_predictions(pixel_values, actual_class, img_filenames):
+def make_predictions(pixel_values, actual_class, img_filenames, class_labels, model):
     ''' Model predicts classifications for all images, and organizes into a DataFrame
 
     Parameters:
@@ -76,6 +76,8 @@ def make_predictions(pixel_values, actual_class, img_filenames):
     @pixel_values : numpy array of RBG pixel values for each image
     @actual_class : numpy array of 0/1's of actual classification of the images
     @img_filenames : numpy array of the image filenames
+    @class_labels : list containing the names of the two classes (e.g. ['coastal', 'rostrata'])
+    @model : keras model, already loaded
 
     Output:
     -----
@@ -97,8 +99,6 @@ def make_predictions(pixel_values, actual_class, img_filenames):
     prediction_integer_func = np.vectorize(lambda t: (1 if t > THRESHOLD else 0))
     prediction_class = prediction_integer_func(predictions[:,[1]]) # 0/1 labels of predictions
 
-    # Map class numbers to class labels
-    class_labels = [ folders[0].split('_')[0], folders[1].split('_')[0] ]
     prediction_label_func = np.vectorize(lambda t: class_labels[t])
     pred_actual_class_labels = np.c_[prediction_label_func(prediction_class), prediction_label_func(actual_class)]
     
@@ -178,9 +178,12 @@ if __name__ == '__main__':
     # Import images
     pixel_values, actual_class, img_filenames = import_images(img_directory, folders, img_size)
     print('Images imported.')
+
+    # Map class numbers to class labels
+    class_labels = [ folders[0].split('_')[0], folders[1].split('_')[0] ]
     
     # Generate predictions and organize results
-    predictions_to_write = make_predictions(pixel_values, actual_class, img_filenames)
+    predictions_to_write = make_predictions(pixel_values, actual_class, img_filenames, class_labels, model)
     print('Predictions generated.')
 
     # Save to file
