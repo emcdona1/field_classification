@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
 
 
-    classify_images.write_dataframe_to_CSV('','all_model_vote_predict', combined_results)
+    classify_images.write_dataframe_to_CSV('predictions','model_vote_predict', combined_results)
 
     # TODO: for each row in chart, vote (simple majority) and give each *image* a final classification
     # TODO: output: image name, final classification, true classification, tp/fn/fp/tn, then each classification
