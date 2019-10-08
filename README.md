@@ -11,8 +11,6 @@ For full details, see section Folder Descriptions below.
 - *archive/* contains an older version of the model and method of uploading images into the model that may still be explored in the future.
 - *image_processing/* contains two programs for downloading and prepping the Field Museum's images of the *Lycopodieaceae* and *Selaginellaceae* families from an online database.  See the folder for full instructions.
 
----
-
 
 ### create_models_with_cross_validation.py
 
