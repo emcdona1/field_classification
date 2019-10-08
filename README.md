@@ -14,9 +14,9 @@ For full details, see section Folder Descriptions below.
 ---
 
 
-## build_model_k_fold_cv.py
+## create_models_with_cross_validation.py
 
-This file is where the architecture of the model is created. It takes in images directly (*not* from pickle files) and performs k-fold cross validation. This file can be called from the terminal with arguments for path to category folders, the category folder names, image size, number of folds, and number of epochs. Look at lines 242-249 for the "keys" for each input. 
+This file is where the architecture of the model is created and the model is trained and validated. It takes in images directly (*not* from pickle files) and performs k-fold cross validation. This file can be called from the terminal with arguments for path to category folders, the category folder names, image size, number of folds, and number of epochs. Look at lines 242-249 for the "keys" for each input. 
 
 Note that the first argument (-d or --directory) is the path from current location to the folder **holding the two class folders**. If the class folders are in the current folder, leave it blank!
 
