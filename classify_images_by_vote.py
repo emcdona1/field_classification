@@ -58,12 +58,42 @@ if __name__ == '__main__':
             # add newest predictions to results
             combined_results[model_name] = predictions[class_labels[1] + '_pred'] # probability of class = 1
 
-    # TODO: Get rid of this temporary hard-coding!
-    classify_images.write_dataframe_to_CSV('','all_model_predict', combined_results)
+    combined_results['label'] = -1
+    combined_results['tp'] = 0
+    combined_results['fn'] = 0
+    combined_results['fp'] = 0
+    combined_results['tn'] = 0
+    for (idx, row) in combined_results.iterrows():
+        count = 0
+        for p in range(2, 7):
+            if float(row[p]) > THRESHOLD:
+                count = count + 1
+        prediction = 1 if count >= 3 else 0
+        combined_results.at[idx, 'label'] = prediction
+        actual = int(row['actual_class'])
+        if actual == 1:
+            if prediction == 1:
+                combined_results.at[idx, 'tp'] = 1
+            elif prediction == 0:
+                combined_results.at[idx, 'fn'] = 1
+            else:
+                print('Invalid prediction value')
+        elif actual == 0:
+            if prediction == 1:
+                combined_results.at[idx, 'fp'] = 1
+            elif prediction == 0:
+                combined_results.at[idx, 'tn'] = 1
+            else:
+                print('Invalid prediction value')
+        else:
+            print('Invalid image class value')
+
+
+
+    classify_images.write_dataframe_to_CSV('','all_model_vote_predict', combined_results)
 
     # TODO: for each row in chart, vote (simple majority) and give each *image* a final classification
     # TODO: output: image name, final classification, true classification, tp/fn/fp/tn, then each classification
-
 
     # Finish execution
     end_time = time.time()
