@@ -7,7 +7,7 @@ def download_images_from_csv(csv_local_name, occ_file_name, download_location):
     with open(csv_local_name, encoding='utf-8') as image_csv: #using with ensures files get closed automatically at end - good for memory
         image_rows = pd.read_csv(image_csv, usecols=['coreid','identifier','goodQualityAccessURI', 'format']) #we only want these three columns
         #delete the duplicate rows
-        image_rows = image_rows[image_rows.format=='image/jpeg']
+        # image_rows = image_rows[image_rows.format=='image/jpeg'] # removed this row because it's dropping 'jpeg' files
         #reindex appropriately and drop the rows that are NaN
         image_rows = image_rows.reset_index(drop=True)
         image_rows = image_rows.drop('format', axis=1)
@@ -18,6 +18,7 @@ def download_images_from_csv(csv_local_name, occ_file_name, download_location):
         num_not_found=0
         not_found=[['Barcode','Core ID']]
         for i in range(len(image_rows)):
+            print('.', end='') #show some progress - this takes a while
             image_url = image_rows.identifier[i]
             result = requests.get(image_url)
             coreid = image_rows.coreid[i]
