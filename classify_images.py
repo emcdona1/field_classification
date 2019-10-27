@@ -1,4 +1,5 @@
 import os
+import re
 import argparse
 import time
 from datetime import datetime
@@ -189,9 +190,9 @@ if __name__ == '__main__':
 
     # Save to file
     if not os.path.exists('predictions'):
-		os.makedirs('predictions')
-
-    filename = write_dataframe_to_CSV('predictions', 'predictions', predictions_to_write)
+        os.makedirs('predictions')
+    model_name = re.split('[/\\\\]+', model_directory)[2].split('.')[0]
+    filename = write_dataframe_to_CSV('predictions', 'predictions'+model_name, predictions_to_write)
     print('File written to \'%s\'.' % filename)
 
     # Finish execution
