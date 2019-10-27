@@ -188,6 +188,9 @@ if __name__ == '__main__':
     print('Predictions generated.')
 
     # Save to file
+    if not os.path.exists('predictions'):
+		os.makedirs('predictions')
+
     filename = write_dataframe_to_CSV('predictions', 'predictions', predictions_to_write)
     print('File written to \'%s\'.' % filename)
 
