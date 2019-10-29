@@ -4,26 +4,23 @@ import time
 import random
 import cv2
 import numpy as np
-from numpy.random import seed
 import matplotlib
-matplotlib.use('Agg') # required when running on Vortex server
 import matplotlib.pyplot as plt
 import pandas as pd
 import tensorflow as tf
 from keras import regularizers
-from keras.models import model_from_json
-from keras.models import load_model
 from scipy import interp
 from sklearn.metrics import roc_curve, confusion_matrix, auc
 from sklearn.model_selection import StratifiedKFold
 
 # setup
 SEED = 1
-seed(SEED)
+np.random.seed(SEED)
 tf.compat.v1.random.set_random_seed(SEED)
 random.seed(SEED)
 BATCH_SIZE = 64 * 32
 LEARNING_RATE = 0.0001 * 32
+matplotlib.use('Agg') # required when running on Vortex server
 
 def build_model(img_size): # create model architecture and compile it # change so all of the parameters are passed in
 	""" Creates layers for model and compiles model.
