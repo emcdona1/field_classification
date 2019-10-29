@@ -25,7 +25,6 @@ SEED = 1
 seed(SEED)
 tf.compat.v1.random.set_random_seed(SEED)
 random.seed(SEED)
-
 BATCH_SIZE = 64 * 32
 LEARNING_RATE = 0.0001 * 32
 
@@ -33,11 +32,12 @@ def build_model(img_size): # create model architecture and compile it # change s
 	""" Creates layers for model and compiles model.
 	Parameters:
 	-----
-	none
+	@ img_size : int
+	Dimensions of images being inputted (img_size x img_size in pixels)
 
 	Output:
 	-----
-	model : keras.Sequential
+	@ model : keras.Sequential
 	"""
 	model = Sequential()
 
@@ -114,15 +114,15 @@ def plot_accuracy_and_loss(history, index):
 
 	Parameters:
 	-----
-	history : History
+	@ history : History
 	History object of results, returned from the model.fit() method.
 
-	index : int
+	@ index : int
 	Current fold.
 
 	Output:
 	-----
-	none in Python
+	none (file output)
 
 	Two PNG files saved in graphs folder
 	'''
@@ -153,16 +153,16 @@ def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 
 	Parameters:
 	------
-	mean_fpr : float
+	@ mean_fpr : float
 	false positive rate (mean from all folds run so far)
 
-	mean_tpr : float
+	@ mean_tpr : float
 	true postive rate (mean from all folds run so far)
 
-	mean_auc : float
+	@ mean_auc : float
 	area under ROC curve (mean from all folds run so far)
 
-	std_auc : float
+	@ std_auc : float
 	standard deviation of AUC (mean from all folds run so far)
 
 	Output:
@@ -191,17 +191,22 @@ def import_images(img_directory, folders, img_size):
 
 	Parameters:
 	-----
-	@ img_directory
-	@ folders - names of folders
-	@ img_size - pixel dimensions
+	@ img_directory : String
+	Directory which contains the image folders
+
+	@ folders : String list of length = 2
+	Names of folders containing images (images must be in separate folders by species)
+	
+	@ img_size : int
+	Pixel dimensions of images
 
 	Output:
 	-----
-	features : numpy arrays
+	@ features : numpy arrays
 	Contains RGB values for each image
 	(dimensions: # of images x image width x image height x 3)
 	
-	labels : numpy array
+	@ labels : numpy array
 	Contains the class label (0/1) of the corresponding image
 	(# of rows = # of images, # of columns = 1)
 	"""
@@ -237,6 +242,29 @@ def import_images(img_directory, folders, img_size):
 	return [features,labels]
 
 def train_cross_validate(n_folds, img_directory, folders, img_size, num_epochs):
+	""" Import images from the file system and returns two numpy arrays containing the pixel information and classification.
+
+	Parameters:
+	-----
+	@ n_folds : int
+	Number of folds to train on (minimum of 2)
+
+	@ img_directory : String
+	Directory which contains the image folders
+
+	@ folders : String list of length = 2
+	Names of folders containing images (images must be in separate folders by species)
+	
+	@ img_size : int
+	Pixel dimensions of images
+
+	@ num_epochs : int
+	Maximum number of epochs to perform on each k-fold.
+
+	Output:
+	-----
+	none
+	"""
 	# initialize stratifying k fold
 	skf = StratifiedKFold(n_splits = n_folds, shuffle = True, random_state = SEED)
 
