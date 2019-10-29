@@ -1,5 +1,3 @@
-# TODO: get rid of globals
-
 import os
 import argparse
 import time
@@ -23,7 +21,6 @@ from sklearn.metrics import roc_curve, confusion_matrix, auc
 from sklearn.model_selection import StratifiedKFold
 
 # setup
-global img_directory, folders, img_size, n_folds, n_epochs
 SEED = 1
 seed(SEED)
 tf.compat.v1.random.set_random_seed(SEED)
@@ -32,7 +29,7 @@ random.seed(SEED)
 BATCH_SIZE = 64 * 32
 LEARNING_RATE = 0.0001 * 32
 
-def build_model(): # create model architecture and compile it # change so all of the parameters are passed in
+def build_model(img_size): # create model architecture and compile it # change so all of the parameters are passed in
 	""" Creates layers for model and compiles model.
 	Parameters:
 	-----
@@ -189,15 +186,15 @@ def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.savefig(os.path.join('graphs', 'mean_ROC.png'))
 	plt.clf()
 
-def import_images(): 
+def import_images(img_directory, folders, img_size): 
 	""" Import images from the file system and returns two numpy arrays containing the pixel information and classification.
 
 	Parameters:
 	-----
-	None
-	
-	Uses global variables of img_directory, and folders (names of folders).
-	
+	@ img_directory
+	@ folders - names of folders
+	@ img_size - pixel dimensions
+
 	Output:
 	-----
 	features : numpy arrays
@@ -210,7 +207,7 @@ def import_images():
 	"""
 	all_data = []
 	for category in folders:
-		path=os.path.join(img_directory,category) #look at each folder of images
+		path=os.path.join(img_directory, category) #look at each folder of images
 		class_index = folders.index(category)
 		for img in os.listdir(path): # look at each image
 			try:
@@ -239,14 +236,14 @@ def import_images():
 	labels = np.array(labels)
 	return [features,labels]
 
-def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
+def train_cross_validate(n_folds, img_directory, folders, img_size, num_epochs):
 	# initialize stratifying k fold
 	skf = StratifiedKFold(n_splits = n_folds, shuffle = True, random_state = SEED)
 
 	# data frame to save values of loss and validation after each fold
 	results = pd.DataFrame()
 	#obtain images
-	data = import_images()
+	data = import_images(img_directory, folders, img_size)
 	features = data[0]
 	labels = data[1]
 	print("Stored features and labels")
@@ -267,7 +264,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 
 		# Create new model each time
 		model = None
-		model = build_model()
+		model = build_model(img_size)
 		print("Training model")
 		es_callback = EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
 		history = model.fit(train_features, train_labels, \
