@@ -5,6 +5,7 @@ import random
 import cv2
 import numpy as np
 import matplotlib
+matplotlib.use('Agg') # required when running on Vortex server
 import matplotlib.pyplot as plt
 import pandas as pd
 import tensorflow as tf
@@ -20,7 +21,6 @@ tf.compat.v1.random.set_random_seed(SEED)
 random.seed(SEED)
 BATCH_SIZE = 64 * 32
 LEARNING_RATE = 0.0001 * 32
-matplotlib.use('Agg') # required when running on Vortex server
 
 def build_model(img_size): # create model architecture and compile it # change so all of the parameters are passed in
 	""" Creates layers for model and compiles model.
@@ -100,7 +100,7 @@ def build_model(img_size): # create model architecture and compile it # change s
 
 	opt = tf.keras.optimizers.Adam(lr = LEARNING_RATE, beta_1 = 0.9, beta_2 = 0.999, \
 		epsilon = 0.00001, decay = 0.0, amsgrad = False)
-	model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
+	model.compile(optimizer=opt, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 	return model
 
 def plot_accuracy_and_loss(history, index):
@@ -288,10 +288,12 @@ def train_cross_validate(n_folds, img_directory, folders, img_size, num_epochs):
 		model = None
 		model = build_model(img_size)
 		print("Training model")
-		es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
+		es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', patience = 4 * 32, restore_best_weights = True)
 		history = model.fit(train_features, train_labels, \
 			batch_size = BATCH_SIZE, epochs = num_epochs, \
-			callbacks = [es_callback], validation_data = (val_features, val_labels))
+			callbacks = [es_callback], \
+			validation_data = (val_features, val_labels), \
+			verbose = 2)
 
 		model.save('saved_models/CNN_' + str(index + 1) + '.model')
 		
