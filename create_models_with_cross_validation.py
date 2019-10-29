@@ -8,6 +8,8 @@ import random
 import cv2
 import numpy as np
 from numpy.random import seed
+import matplotlib
+matplotlib.use('Agg') # required when running on Vortex server
 import matplotlib.pyplot as plt
 import pandas as pd
 import tensorflow as tf
@@ -125,7 +127,7 @@ def plot_accuracy_and_loss(history, index):
 	-----
 	none in Python
 
-	Two PNG files saved in /graphs/ folder
+	Two PNG files saved in graphs folder
 	'''
 	# Save a graph of the testing/training accuracy during the training phase
 	plt.figure(1)
@@ -135,7 +137,7 @@ def plot_accuracy_and_loss(history, index):
 	plt.ylabel('accuracy')
 	plt.xlabel('epoch')
 	plt.legend(['train', 'validation'], loc='upper left')
-	plt.savefig('graphs/val_accuracy_' + str(index + 1) + '.png')
+	plt.savefig(os.path.join('graphs', 'val_accuracy_' + str(index + 1) + '.png'))
 	plt.clf()
 
 	# Save a graph of the testing/training loss during the training phase
@@ -146,7 +148,7 @@ def plot_accuracy_and_loss(history, index):
 	plt.ylabel('loss')
 	plt.xlabel('epoch')
 	plt.legend(['train', 'validation'], loc = 'upper left')
-	plt.savefig('graphs/val_loss_' + str(index + 1) + '.png')
+	plt.savefig(os.path.join('graphs', 'val_loss_' + str(index + 1) + '.png'))
 	plt.clf()
 
 def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
@@ -170,7 +172,7 @@ def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	------
 	none
 
-	Saves plot as `mean_ROC.png` in /graphs/ folder.
+	Saves plot as `mean_ROC.png` in graphs folder.
 	"""
 	plt.figure(3)
 	plt.plot([0, 1], [0, 1], linestyle = '--', lw = 2,
@@ -184,7 +186,7 @@ def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.ylabel('True Positive Rate')
 	plt.title('Receiver operating characteristic (ROC) curve')
 	plt.legend(loc="lower right")
-	plt.savefig('graphs/mean_ROC.png')
+	plt.savefig(os.path.join('graphs', 'mean_ROC.png'))
 	plt.clf()
 
 def import_images(): 
@@ -252,7 +254,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	tprs = []
 	aucs = []
 	mean_fpr = np.linspace(0, 1, 100)
-	cm_file = open('graphs\confusion_matrix.txt', 'w')
+	cm_file = open(os.path.join('graphs', 'confusion_matrix.txt'), 'w')
 
 	for index, (train_indices, val_indices) in enumerate(skf.split(features, labels)):
 		print("Training on fold " + str(index + 1) + "/" + str(n_folds))
@@ -317,7 +319,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 					3: 'Validation Loss', \
 					4: 'Validation Accuracy',\
 					5: 'True Negatives', 6: 'False Positives', \
-					7: 'False Negatives', 8: 'True Positives'}, axis='columns')
+					7: 'False Negatives', 8: 'True Positives'})
 	results.to_csv(os.path.join('graphs','final_acc_loss.csv'), encoding='utf-8', index=False)
 	cm_file.close()
 	
