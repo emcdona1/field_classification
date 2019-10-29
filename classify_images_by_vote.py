@@ -89,7 +89,8 @@ if __name__ == '__main__':
             print('Invalid image class value')
 
 
-
+    if not os.path.exists('predictions'):
+        os.makedirs('predictions')
     classify_images.write_dataframe_to_CSV('predictions','model_vote_predict', combined_results)
 
     # TODO: for each row in chart, vote (simple majority) and give each *image* a final classification
