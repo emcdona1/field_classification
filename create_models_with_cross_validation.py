@@ -10,9 +10,6 @@ matplotlib.use('Agg') # required when running on Vortex server
 import matplotlib.pyplot as plt
 import pandas as pd
 import tensorflow as tf
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import BatchNormalization, Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 from keras import regularizers
 from keras.models import model_from_json
 from keras.models import load_model
@@ -39,67 +36,67 @@ def build_model(img_size): # create model architecture and compile it # change s
 	-----
 	@ model : keras.Sequential
 	"""
-	model = Sequential()
+	model = tf.keras.models.Sequential()
 
 	# Image input shape: 256 x 256 x 3
 
 	# 1. Convolution Layer: 10 filters of 5px by 5px
-	model.add(Conv2D(10, (5, 5), input_shape = (img_size, img_size, 3))) 
+	model.add(tf.keras.layers.Conv2D(10, (5, 5), input_shape = (img_size, img_size, 3))) 
 	# Output shape: 10 x 252 x 252
 
 	# 2. Batch Normalization: Normalizes previous layer to have mean near 0 and S.D. near 1
-	model.add(BatchNormalization())
+	model.add(tf.keras.layers.BatchNormalization())
 	# Output shape: 10 x 252 x 252
 
 	# 3. Activation Layer: ReLU uses the formula of f(x)= x if x>0 and 0 if x<=0
 	# Apparently it's a pretty common one for CNN so we're going with the flow here
-	model.add(Activation("relu"))
+	model.add(tf.keras.layers.Activation("relu"))
 	# Output shape: 10 x 252 x 252
 
 	# 4. Pooling function: from the paper, it didn't specify function, but looking online, it seems that the default is Max so we are a-okay here
-	model.add(MaxPooling2D(pool_size = (2, 2), strides = (2, 2)))
+	model.add(tf.keras.layers.MaxPooling2D(pool_size = (2, 2), strides = (2, 2)))
 	# Output shape: 10 x 126 x 126
 
 	#-------------Next Set of Layers--------------
 	# 5. Convolution Layer: 40 filters of 5px by 5px
-	model.add(Conv2D(40, (5, 5)))
+	model.add(tf.keras.layers.Conv2D(40, (5, 5)))
 	# Output shape: 40 x 122 x 122
 
 	# 6. Batch Normalization Layer
-	model.add(BatchNormalization())
+	model.add(tf.keras.layers.BatchNormalization())
 	# Output shape: 40 x 122 x 122
 
 	# 7. Activation Layer: Same as above
-	model.add(Activation("relu"))
+	model.add(tf.keras.layers.Activation("relu"))
 	# Output shape: 40 x 122 x 122
 
 	# 8. Pooling again will decrease "image shape" by half since stride = 2
-	model.add(MaxPooling2D(pool_size = (2, 2), strides = (2, 2)))
+	model.add(tf.keras.layers.MaxPooling2D(pool_size = (2, 2), strides = (2, 2)))
 	# Output shape: 40 x 61 x 61
 
 	# ----------Hidden layers-----------
 
 	# 9. Flattening Layer: Make pooled layers (that look like stacks of grids) into one "column" to feed into ANN
-	model.add(Flatten())
+	model.add(tf.keras.layers.Flatten())
 
 	# 10. Dropout Layer: In Mathematica Dropout[] has a rate of dropping 50% of elements and multiply rest by 2
 	# !!!!!!! Currently trying to figure out how to do the multiply by 2 but moving on for now !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	model.add(Dropout(0.5, seed=SEED))
+	model.add(tf.keras.layers.Dropout(0.5, seed=SEED))
 
-	model.add(Dense(500, activation = "linear", \
+	model.add(tf.keras.layers.Dense(500, activation = "linear", \
 				activity_regularizer = regularizers.l2(0.01), \
 				kernel_regularizer = regularizers.l2(0.05))) # kernel_regularizer=regularizers.l2(0.1)))
-	model.add(Dense(500, activation = "relu", \
+	model.add(tf.keras.layers.Dense(500, activation = "relu", \
 				activity_regularizer = regularizers.l2(0.01), \
 				kernel_regularizer = regularizers.l2(0.05))) 
 	#model.add(Activation("relu"))
 
-	model.add(Dropout(0.25, seed = SEED))
+	model.add(tf.keras.layers.Dropout(0.25, seed = SEED))
 	# The output layer with 2 neurons, for 2 classes
-	model.add(Dense(2, activation = "linear", \
+	model.add(tf.keras.layers.Dense(2, activation = "linear", \
 				activity_regularizer = regularizers.l2(0.01), \
 				kernel_regularizer = regularizers.l2(0.05)))
-	model.add(Dense(2, activation = "softmax", \
+	model.add(tf.keras.layers.Dense(2, activation = "softmax", \
 				activity_regularizer = regularizers.l2(0.01), \
 				kernel_regularizer = regularizers.l2(0.05)))
 	# model.add(Activation("softmax"))
@@ -294,7 +291,7 @@ def train_cross_validate(n_folds, img_directory, folders, img_size, num_epochs):
 		model = None
 		model = build_model(img_size)
 		print("Training model")
-		es_callback = EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
+		es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
 		history = model.fit(train_features, train_labels, \
 			batch_size = BATCH_SIZE, epochs = num_epochs, \
 			callbacks = [es_callback], validation_data = (val_features, val_labels))
