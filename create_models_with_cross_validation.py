@@ -1,9 +1,8 @@
-# TODO: Turn all print statements into logs
 # TODO: get rid of globals
 
 import os
 import argparse
-import logging
+import time
 import random
 import cv2
 import numpy as np
@@ -24,13 +23,14 @@ from sklearn.metrics import roc_curve, confusion_matrix, auc
 from sklearn.model_selection import StratifiedKFold
 
 # setup
-logging.basicConfig(filename='cnn_run.log', level=logging.DEBUG) #, format='%(asctime)s %(levelname)s %(message)s')
-logger = logging.getLogger(__name__)
 global img_directory, folders, img_size, n_folds, n_epochs
 SEED = 1
 seed(SEED)
 tf.compat.v1.random.set_random_seed(SEED)
 random.seed(SEED)
+
+BATCH_SIZE = 64 * 32
+LEARNING_RATE = 0.0001 * 32
 
 def build_model(): # create model architecture and compile it # change so all of the parameters are passed in
 	""" Creates layers for model and compiles model.
@@ -107,7 +107,7 @@ def build_model(): # create model architecture and compile it # change so all of
 				kernel_regularizer = regularizers.l2(0.05)))
 	# model.add(Activation("softmax"))
 
-	opt = tf.keras.optimizers.Adam(lr = 0.0001, beta_1 = 0.9, beta_2 = 0.999, \
+	opt = tf.keras.optimizers.Adam(lr = LEARNING_RATE, beta_1 = 0.9, beta_2 = 0.999, \
 		epsilon = 0.00001, decay = 0.0, amsgrad = False)
 	model.compile(loss="sparse_categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 	return model
@@ -271,7 +271,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 		print("Training model")
 		es_callback = EarlyStopping(monitor = 'val_loss', patience = 4, restore_best_weights = True)
 		history = model.fit(train_features, train_labels, \
-			batch_size = 64, epochs = num_epochs, \
+			batch_size = BATCH_SIZE, epochs = num_epochs, \
 			callbacks = [es_callback], validation_data = (val_features, val_labels))
 
 		model.save('saved_models/CNN_' + str(index + 1) + '.model')
@@ -325,6 +325,7 @@ def train_cross_validate(n_folds, data_dir, categories, image_size, num_epochs):
 	
 	
 if __name__ == '__main__':
+	start_time = time.time()
 	parser = argparse.ArgumentParser('import images and train model')
 	parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')	
 	parser.add_argument('-c1', '--category1', default='lyco_train', help='Folder of class 1')
@@ -349,3 +350,5 @@ if __name__ == '__main__':
 	
 	train_cross_validate(n_folds, img_directory, folders, img_size, n_epochs)
 	print('c1: ' + folders[0] + ', c2: ' + folders[1])
+	end_time = time.time()
+	print('Completed in %.1f seconds' % (end_time - start_time))
