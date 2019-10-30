@@ -19,8 +19,8 @@ SEED = 1
 np.random.seed(SEED)
 tf.compat.v1.random.set_random_seed(SEED)
 random.seed(SEED)
-BATCH_SIZE = 64 * 32
-LEARNING_RATE = 0.0001 * 32
+BATCH_SIZE = 64
+LEARNING_RATE = 0.0001
 
 def build_model(img_size): # create model architecture and compile it # change so all of the parameters are passed in
 	""" Creates layers for model and compiles model.
