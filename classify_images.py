@@ -13,7 +13,7 @@ THRESHOLD = (1 - 0.7395)
 
 def process_input_arguments():
     parser = argparse.ArgumentParser('Import a model and classify images.')
-    parser.add_argument('-d', '--directory', default='images', help='Folder holding category folders')	
+    parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')	
     parser.add_argument('-c1', '--category1', help='Folder of class 1')
     parser.add_argument('-c2', '--category2', help='Folder of class 2')
     parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
