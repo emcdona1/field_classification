@@ -6,16 +6,46 @@ import time
 SPLIT = 10 # 1 image in every SPLIT is reserved for testing
 
 def process_input_arguments():
+    ''' Parse command line arguments
+    PARAMETERS:
+    -----
+    none (reads arguments from the command line)
+
+    OUTPUT:
+    -----
+    @directory - file folder in working directory containing the image folders
+    
+    @categories - list of size 2, containing the image folder names (separated by species)
+
+    @image_groups - dictionary with 4 keys, which contain the new folder names
+    '''
     parser = argparse.ArgumentParser('data to be imported')
     parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')
     parser.add_argument('-c1', '--category1', default='', help='1st folder')
     parser.add_argument('-c2', '--category2', default='', help='2nd folder')
     args = parser.parse_args()
-    image_groups = { args.category1 + 'train' : [], args.category1 + 'test': [], \
-         args.category2 + 'train': [], args.category2 + 'test': []}
-    return args.directory, [args.category1, args.category2], image_groups
+    categories = [args.category1.replace('\\','').replace('/','').replace('.',''), \
+        args.category2.replace('\\','').replace('/','').replace('.','')]
+    image_groups = { categories[0] + 'train' : [], categories[0] + 'test': [], \
+         categories[1] + 'train': [], categories[1] + 'test': []}
+    return args.directory, categories, image_groups
 
 def split_images(directory, categories, image_groups):
+    ''' Split the images evenly into training and test sets
+
+    PARAMETERS:
+    -----
+    @directory - directory containing the images
+
+    @categories - the two image folder names inputted as arguments
+
+    @image_groups - a dictionary containing four empty lists, with keys '[cat1]train' '[cat1]test', '[cat2]train' and '[cat2]test'
+
+    OUTPUT:
+    -----
+    @image_groups - the same dictionary, with lists now filled with string filenames
+
+    '''
     for category in categories:
         path = os.path.join(directory, category)
         for (idx, img_name) in enumerate(os.listdir(path)):
@@ -32,6 +62,19 @@ def split_images(directory, categories, image_groups):
     return image_groups
 
 def copy_images_to_new_directories(directory, categories, image_groups):
+    ''' Copies the images into new 'test' and 'train' folders.
+    PARAMETERS:
+    -----
+    @directory - directory containing the images
+
+    @categories - the two image folder names inputted as arguments
+
+    @image_groups - a dictionary containing four empty lists, with keys '[cat1]train' '[cat1]test', '[cat2]train' and '[cat2]test'
+
+    OUTPUT:
+    -----
+    nothing in Python (copies of images are saved in filesystem)
+    '''
     # create new images folders
     for folder in image_groups:
         if not os.path.exists(os.path.join(directory, folder)):
