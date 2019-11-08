@@ -9,7 +9,7 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow import keras
 
-THRESHOLD = (1 - 0.7395)
+THRESHOLD = 0.5
 
 def process_input_arguments():
     parser = argparse.ArgumentParser('Import a model and classify images.')
@@ -24,16 +24,16 @@ def process_input_arguments():
     folders = [args.category1, args.category2]
     img_size = args.img_size
     model_directory = args.models
+    # Map class numbers to class labels
+    class_labels = [ folders[0].split('_')[0], folders[1].split('_')[0] ]
 
-    return img_directory, folders, img_size, model_directory
+    return img_directory, folders, img_size, model_directory, class_labels
 
 if __name__ == '__main__':
     # Start execution and parse arguments
     start_time = time.time()
-    img_directory, folders, img_size, model_directory = process_input_arguments()
-    # Map class numbers to class labels
-    class_labels = [ folders[0].split('_')[0], folders[1].split('_')[0] ]
-
+    img_directory, folders, img_size, model_directory, class_labels = process_input_arguments()
+    
     # Import images
     pixel_values, actual_class, img_filenames = classify_images.import_images(img_directory, folders, img_size)
     print('Images imported.')
