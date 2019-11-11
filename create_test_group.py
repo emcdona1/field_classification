@@ -4,6 +4,7 @@ import shutil
 import time
 
 SPLIT = 10 # 1 image in every SPLIT is reserved for testing
+VERBOSE = False
 
 def process_input_arguments():
     ''' Parse command line arguments
@@ -18,16 +19,21 @@ def process_input_arguments():
     @categories - list of size 2, containing the image folder names (separated by species)
 
     @image_groups - dictionary with 4 keys, which contain the new folder names
+
+    @verbose - how much detail to print during image copying process
     '''
     parser = argparse.ArgumentParser('data to be imported')
     parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')
     parser.add_argument('-c1', '--category1', default='', help='1st folder')
     parser.add_argument('-c2', '--category2', default='', help='2nd folder')
+    parser.add_argument('-v', '--verbose', default='0', help='Verbose mode on (1) or off (0)')
     args = parser.parse_args()
     categories = [args.category1.replace('\\','').replace('/','').replace('.',''), \
         args.category2.replace('\\','').replace('/','').replace('.','')]
     image_groups = { categories[0] + 'train' : [], categories[0] + 'test': [], \
          categories[1] + 'train': [], categories[1] + 'test': []}
+    global VERBOSE
+    VERBOSE = (True if args.verbose == '1' else False)
     return args.directory, categories, image_groups
 
 def split_images(directory, categories, image_groups):
@@ -80,10 +86,17 @@ def copy_images_to_new_directories(directory, categories, image_groups):
         if not os.path.exists(os.path.join(directory, folder)):
             os.mkdir(os.path.join(directory, folder))
     for (group, img_list) in image_groups.items():
+        count = 0
         for img in img_list:
             current_loc = os.path.join(directory, group.replace('test', '').replace('train',''), img)
             new_loc = os.path.join(directory, group, img)
             shutil.copyfile(current_loc, new_loc)
+            if VERBOSE:
+                print(img + ' copied')
+            else:
+                print('.', end='', flush=True)
+        if not VERBOSE:
+            print()
         print(group + ' batch: ' + str(len(img_list)) + ' in ' + directory)
     
     
