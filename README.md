@@ -4,11 +4,10 @@ The code in this repository uses Convolutional Neural Networks (CNN) in Tensorfl
 ---
 
 ## Workflow
-
-After cloning the repository, gather test images into two folders (named by their classification, e.g. species or family).  Use image processing scripts as needed to reduce images to 256x256.
-Run *create_test_group.py* to split the image sets into two groups: training/validation (90%) and testing (10%).  (This creates four new folders in the same directory, and copies of each file.)
-Run *create_models_with_cross_validation.py* on the training/validation image sets.  (Ed.: We have typically been running 10-fold cross validation on between 100 and 500 epochs.)
-Run *classify_images_by_vote.py* on the test image set folders to gauge the model performance.  Results are saved as a CSV file in \[working-directory\]/predictions/.
+- After cloning the repository, gather test images into two folders (named by their classification, e.g. species or family).  Use image processing scripts as needed to reduce images to 256x256.
+- Run *create_test_group.py* to split the image sets into two groups: training/validation (90%) and testing (10%).  (This creates four new folders in the same directory, and copies of each file.)
+- Run *create_models_with_cross_validation.py* on the training/validation image sets.  (Ed.: We have typically been running 10-fold cross validation on between 100 and 500 epochs.)
+- Run *classify_images_by_vote.py* on the test image set folders to gauge the model performance.  Results are saved as a CSV file in \[working-directory\]/predictions/.
 
 ---
 
