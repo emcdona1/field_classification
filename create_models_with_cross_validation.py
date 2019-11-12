@@ -22,15 +22,15 @@ random.seed(SEED)
 BATCH_SIZE = 64
 LEARNING_RATE = 0.0001
 
-def parse_arguments_and_create_folders():
+def parse_arguments():
     parser = argparse.ArgumentParser('import images and train model')
     parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')	
     parser.add_argument('-c1', '--category1', help='Folder of class 1')
     parser.add_argument('-c2', '--category2', help='Folder of class 2')
     parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
+    parser.add_argument('-cm', '--color_mode', default=1, help='Color mode to use (1=color, 0=grayscale)')
     parser.add_argument('-n', '--number_folds', default=10, help='Number of folds (minimum 2) for cross validation')
     parser.add_argument('-e', '--number_epochs', default=25, help='Number of epochs')
-
     args = parser.parse_args()
 
     img_directory = args.directory
@@ -38,14 +38,17 @@ def parse_arguments_and_create_folders():
     img_size = int(args.img_size)
     n_folds = int(args.number_folds)
     n_epochs = int(args.number_epochs)
+    color = True if int(args.color_mode) == 1 else False
     
-    if not os.path.exists('graphs'):
-        os.makedirs('graphs')
-    if not os.path.exists('saved_models'):
-        os.makedirs('saved_models')
-    return n_folds, img_directory, folders, img_size, n_epochs
+    return n_folds, img_directory, folders, img_size, color, n_epochs
 
-def import_images(img_directory, folders, img_size): 
+def create_folders():
+	if not os.path.exists('graphs'):
+		os.makedirs('graphs')
+	if not os.path.exists('saved_models'):
+		os.makedirs('saved_models')
+
+def import_images(img_directory, folders, color): 
 	""" Import images from the file system and returns two numpy arrays containing the pixel information and classification.
 
 	Parameters:
@@ -55,9 +58,6 @@ def import_images(img_directory, folders, img_size):
 
 	@ folders : String list of length = 2
 	Names of folders containing images (images must be in separate folders by species)
-	
-	@ img_size : int
-	Pixel dimensions of images
 
 	Output:
 	-----
@@ -70,12 +70,12 @@ def import_images(img_directory, folders, img_size):
 	(# of rows = # of images, # of columns = 1)
 	"""
 	all_data = []
-	for category in folders:
-		path=os.path.join(img_directory, category) #look at each folder of images
-		class_index = folders.index(category)
-		for img in os.listdir(path): # look at each image
+	for (class_index, category) in enumerate(folders):
+		image_folder_path = os.path.join(img_directory, category)
+		for img in os.listdir(image_folder_path): # for each image
 			try:
-				img_array = cv2.imread(os.path.join(path,img), -1) #-1 means image is read as color
+				img_array = cv2.imread(os.path.join(image_folder_path,img), \
+					cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE)
 				img_array = img_array/255.0
 				all_data.append([img_array, class_index]) #, img])
 			except Exception as e:
@@ -98,7 +98,9 @@ def import_images(img_directory, folders, img_size):
 	features = features.reshape(-1, img_size, img_size, 3) # 3 bc three channels for RGB values
 		# -1 means "numpy figure out this dimension," so the new nparray has the dimensions of: [#_of_images rows, img_size, img_size, 3] 
 	labels = np.array(labels)
-	return [features,labels]
+	print("Stored features and labels")
+
+	return (features, labels)
 
 def build_smithsonian_model(img_size): # create model architecture and compile it # change so all of the parameters are passed in
 	""" Creates layers for model and compiles model -- this complies as closely
@@ -311,7 +313,7 @@ def save_results_to_csv(results):
     results.to_csv(os.path.join('graphs','final_acc_loss.csv'), encoding='utf-8', index=False)
 
 
-def train_cross_validate(n_folds, img_directory, folders, img_size, num_epochs):
+def train_cross_validate(n_folds, features, labels, img_size, num_epochs):
 	""" Import images from the file system and returns two numpy arrays containing the pixel information and classification.
 
 	Parameters:
@@ -340,11 +342,7 @@ def train_cross_validate(n_folds, img_directory, folders, img_size, num_epochs):
 
 	# data frame to save values of loss and validation after each fold
 	results = pd.DataFrame()
-	#obtain images
-	data = import_images(img_directory, folders, img_size)
-	features = data[0]
-	labels = data[1]
-	print("Stored features and labels")
+	
 	# for roc plotting
 	tprs = []
 	aucs = []
@@ -388,9 +386,15 @@ def train_cross_validate(n_folds, img_directory, folders, img_size, num_epochs):
 if __name__ == '__main__':
 	start_time = time.time()
 
-	n_folds, img_directory, folders, img_size, n_epochs = parse_arguments_and_create_folders()
-	
-	train_cross_validate(n_folds, img_directory, folders, img_size, n_epochs)
+	# Set up
+	n_folds, img_directory, folders, img_size, color, n_epochs = parse_arguments()
+	create_folders()
+
+	# Load in images and shuffle order
+	features, labels = import_images(img_directory, folders, color)
+
+	# Train model
+	train_cross_validate(n_folds, features, labels, img_size, n_epochs)
 	
 	# end
 	print('c1: ' + folders[0] + ', c2: ' + folders[1])
