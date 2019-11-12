@@ -5,7 +5,7 @@ import random
 import cv2
 import numpy as np
 import matplotlib
-matplotlib.use('Agg') # required when running on Vortex server
+matplotlib.use('Agg') # required when running on server
 import matplotlib.pyplot as plt
 import pandas as pd
 import tensorflow as tf
@@ -22,8 +22,87 @@ random.seed(SEED)
 BATCH_SIZE = 64
 LEARNING_RATE = 0.0001
 
-def build_model(img_size): # create model architecture and compile it # change so all of the parameters are passed in
-	""" Creates layers for model and compiles model.
+def parse_arguments_and_create_folders():
+    parser = argparse.ArgumentParser('import images and train model')
+    parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')	
+    parser.add_argument('-c1', '--category1', help='Folder of class 1')
+    parser.add_argument('-c2', '--category2', help='Folder of class 2')
+    parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
+    parser.add_argument('-n', '--number_folds', default=10, help='Number of folds (minimum 2) for cross validation')
+    parser.add_argument('-e', '--number_epochs', default=25, help='Number of epochs')
+
+    args = parser.parse_args()
+
+    img_directory = args.directory
+    folders = [args.category1, args.category2]
+    img_size = int(args.img_size)
+    n_folds = int(args.number_folds)
+    n_epochs = int(args.number_epochs)
+    
+    if not os.path.exists('graphs'):
+        os.makedirs('graphs')
+    if not os.path.exists('saved_models'):
+        os.makedirs('saved_models')
+    return n_folds, img_directory, folders, img_size, n_epochs
+
+def import_images(img_directory, folders, img_size): 
+	""" Import images from the file system and returns two numpy arrays containing the pixel information and classification.
+
+	Parameters:
+	-----
+	@ img_directory : String
+	Directory which contains the image folders
+
+	@ folders : String list of length = 2
+	Names of folders containing images (images must be in separate folders by species)
+	
+	@ img_size : int
+	Pixel dimensions of images
+
+	Output:
+	-----
+	@ features : numpy arrays
+	Contains RGB values for each image
+	(dimensions: # of images x image width x image height x 3)
+	
+	@ labels : numpy array
+	Contains the class label (0/1) of the corresponding image
+	(# of rows = # of images, # of columns = 1)
+	"""
+	all_data = []
+	for category in folders:
+		path=os.path.join(img_directory, category) #look at each folder of images
+		class_index = folders.index(category)
+		for img in os.listdir(path): # look at each image
+			try:
+				img_array = cv2.imread(os.path.join(path,img), -1) #-1 means image is read as color
+				img_array = img_array/255.0
+				all_data.append([img_array, class_index]) #, img])
+			except Exception as e:
+				pass
+	random.shuffle(all_data)
+	print("Loaded and shuffled data")
+
+	features = []
+	labels = []
+	img_names = []
+
+	#store the image features (array of RGB for each pixel) and labels into corresponding arrays
+	for data_feature, data_label in all_data:
+		features.append(data_feature)
+		labels.append(data_label)
+		# img_names.append(file_name)
+
+	#reshape into numpy array
+	features = np.array(features) #turns list into a numpy array
+	features = features.reshape(-1, img_size, img_size, 3) # 3 bc three channels for RGB values
+		# -1 means "numpy figure out this dimension," so the new nparray has the dimensions of: [#_of_images rows, img_size, img_size, 3] 
+	labels = np.array(labels)
+	return [features,labels]
+
+def build_smithsonian_model(img_size): # create model architecture and compile it # change so all of the parameters are passed in
+	""" Creates layers for model and compiles model -- this complies as closely
+	as possible to the model outlined in Schuettpelz, Frandsen, Dikow, Brown, et al. (2017).
 	Parameters:
 	-----
 	@ img_size : int
@@ -31,7 +110,7 @@ def build_model(img_size): # create model architecture and compile it # change s
 
 	Output:
 	-----
-	@ model : keras.Sequential
+	@ model : keras.Sequential object, compiled
 	"""
 	model = tf.keras.models.Sequential()
 
@@ -101,6 +180,7 @@ def build_model(img_size): # create model architecture and compile it # change s
 	opt = tf.keras.optimizers.Adam(lr = LEARNING_RATE, beta_1 = 0.9, beta_2 = 0.999, \
 		epsilon = 0.00001, decay = 0.0, amsgrad = False)
 	model.compile(optimizer=opt, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+	
 	return model
 
 def plot_accuracy_and_loss(history, index):
@@ -180,60 +260,56 @@ def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	plt.savefig(os.path.join('graphs', 'mean_ROC.png'))
 	plt.clf()
 
-def import_images(img_directory, folders, img_size): 
-	""" Import images from the file system and returns two numpy arrays containing the pixel information and classification.
+def train_model_on_images(model, train_features, train_labels, num_epochs, val_features, val_labels):
+    print("Training model")
+    es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', \
+            mode='min', min_delta = 0.05, patience = 10, restore_best_weights = True)
+    history = model.fit(train_features, train_labels, \
+            batch_size = BATCH_SIZE, epochs = num_epochs, \
+            callbacks = [es_callback], \
+            validation_data = (val_features, val_labels), \
+            verbose = 2)
+    return history
 
-	Parameters:
-	-----
-	@ img_directory : String
-	Directory which contains the image folders
+def create_confusion_matrix_and_roc_curve(model, val_features, val_labels, cm_file, tprs, mean_fpr, aucs):
+    # Compute ROC curve and area the curve
+    probas = model.predict_proba(val_features)[:,1] # 0 = definitely c1, 1 = definitely c2
+    prob_classification = [round(a + 0.001) for a in probas]
+    # Compute ROC curve and area the curve
+    fpr, tpr, thresh = roc_curve(val_labels, probas)
+    tn, fp, fn, tp = confusion_matrix(val_labels, prob_classification).ravel()
+    confusion_mat = '\t\t   Predicted\n\t\t  P\t    N\t\n\t\t  --------------\n\t\tP|  ' + str(tp)
+    confusion_mat += ' \t|  ' + str(fn)
+    confusion_mat += ' \t|\nActual\t  --------------\n\t\tN|  ' + str(fp)
+    confusion_mat += ' \t|  ' + str(tn)
+    confusion_mat += ' \t|\n\t\t  --------------\n'
+    print(confusion_mat)
+    cm_file.write(confusion_mat)
 
-	@ folders : String list of length = 2
-	Names of folders containing images (images must be in separate folders by species)
-	
-	@ img_size : int
-	Pixel dimensions of images
+    tprs.append(interp(mean_fpr, fpr, tpr))
+    tprs[-1][0] = 0.0
+    roc_auc = auc(fpr, tpr)
+    aucs.append(roc_auc)
+    # use the mean statistics to compare each model (that we train/test using 10-fold cv)
+    mean_tpr = np.mean(tprs, axis = 0)
+    mean_tpr[-1] = 1.0
+    mean_auc = auc(mean_fpr, mean_tpr)
+    std_auc = np.std(aucs)
 
-	Output:
-	-----
-	@ features : numpy arrays
-	Contains RGB values for each image
-	(dimensions: # of images x image width x image height x 3)
-	
-	@ labels : numpy array
-	Contains the class label (0/1) of the corresponding image
-	(# of rows = # of images, # of columns = 1)
-	"""
-	all_data = []
-	for category in folders:
-		path=os.path.join(img_directory, category) #look at each folder of images
-		class_index = folders.index(category)
-		for img in os.listdir(path): # look at each image
-			try:
-				img_array = cv2.imread(os.path.join(path,img), -1) #-1 means image is read as color
-				img_array = img_array/255.0
-				all_data.append([img_array, class_index]) #, img])
-			except Exception as e:
-				pass
-	random.shuffle(all_data)
-	print("Loaded and shuffled data")
+    # plot the mean ROC curve and display AUC (mean/st dev)
+    plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc)
+    return tn, fp, fn, tp
 
-	features = []
-	labels = []
-	img_names = []
+def save_results_to_csv(results):
+    results = results.rename({0: 'Fold Number',\
+                                    1: 'Training Loss',\
+                                    2: 'Training Accuracy',\
+                                    3: 'Validation Loss', \
+                                    4: 'Validation Accuracy',\
+                                    5: 'True Negatives', 6: 'False Positives', \
+                                    7: 'False Negatives', 8: 'True Positives'})
+    results.to_csv(os.path.join('graphs','final_acc_loss.csv'), encoding='utf-8', index=False)
 
-	#store the image features (array of RGB for each pixel) and labels into corresponding arrays
-	for data_feature, data_label in all_data:
-		features.append(data_feature)
-		labels.append(data_label)
-		# img_names.append(file_name)
-
-	#reshape into numpy array
-	features = np.array(features) #turns list into a numpy array
-	features = features.reshape(-1, img_size, img_size, 3) # 3 bc three channels for RGB values
-		# -1 means "numpy figure out this dimension," so the new nparray has the dimensions of: [#_of_images rows, img_size, img_size, 3] 
-	labels = np.array(labels)
-	return [features,labels]
 
 def train_cross_validate(n_folds, img_directory, folders, img_size, num_epochs):
 	""" Import images from the file system and returns two numpy arrays containing the pixel information and classification.
@@ -286,45 +362,17 @@ def train_cross_validate(n_folds, img_directory, folders, img_size, num_epochs):
 
 		# Create new model each time
 		model = None
-		model = build_model(img_size)
-		print("Training model")
-		es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', patience = 4 * 32, restore_best_weights = True)
-		history = model.fit(train_features, train_labels, \
-			batch_size = BATCH_SIZE, epochs = num_epochs, \
-			callbacks = [es_callback], \
-			validation_data = (val_features, val_labels), \
-			verbose = 2)
+		model = build_smithsonian_model(img_size)
+		history = train_model_on_images(model, train_features, train_labels, \
+			num_epochs, val_features, val_labels)
 
 		model.save('saved_models/CNN_' + str(index + 1) + '.model')
 		
 		plot_accuracy_and_loss(history, index)
 
 		# Compute ROC curve and area the curve
-		probas = model.predict_proba(val_features)[:,1] # 0 = definitely c1, 1 = definitely c2
-		prob_classification = [round(a + 0.001) for a in probas]
-		# Compute ROC curve and area the curve
-		fpr, tpr, thresh = roc_curve(val_labels, probas)
-		tn, fp, fn, tp = confusion_matrix(val_labels, prob_classification).ravel()
-		confusion_mat = '\t\t   Predicted\n\t\t  P\t    N\t\n\t\t  --------------\n\t\tP|  ' + str(tp)
-		confusion_mat += ' \t|  ' + str(fn)
-		confusion_mat += ' \t|\nActual\t  --------------\n\t\tN|  ' + str(fp)
-		confusion_mat += ' \t|  ' + str(tn)
-		confusion_mat += ' \t|\n\t\t  --------------\n'
-		print(confusion_mat)
-		cm_file.write(confusion_mat)
-
-		tprs.append(interp(mean_fpr, fpr, tpr))
-		tprs[-1][0] = 0.0
-		roc_auc = auc(fpr, tpr)
-		aucs.append(roc_auc)
-		# use the mean statistics to compare each model (that we train/test using 10-fold cv)
-		mean_tpr = np.mean(tprs, axis = 0)
-		mean_tpr[-1] = 1.0
-		mean_auc = auc(mean_fpr, mean_tpr)
-		std_auc = np.std(aucs)
-
-		# plot the mean ROC curve and display AUC (mean/st dev)
-		plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc)
+		tn, fp, fn, tp = create_confusion_matrix_and_roc_curve(model, \
+			val_features, val_labels, cm_file, tprs, mean_fpr, aucs)
 		
 		len_history = len(history.history['loss'])
 		results = results.append([[index + 1, \
@@ -334,42 +382,17 @@ def train_cross_validate(n_folds, img_directory, folders, img_size, num_epochs):
 			history.history['val_acc'][len_history - 1], \
 			tn, fp, fn, tp]])
 	
-	results = results.rename({0: 'Fold Number',\
-					1: 'Training Loss',\
-					2: 'Training Accuracy',\
-					3: 'Validation Loss', \
-					4: 'Validation Accuracy',\
-					5: 'True Negatives', 6: 'False Positives', \
-					7: 'False Negatives', 8: 'True Positives'})
-	results.to_csv(os.path.join('graphs','final_acc_loss.csv'), encoding='utf-8', index=False)
 	cm_file.close()
-	
-	
+	save_results_to_csv(results)
+
 if __name__ == '__main__':
 	start_time = time.time()
-	parser = argparse.ArgumentParser('import images and train model')
-	parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')	
-	parser.add_argument('-c1', '--category1', help='Folder of class 1')
-	parser.add_argument('-c2', '--category2', help='Folder of class 2')
-	parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
-	parser.add_argument('-n', '--number_folds', default=10, help='Number of folds (minimum 2) for cross validation')
-	parser.add_argument('-e', '--number_epochs', default=25, help='Number of epochs')
 
-	args = parser.parse_args()
-
-	img_directory = args.directory
-	folders = [args.category1, args.category2]
-	img_size = int(args.img_size)
-	n_folds = int(args.number_folds)
-	n_epochs = int(args.number_epochs)
-
-	
-	if not os.path.exists('graphs'):
-		os.makedirs('graphs')
-	if not os.path.exists('saved_models'):
-		os.makedirs('saved_models')
+	n_folds, img_directory, folders, img_size, n_epochs = parse_arguments_and_create_folders()
 	
 	train_cross_validate(n_folds, img_directory, folders, img_size, n_epochs)
+	
+	# end
 	print('c1: ' + folders[0] + ', c2: ' + folders[1])
 	end_time = time.time()
 	print('Completed in %.1f seconds' % (end_time - start_time))
