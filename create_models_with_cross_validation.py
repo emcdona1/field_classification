@@ -59,6 +59,10 @@ def import_images(img_directory, folders, color):
 	@ folders : String list of length = 2
 	Names of folders containing images (images must be in separate folders by species)
 
+	@ color : Boolean
+	True if the images should be read in as color (RBG), or False if the images should be
+	read in as grayscale (K). Color conversion is done automatically by cv2 package.
+
 	Output:
 	-----
 	@ features : numpy arrays
@@ -95,20 +99,25 @@ def import_images(img_directory, folders, color):
 
 	#reshape into numpy array
 	features = np.array(features) #turns list into a numpy array
-	features = features.reshape(-1, img_size, img_size, 3) # 3 bc three channels for RGB values
+	features = features.reshape(-1, img_size, img_size, \
+		3 if color else 1) # 3 bc three channels for RGB values
 		# -1 means "numpy figure out this dimension," so the new nparray has the dimensions of: [#_of_images rows, img_size, img_size, 3] 
 	labels = np.array(labels)
 	print("Stored features and labels")
 
 	return (features, labels)
 
-def build_smithsonian_model(img_size): # create model architecture and compile it # change so all of the parameters are passed in
+def build_smithsonian_model(img_size, color): # create model architecture and compile it # change so all of the parameters are passed in
 	""" Creates layers for model and compiles model -- this complies as closely
 	as possible to the model outlined in Schuettpelz, Frandsen, Dikow, Brown, et al. (2017).
 	Parameters:
 	-----
 	@ img_size : int
 	Dimensions of images being inputted (img_size x img_size in pixels)
+
+	@ color : Boolean
+	True if the images should be read in as color (RBG), or False if the images should be
+	read in as grayscale (K). Color conversion is done automatically by cv2 package.
 
 	Output:
 	-----
@@ -119,7 +128,8 @@ def build_smithsonian_model(img_size): # create model architecture and compile i
 	# Image input shape: 256 x 256 x 3
 
 	# 1. Convolution Layer: 10 filters of 5px by 5px
-	model.add(tf.keras.layers.Conv2D(10, (5, 5), input_shape = (img_size, img_size, 3))) 
+	model.add(tf.keras.layers.Conv2D(10, (5, 5), \
+		input_shape = (img_size, img_size, 3 if color else 1))) 
 	# Output shape: 10 x 252 x 252
 
 	# 2. Batch Normalization: Normalizes previous layer to have mean near 0 and S.D. near 1
@@ -313,7 +323,7 @@ def save_results_to_csv(results):
     results.to_csv(os.path.join('graphs','final_acc_loss.csv'), encoding='utf-8', index=False)
 
 
-def train_cross_validate(n_folds, features, labels, img_size, num_epochs):
+def train_cross_validate(n_folds, features, labels, img_size, color, num_epochs):
 	""" Import images from the file system and returns two numpy arrays containing the pixel information and classification.
 
 	Parameters:
@@ -321,12 +331,13 @@ def train_cross_validate(n_folds, features, labels, img_size, num_epochs):
 	@ n_folds : int
 	Number of folds to train on (minimum of 2)
 
-	@ img_directory : String
-	Directory which contains the image folders
+	@ features : np.array
+	Array containing the pixel values -- dimensions are (img_size x img_size x 3) if color,
+	(img_size x img_size x 1) if grayscale.
 
-	@ folders : String list of length = 2
-	Names of folders containing images (images must be in separate folders by species)
-	
+	@ labels : np.array
+	Array containing the actual labels (0/1) of the images
+
 	@ img_size : int
 	Pixel dimensions of images
 
@@ -360,7 +371,7 @@ def train_cross_validate(n_folds, features, labels, img_size, num_epochs):
 
 		# Create new model each time
 		model = None
-		model = build_smithsonian_model(img_size)
+		model = build_smithsonian_model(img_size, color)
 		history = train_model_on_images(model, train_features, train_labels, \
 			num_epochs, val_features, val_labels)
 
@@ -394,7 +405,7 @@ if __name__ == '__main__':
 	features, labels = import_images(img_directory, folders, color)
 
 	# Train model
-	train_cross_validate(n_folds, features, labels, img_size, n_epochs)
+	train_cross_validate(n_folds, features, labels, img_size, color, n_epochs)
 	
 	# end
 	print('c1: ' + folders[0] + ', c2: ' + folders[1])
