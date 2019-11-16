@@ -48,7 +48,7 @@ The program takes in the folder with all the original images, the destination fo
 
 To use the file, follow this format in the command line terminal:
 
-`python image_resize.py -f orig_image_folder_path -d dest_folder_path -s image_size`
+`python image_resize.py -sf orig_image_folder_path -df dest_folder_path -s image_size`
 
 For example:
-`python image_resize.py -f orig_images -d smaller_images -s 256`
+`python image_resize.py -sf orig_images -df smaller_images -s 256`
