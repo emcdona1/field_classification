@@ -275,7 +275,7 @@ def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 def train_model_on_images(model, train_features, train_labels, num_epochs, val_features, val_labels):
     print("Training model")
     es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', \
-            mode='min', min_delta = 0.05, patience = 10, restore_best_weights = True)
+            mode='min', min_delta = 0.05, patience = 20, restore_best_weights = True)
     history = model.fit(train_features, train_labels, \
             batch_size = BATCH_SIZE, epochs = num_epochs, \
             callbacks = [es_callback], \
