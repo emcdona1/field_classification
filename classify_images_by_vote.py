@@ -13,11 +13,12 @@ THRESHOLD = 0.5
 
 def process_input_arguments():
     parser = argparse.ArgumentParser('Import a model and classify images.')
-    parser.add_argument('-d', '--directory', default='', help='Folder containing the image folders')	
+    parser.add_argument('-d', '--directory', help='Folder containing the image folders')	
     parser.add_argument('-c1', '--category1', help='Folder of class 1 images')
     parser.add_argument('-c2', '--category2', help='Folder of class 2 images')
     parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
     parser.add_argument('-m', '--models', help='Folder of models to use')
+    # TODO: add color mode arg
     args = parser.parse_args()
 
     img_directory = args.directory
@@ -35,6 +36,7 @@ if __name__ == '__main__':
     img_directory, folders, img_size, model_directory, class_labels = process_input_arguments()
     
     # Import images
+    # TODO: Update this to use the create_models method, and to accept color mode as a param
     pixel_values, actual_class, img_filenames = classify_images.import_images(img_directory, folders, img_size)
     print('Images imported.')
 
