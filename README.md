@@ -67,3 +67,6 @@ This program depends on functions from the classify_images.py program.
 ## Contributors and licensing
 This code base has been developed by Beth McDonald ([emcdona1](https://github.com/emcdona1)) and Allison Chen ([allisonchen23](https://github.com/allisonchen23)), under the guidance of Dr. Francisco Iacobelli ([fiacobelli](https://github.com/fiacobelli)), Dr. Matt von Konrat, Dr. Rachel Trana([rtrana](https://github.com/rtrana)), and Dr. Tom Campbell.
 This code has been constructed for the Field Museum Gantz Family Collections Center, under the direction of Dr. Matt von Konrat, Head of Botanical Collections at the Field.  Please contact him for licensing inquiries.
+
+## Software requirements
+All code is written in Python 3 and has been tested in Python 3.4.3. Required Python packages: argparse, csv, cv2 (opencv-python), datetime, keras, matplotlib, numpy, os, pandas, scipy, shutil, sklearn, tensorflow, time,
