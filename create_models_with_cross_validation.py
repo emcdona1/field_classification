@@ -9,9 +9,10 @@ from keras import regularizers
 from scipy import interp
 from sklearn.metrics import roc_curve, confusion_matrix, auc
 from sklearn.model_selection import StratifiedKFold
-from image_importer import ImageLoader
 import matplotlib.pyplot as plt
 import matplotlib
+from image_importer import ImageLoader
+from cnn_model import CNNModel
 
 matplotlib.use('Agg')  # required when running on server
 
@@ -50,96 +51,6 @@ def create_folders():
         os.makedirs('graphs')
     if not os.path.exists('saved_models'):
         os.makedirs('saved_models')
-
-
-def build_smithsonian_model(img_size, color):
-    """ Creates layers for model and compiles model -- this complies as closely
-	as possible to the model outlined in Schuettpelz, Frandsen, Dikow, Brown, et al. (2017).
-	Parameters:
-	-----
-	@ img_size : int
-	Dimensions of images being inputted (img_size x img_size in pixels)
-
-	@ color : Boolean
-	True if the images should be read in as color (RBG), or False if the images should be
-	read in as grayscale (K). Color conversion is done automatically by cv2 package.
-
-	Output:
-	-----
-	@ model : keras.Sequential object, compiled
-	"""
-    # create model architecture and compile it # change so all of the parameters are passed in
-    model = tf.keras.models.Sequential()
-
-    # Image input shape: 256 x 256 x 3
-
-    # 1. Convolution Layer: 10 filters of 5px by 5px
-    model.add(tf.keras.layers.Conv2D(10, (5, 5), \
-                                     input_shape=(img_size, img_size, 3 if color else 1)))
-    # Output shape: 10 x 252 x 252
-
-    # 2. Batch Normalization: Normalizes previous layer to have mean near 0 and S.D. near 1
-    model.add(tf.keras.layers.BatchNormalization())
-    # Output shape: 10 x 252 x 252
-
-    # 3. Activation Layer: ReLU uses the formula of f(x)= x if x>0 and 0 if x<=0
-    # Apparently it's a pretty common one for CNN so we're going with the flow here
-    model.add(tf.keras.layers.Activation("relu"))
-    # Output shape: 10 x 252 x 252
-
-    # 4. Pooling function: the paper didn't specify function, but it seems that the Mathematica default is Max
-    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-    # Output shape: 10 x 126 x 126
-
-    # -------------Next Set of Layers--------------
-    # 5. Convolution Layer: 40 filters of 5px by 5px
-    model.add(tf.keras.layers.Conv2D(40, (5, 5)))
-    # Output shape: 40 x 122 x 122
-
-    # 6. Batch Normalization Layer
-    model.add(tf.keras.layers.BatchNormalization())
-    # Output shape: 40 x 122 x 122
-
-    # 7. Activation Layer: Same as above
-    model.add(tf.keras.layers.Activation("relu"))
-    # Output shape: 40 x 122 x 122
-
-    # 8. Pooling again will decrease "image shape" by half since stride = 2
-    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-    # Output shape: 40 x 61 x 61
-
-    # ----------Hidden layers-----------
-
-    # 9. Flattening Layer: Make pooled layers (that look like stacks of grids) into one "column" to feed into ANN
-    model.add(tf.keras.layers.Flatten())
-
-    # 10. Dropout Layer: In Mathematica Dropout[] has a rate of dropping 50% of elements then * by 2 -- ours does not
-    model.add(tf.keras.layers.Dropout(0.5, seed=SEED))
-
-    model.add(tf.keras.layers.Dense(500, activation="linear", \
-                                    activity_regularizer=regularizers.l2(0.01), \
-                                    kernel_regularizer=regularizers.l2(
-                                        0.05)))  # kernel_regularizer=regularizers.l2(0.1)))
-    model.add(tf.keras.layers.Dense(500, activation="relu", \
-                                    activity_regularizer=regularizers.l2(0.01), \
-                                    kernel_regularizer=regularizers.l2(0.05)))
-    # model.add(Activation("relu"))
-
-    model.add(tf.keras.layers.Dropout(0.25, seed=SEED))
-    # The output layer with 2 neurons, for 2 classes
-    model.add(tf.keras.layers.Dense(2, activation="linear", \
-                                    activity_regularizer=regularizers.l2(0.01), \
-                                    kernel_regularizer=regularizers.l2(0.05)))
-    model.add(tf.keras.layers.Dense(2, activation="softmax", \
-                                    activity_regularizer=regularizers.l2(0.01), \
-                                    kernel_regularizer=regularizers.l2(0.05)))
-    # model.add(Activation("softmax"))
-
-    opt = tf.keras.optimizers.Adam(lr=LEARNING_RATE, beta_1=0.9, beta_2=0.999, \
-                                   epsilon=0.00001, decay=0.0, amsgrad=False)
-    model.compile(optimizer=opt, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-
-    return model
 
 
 def plot_accuracy_and_loss(history, index):
@@ -321,9 +232,9 @@ def train_cross_validate(n_folds, features, labels, img_size, color, num_epochs)
         print("Validation data obtained")
 
         # Create new model each time
-        model = None
-        model = build_smithsonian_model(img_size, color)
-        history = train_model_on_images(model, train_features, train_labels, \
+        architecture = CNNModel(img_size, color, SEED, LEARNING_RATE)
+        model = architecture.model
+        history = train_model_on_images(model, train_features, train_labels,
                                         num_epochs, val_features, val_labels)
 
         model.save('saved_models/CNN_' + str(index + 1) + '.model')
@@ -331,15 +242,15 @@ def train_cross_validate(n_folds, features, labels, img_size, color, num_epochs)
         plot_accuracy_and_loss(history, index)
 
         # Compute ROC curve and area the curve
-        tn, fp, fn, tp = create_confusion_matrix_and_roc_curve(model, \
+        tn, fp, fn, tp = create_confusion_matrix_and_roc_curve(model,
                                                                val_features, val_labels, cm_file, tprs, mean_fpr, aucs)
 
         len_history = len(history.history['loss'])
-        results = results.append([[index + 1, \
-                                   history.history['loss'][len_history - 1], \
-                                   history.history['acc'][len_history - 1], \
-                                   history.history['val_loss'][len_history - 1], \
-                                   history.history['val_acc'][len_history - 1], \
+        results = results.append([[index + 1,
+                                   history.history['loss'][len_history - 1],
+                                   history.history['acc'][len_history - 1],
+                                   history.history['val_loss'][len_history - 1],
+                                   history.history['val_acc'][len_history - 1],
                                    tn, fp, fn, tp]])
 
     cm_file.close()
