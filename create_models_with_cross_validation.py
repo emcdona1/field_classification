@@ -56,19 +56,20 @@ def create_folders():
 def plot_accuracy_and_loss(history, index):
     """Create plots of accuracy and loss, save to disk.
 
-	Parameters:
-	-----
-	@ history : History
-	History object of results, returned from the model.fit() method.
+    Parameters:
+    -----
+    @ history : History
+    History object of results, returned from the model.fit() method.
 
-	@ index : int
-	Current fold.
+    @ index : int
+    Current fold.
 
-	Output:
-	-----
-	none (file output)
+    Output:
+    -----
+    none (file output)
 
-	Two PNG files saved in graphs folder"""
+    Two PNG files saved in graphs folder
+    """
 
     # Save a graph of the testing/training accuracy during the training phase
     plt.figure(1)
@@ -93,7 +94,7 @@ def plot_accuracy_and_loss(history, index):
     plt.clf()
 
 
-def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
+def plot_roc_for_kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
     """ Update and save mean ROC plot after each fold.
 
 	Parameters:
@@ -136,10 +137,10 @@ def train_model_on_images(model, train_features, train_labels, num_epochs, val_f
     print("Training model")
     # es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', \
     #        mode='min', min_delta = 0.05, patience = 20, restore_best_weights = True)
-    history = model.fit(train_features, train_labels, \
-                        batch_size=BATCH_SIZE, epochs=num_epochs, \
+    history = model.fit(train_features, train_labels,
+                        batch_size=BATCH_SIZE, epochs=num_epochs,
                         #        callbacks = [es_callback], \
-                        validation_data=(val_features, val_labels), \
+                        validation_data=(val_features, val_labels),
                         verbose=2)
     return history
 
@@ -170,7 +171,7 @@ def create_confusion_matrix_and_roc_curve(model, val_features, val_labels, cm_fi
     std_auc = np.std(aucs)
 
     # plot the mean ROC curve and display AUC (mean/st dev)
-    plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc)
+    plot_roc_for_kfold(mean_fpr, mean_tpr, mean_auc, std_auc)
     return tn, fp, fn, tp
 
 
@@ -188,28 +189,28 @@ def save_results_to_csv(results):
 def train_cross_validate(n_folds, features, labels, img_size, color, num_epochs):
     """ Import images from the file system and returns two numpy arrays containing the pixel information and classification.
 
-	Parameters:
-	-----
-	@ n_folds : int
-	Number of folds to train on (minimum of 2)
+    Parameters:
+    -----
+    @ n_folds : int
+    Number of folds to train on (minimum of 2)
 
-	@ features : np.array
-	Array containing the pixel values -- dimensions are (img_size x img_size x 3) if color,
-	(img_size x img_size x 1) if grayscale.
+    @ features : np.array
+    Array containing the pixel values -- dimensions are (img_size x img_size x 3) if color,
+    (img_size x img_size x 1) if grayscale.
 
-	@ labels : np.array
-	Array containing the actual labels (0/1) of the images
+    @ labels : np.array
+    Array containing the actual labels (0/1) of the images
 
-	@ img_size : int
-	Pixel dimensions of images
+    @ img_size : int
+    Pixel dimensions of images
 
-	@ num_epochs : int
-	Maximum number of epochs to perform on each k-fold.
+    @ num_epochs : int
+    Maximum number of epochs to perform on each k-fold.
 
-	Output:
-	-----
-	none
-	"""
+    Output:
+    -----
+    none
+    """
     # initialize stratifying k fold
     skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=SEED)
 
