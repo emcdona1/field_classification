@@ -2,17 +2,17 @@ import os
 import argparse
 import time
 import random
-import cv2
 import numpy as np
-import matplotlib
-matplotlib.use('Agg') # required when running on server
-import matplotlib.pyplot as plt
 import pandas as pd
 import tensorflow as tf
 from keras import regularizers
 from scipy import interp
 from sklearn.metrics import roc_curve, confusion_matrix, auc
 from sklearn.model_selection import StratifiedKFold
+from image_importer import ImageLoader
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg') # required when running on server
 
 # setup
 SEED = 1
@@ -21,6 +21,7 @@ tf.compat.v1.random.set_random_seed(SEED)
 random.seed(SEED)
 BATCH_SIZE = 64
 LEARNING_RATE = 0.0001
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser('import images and train model')
@@ -42,72 +43,80 @@ def parse_arguments():
     
     return n_folds, img_directory, folders, img_size, color, n_epochs
 
+
 def create_folders():
 	if not os.path.exists('graphs'):
 		os.makedirs('graphs')
 	if not os.path.exists('saved_models'):
 		os.makedirs('saved_models')
 
-def import_images(img_directory, folders, color): 
-	""" Import images from the file system and returns two numpy arrays containing the pixel information and classification.
 
-	Parameters:
-	-----
-	@ img_directory : String
-	Directory which contains the image folders
+def load_images():
+	images = ImageLoader(img_directory, folders, img_size, color, SEED)
+	return images
 
-	@ folders : String list of length = 2
-	Names of folders containing images (images must be in separate folders by species)
+	# """ Import images from the file system and returns two numpy arrays containing the pixel information and classification.
+	#
+	# Parameters:
+	# -----
+	# @ img_directory : String
+	# Directory which contains the image folders
+	#
+	# @ folders : String list of length = 2
+	# Names of folders containing images (images must be in separate folders by species)
+	#
+	# @ color : Boolean
+	# True if the images should be read in as color (RBG), or False if the images should be
+	# read in as grayscale (K). Color conversion is done automatically by cv2 package.
+	#
+	# Output:
+	# -----
+	# @ features : numpy arrays
+	# Contains RGB values for each image
+	# (dimensions: # of images x image width x image height x 3)
+	#
+	# @ labels : numpy array
+	# Contains the class label (0/1) of the corresponding image
+	# (# of rows = # of images, # of columns = 1)
+	# """
+	# all_data = []
+	# for (class_index, category) in enumerate(folders):
+	# 	image_folder_path = os.path.join(img_directory, category)
+	# 	for img in os.listdir(image_folder_path): # for each image
+	# 		try:
+	# 			img_array = cv2.imread(os.path.join(image_folder_path,img),
+	# 				cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE)
+	# 			img_array = img_array/255.0
+	# 			all_data.append([img_array, class_index]) #, img])
+	# 		except Exception as e:
+	# 			pass
+	# random.shuffle(all_data)
+	# print("Loaded and shuffled data")
+	#
+	# features = []
+	# labels = []
+	# img_names = []
+	#
+	# # store the image features (array of RGB for each pixel) and labels into corresponding arrays
+	# for data_feature, data_label in all_data:
+	# 	features.append(data_feature)
+	# 	labels.append(data_label)
+	# 	# img_names.append(file_name)
+	#
+	# # reshape into numpy array
+	# features = np.array(features) # turns list into a numpy array
+	# features = features.reshape(-1, img_size, img_size, \
+	# 	3 if color else 1)
+	# # 3 bc three channels for RGB values
+	# # -1 means "numpy figure out this dimension," so
+	# # the new nparray has the dimensions of: [#_of_images rows, img_size, img_size, 3]
+	# labels = np.array(labels)
+	# print("Stored features and labels")
+	#
+	# return (features, labels)
 
-	@ color : Boolean
-	True if the images should be read in as color (RBG), or False if the images should be
-	read in as grayscale (K). Color conversion is done automatically by cv2 package.
 
-	Output:
-	-----
-	@ features : numpy arrays
-	Contains RGB values for each image
-	(dimensions: # of images x image width x image height x 3)
-	
-	@ labels : numpy array
-	Contains the class label (0/1) of the corresponding image
-	(# of rows = # of images, # of columns = 1)
-	"""
-	all_data = []
-	for (class_index, category) in enumerate(folders):
-		image_folder_path = os.path.join(img_directory, category)
-		for img in os.listdir(image_folder_path): # for each image
-			try:
-				img_array = cv2.imread(os.path.join(image_folder_path,img), \
-					cv2.IMREAD_COLOR if color else cv2.IMREAD_GRAYSCALE)
-				img_array = img_array/255.0
-				all_data.append([img_array, class_index]) #, img])
-			except Exception as e:
-				pass
-	random.shuffle(all_data)
-	print("Loaded and shuffled data")
-
-	features = []
-	labels = []
-	img_names = []
-
-	#store the image features (array of RGB for each pixel) and labels into corresponding arrays
-	for data_feature, data_label in all_data:
-		features.append(data_feature)
-		labels.append(data_label)
-		# img_names.append(file_name)
-
-	#reshape into numpy array
-	features = np.array(features) #turns list into a numpy array
-	features = features.reshape(-1, img_size, img_size, \
-		3 if color else 1) # 3 bc three channels for RGB values
-		# -1 means "numpy figure out this dimension," so the new nparray has the dimensions of: [#_of_images rows, img_size, img_size, 3] 
-	labels = np.array(labels)
-	print("Stored features and labels")
-
-	return (features, labels)
-
-def build_smithsonian_model(img_size, color): # create model architecture and compile it # change so all of the parameters are passed in
+def build_smithsonian_model(img_size, color):
 	""" Creates layers for model and compiles model -- this complies as closely
 	as possible to the model outlined in Schuettpelz, Frandsen, Dikow, Brown, et al. (2017).
 	Parameters:
@@ -123,6 +132,7 @@ def build_smithsonian_model(img_size, color): # create model architecture and co
 	-----
 	@ model : keras.Sequential object, compiled
 	"""
+	# create model architecture and compile it # change so all of the parameters are passed in
 	model = tf.keras.models.Sequential()
 
 	# Image input shape: 256 x 256 x 3
@@ -141,11 +151,11 @@ def build_smithsonian_model(img_size, color): # create model architecture and co
 	model.add(tf.keras.layers.Activation("relu"))
 	# Output shape: 10 x 252 x 252
 
-	# 4. Pooling function: from the paper, it didn't specify function, but looking online, it seems that the default is Max so we are a-okay here
+	# 4. Pooling function: the paper didn't specify function, but it seems that the Mathematica default is Max
 	model.add(tf.keras.layers.MaxPooling2D(pool_size = (2, 2), strides = (2, 2)))
 	# Output shape: 10 x 126 x 126
 
-	#-------------Next Set of Layers--------------
+	# -------------Next Set of Layers--------------
 	# 5. Convolution Layer: 40 filters of 5px by 5px
 	model.add(tf.keras.layers.Conv2D(40, (5, 5)))
 	# Output shape: 40 x 122 x 122
@@ -167,8 +177,7 @@ def build_smithsonian_model(img_size, color): # create model architecture and co
 	# 9. Flattening Layer: Make pooled layers (that look like stacks of grids) into one "column" to feed into ANN
 	model.add(tf.keras.layers.Flatten())
 
-	# 10. Dropout Layer: In Mathematica Dropout[] has a rate of dropping 50% of elements and multiply rest by 2
-	# !!!!!!! Currently trying to figure out how to do the multiply by 2 but moving on for now !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	# 10. Dropout Layer: In Mathematica Dropout[] has a rate of dropping 50% of elements then * by 2 -- ours does not
 	model.add(tf.keras.layers.Dropout(0.5, seed=SEED))
 
 	model.add(tf.keras.layers.Dense(500, activation = "linear", \
@@ -176,8 +185,8 @@ def build_smithsonian_model(img_size, color): # create model architecture and co
 				kernel_regularizer = regularizers.l2(0.05))) # kernel_regularizer=regularizers.l2(0.1)))
 	model.add(tf.keras.layers.Dense(500, activation = "relu", \
 				activity_regularizer = regularizers.l2(0.01), \
-				kernel_regularizer = regularizers.l2(0.05))) 
-	#model.add(Activation("relu"))
+				kernel_regularizer = regularizers.l2(0.05)))
+	# model.add(Activation("relu"))
 
 	model.add(tf.keras.layers.Dropout(0.25, seed = SEED))
 	# The output layer with 2 neurons, for 2 classes
@@ -195,8 +204,9 @@ def build_smithsonian_model(img_size, color): # create model architecture and co
 	
 	return model
 
+
 def plot_accuracy_and_loss(history, index):
-	''' Create plots of accuracy and loss, save to disk.
+	"""Create plots of accuracy and loss, save to disk.
 
 	Parameters:
 	-----
@@ -210,8 +220,8 @@ def plot_accuracy_and_loss(history, index):
 	-----
 	none (file output)
 
-	Two PNG files saved in graphs folder
-	'''
+	Two PNG files saved in graphs folder"""
+
 	# Save a graph of the testing/training accuracy during the training phase
 	plt.figure(1)
 	plt.plot(history.history['acc'])
@@ -233,6 +243,7 @@ def plot_accuracy_and_loss(history, index):
 	plt.legend(['train', 'validation'], loc = 'upper left')
 	plt.savefig(os.path.join('graphs', 'val_loss_' + str(index + 1) + '.png'))
 	plt.clf()
+
 
 def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 	""" Update and save mean ROC plot after each fold.
@@ -274,14 +285,15 @@ def plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc):
 
 def train_model_on_images(model, train_features, train_labels, num_epochs, val_features, val_labels):
     print("Training model")
-    es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', \
-            mode='min', min_delta = 0.05, patience = 20, restore_best_weights = True)
+    # es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', \
+    #        mode='min', min_delta = 0.05, patience = 20, restore_best_weights = True)
     history = model.fit(train_features, train_labels, \
             batch_size = BATCH_SIZE, epochs = num_epochs, \
-            callbacks = [es_callback], \
+    #        callbacks = [es_callback], \
             validation_data = (val_features, val_labels), \
             verbose = 2)
     return history
+
 
 def create_confusion_matrix_and_roc_curve(model, val_features, val_labels, cm_file, tprs, mean_fpr, aucs):
     # Compute ROC curve and area the curve
@@ -312,13 +324,14 @@ def create_confusion_matrix_and_roc_curve(model, val_features, val_labels, cm_fi
     plot_ROC_for_Kfold(mean_fpr, mean_tpr, mean_auc, std_auc)
     return tn, fp, fn, tp
 
+
 def save_results_to_csv(results):
-    results = results.rename({0: 'Fold Number',\
-                                    1: 'Training Loss',\
-                                    2: 'Training Accuracy',\
-                                    3: 'Validation Loss', \
-                                    4: 'Validation Accuracy',\
-                                    5: 'True Negatives', 6: 'False Positives', \
+    results = results.rename({0: 'Fold Number',
+                                    1: 'Training Loss',
+                                    2: 'Training Accuracy',
+                                    3: 'Validation Loss',
+                                    4: 'Validation Accuracy',
+                                    5: 'True Negatives', 6: 'False Positives',
                                     7: 'False Negatives', 8: 'True Positives'})
     results.to_csv(os.path.join('graphs','final_acc_loss.csv'), encoding='utf-8', index=False)
 
@@ -394,6 +407,7 @@ def train_cross_validate(n_folds, features, labels, img_size, color, num_epochs)
 	cm_file.close()
 	save_results_to_csv(results)
 
+
 if __name__ == '__main__':
 	start_time = time.time()
 
@@ -402,11 +416,14 @@ if __name__ == '__main__':
 	create_folders()
 
 	# Load in images and shuffle order
-	features, labels = import_images(img_directory, folders, color)
+	images = load_images()
+	features = images.features
+	labels = images.labels
+	# features, labels = import_images(img_directory, folders, color)
 
 	# Train model
 	train_cross_validate(n_folds, features, labels, img_size, color, n_epochs)
-	
+
 	# end
 	print('c1: ' + folders[0] + ', c2: ' + folders[1])
 	end_time = time.time()
