@@ -5,14 +5,14 @@ import random
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from keras import regularizers
 from scipy import interp
 from sklearn.metrics import roc_curve, confusion_matrix, auc
 from sklearn.model_selection import StratifiedKFold
 import matplotlib.pyplot as plt
 import matplotlib
 from image_importer import ImageLoader
-from cnn_model import CNNModel
+from smithsonian_model import SmithsonianModel
+from data_plotter import ChartCreator
 
 matplotlib.use('Agg')  # required when running on server
 
@@ -211,6 +211,8 @@ def train_cross_validate(n_folds, features, labels, img_size, color, num_epochs)
     -----
     none
     """
+    charts = ChartCreator()
+
     # initialize stratifying k fold
     skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=SEED)
 
@@ -233,18 +235,19 @@ def train_cross_validate(n_folds, features, labels, img_size, color, num_epochs)
         print("Validation data obtained")
 
         # Create new model each time
-        architecture = CNNModel(img_size, color, SEED, LEARNING_RATE)
+        architecture = SmithsonianModel(img_size, color_mode=color, seed=SEED, lr=LEARNING_RATE)
         model = architecture.model
         history = train_model_on_images(model, train_features, train_labels,
                                         num_epochs, val_features, val_labels)
 
         model.save('saved_models/CNN_' + str(index + 1) + '.model')
 
-        plot_accuracy_and_loss(history, index)
+        charts.plot_accuracy_and_loss(history, index)
 
         # Compute ROC curve and area the curve
-        tn, fp, fn, tp = create_confusion_matrix_and_roc_curve(model,
-                                                               val_features, val_labels, cm_file, tprs, mean_fpr, aucs)
+        tn, fp, fn, tp = charts.create_confusion_matrix_and_roc_curve(model,
+                                                                      val_features, val_labels, cm_file,
+                                                                      tprs, mean_fpr, aucs)
 
         len_history = len(history.history['loss'])
         results = results.append([[index + 1,
