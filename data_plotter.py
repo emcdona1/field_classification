@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 
 class ChartCreator:
     def __init__(self):
-        # for roc plotting
         self.tpr = []
         self.auc = []
         self.mean_fpr = np.linspace(0, 1, 100)
@@ -16,7 +15,7 @@ class ChartCreator:
         self.history = None
         self.results = pd.DataFrame()
 
-    def update(self, history, index, tp, fn, fp, tn):
+    def update_values(self, history, index, tp, fn, fp, tn):
         self.history = history
         self.index = (index + 1)  # Change index from 0-based to 1-based
 
@@ -30,22 +29,7 @@ class ChartCreator:
                                              tn, fp, fn, tp]])
 
     def plot_accuracy(self):
-        """Create plot of training/validation accuracy, and save it to the file system.
-
-                Parameters:
-                -----
-                @ history : History
-                History object of results, returned from the model.fit() method.
-
-                @ index : int
-                Current fold.
-
-                Output:
-                -----
-                none (file output)
-
-                A PNG file saved in graphs folder
-                """
+        """Create plot of training/validation accuracy, and save it to the file system."""
         plt.figure(1)
         plt.plot(self.history.history['acc'])
         plt.plot(self.history.history['val_acc'])
@@ -57,22 +41,7 @@ class ChartCreator:
         plt.clf()
 
     def plot_loss(self):
-        """Create plot of training/validation loss, and save it to the file system.
-
-        Parameters:
-        -----
-        @ history : History
-        History object of results, returned from the model.fit() method.
-
-        @ index : int
-        Current fold.
-
-        Output:
-        -----
-        none (file output)
-
-        A PNG file saved in graphs folder
-        """
+        """Create plot of training/validation loss, and save it to the file system."""
         plt.figure(2)
         plt.plot(self.history.history['loss'])
         plt.plot(self.history.history['val_loss'])
@@ -140,10 +109,6 @@ class ChartCreator:
 
         self.plot_roc(mean_auc, mean_auc_std, mean_tpr)
 
-    def generate_confusion_matrix(self, validation_labels, predicted_classification):
-        tn, fp, fn, tp = confusion_matrix(validation_labels, predicted_classification).ravel()
-        return tn, fp, fn, tp
-
     def save_results_to_csv(self):
         self.results.rename(columns={0: 'Fold Number', 1: 'Training Loss', 2: 'Training Accuracy',
                                      3: 'Validation Loss', 4: 'Validation Accuracy',
@@ -153,8 +118,8 @@ class ChartCreator:
 
     def update_and_save_graphs(self, history, index, validation_labels,
                                validation_predicted_classification, validation_predicted_probability):
-        tn, fp, fn, tp = self.generate_confusion_matrix(validation_labels, validation_predicted_classification)
-        self.update(history, index, tp, fn, fp, tn)
+        tn, fp, fn, tp = confusion_matrix(validation_labels, validation_predicted_classification).ravel()
+        self.update_values(history, index, tp, fn, fp, tn)
         self.plot_accuracy()
         self.plot_loss()
         self.generate_roc_and_auc(validation_labels, validation_predicted_probability)
