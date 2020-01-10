@@ -3,13 +3,12 @@ import argparse
 import time
 import random
 import numpy as np
-import pandas as pd
 import tensorflow as tf
 from sklearn.model_selection import StratifiedKFold
 import matplotlib
-from image_importer import ImageLoader
-from smithsonian_model import SmithsonianModel
-from data_plotter import ChartCreator
+from image_handling import ImageImporter
+from neural_network_models import SmithsonianModel
+from data_and_visualization_io import DataChartIO
 
 matplotlib.use('Agg')  # required when running on server
 
@@ -50,16 +49,15 @@ def create_folders():
         os.makedirs('saved_models')
 
 
-def train_cross_validate(index, training_idx_list, validation_idx_list, charts, n_folds,
-                         features, labels, img_size, color, num_epochs):
-    print("Training on fold " + str(index + 1) + "/" + str(n_folds))
+def model_training(num_epochs):
+    # set up training/validation
     train_features = features[training_idx_list]
     train_labels = labels[training_idx_list]
     validation_features = features[validation_idx_list]
     validation_labels = labels[validation_idx_list]
-
     architecture = SmithsonianModel(img_size, color_mode=color, seed=SEED, lr=LEARNING_RATE)
-    print("Training model")
+
+    print('Training model for fold' + str(index + 1) + '/' + str(n_folds))
     # es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', \
     #        mode='min', min_delta = 0.05, patience = 20, restore_best_weights = True)
     history = architecture.model.fit(train_features, train_labels,
@@ -69,10 +67,13 @@ def train_cross_validate(index, training_idx_list, validation_idx_list, charts, 
                                      verbose=2)
     architecture.model.save(os.path.join('saved_models', 'CNN_' + str(index + 1) + '.model'))
 
-    # Classify the validation set
-    validation_predicted_probability = architecture.model.predict_proba(validation_features)[:, 1]
-    validation_predicted_classification = [round(a + 0.0001) for a in validation_predicted_probability]
+    return architecture.model, history, validation_features, validation_labels
 
+
+def model_validation():
+    # Classify the validation set
+    validation_predicted_probability = model.predict_proba(validation_features)[:, 1]
+    validation_predicted_classification = [round(a + 0.0001) for a in validation_predicted_probability]
     charts.update_and_save_graphs(history, index, validation_labels,
                                   validation_predicted_classification, validation_predicted_probability)
 
@@ -85,16 +86,16 @@ if __name__ == '__main__':
     create_folders()
 
     # Load in images and shuffle order
-    images = ImageLoader(img_directory, folders, img_size, color, SEED)
+    images = ImageImporter(img_directory, folders, img_size, color, SEED)
     features = images.features
     labels = images.labels
 
     # Train model
     skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=SEED)
-    charts = ChartCreator()
+    charts = DataChartIO()
     for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(features, labels)):
-        train_cross_validate(index, training_idx_list, validation_idx_list, charts, n_folds,
-                             features, labels, img_size, color, n_epochs)
+        model, history, validation_features, validation_labels = model_training(n_epochs)
+        model_validation()
     charts.save_results_to_csv()
 
     # end

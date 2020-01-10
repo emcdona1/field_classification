@@ -1,4 +1,4 @@
-from image_importer import ColorMode
+from image_handling import ColorMode
 import tensorflow as tf
 from keras import regularizers
 

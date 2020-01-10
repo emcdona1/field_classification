@@ -6,7 +6,7 @@ from sklearn.metrics import roc_curve, confusion_matrix, auc
 import matplotlib.pyplot as plt
 
 
-class ChartCreator:
+class DataChartIO:
     def __init__(self):
         self.tpr = []
         self.auc = []
