@@ -1,6 +1,6 @@
 import os
 import argparse
-import time
+from timer import Timer
 import random
 import numpy as np
 import tensorflow as tf
@@ -19,6 +19,30 @@ tf.compat.v1.random.set_random_seed(SEED)
 random.seed(SEED)
 BATCH_SIZE = 64
 LEARNING_RATE = 0.0001
+
+
+def main() -> None:
+    timer = Timer('TrainingModels')
+    # Set up
+    n_folds, img_directory, folders, img_size, color, n_epochs = parse_arguments()
+    create_folders()
+
+    # Load in images and shuffle order
+    images = ImageImporter(img_directory, folders, img_size, color, SEED)
+    features = images.features
+    labels = images.labels
+
+    # Train model
+    skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=SEED)
+    charts = DataChartIO()
+    for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(features, labels)):
+        model, history, validation_features, validation_labels = model_training(n_epochs)
+        model_validation()
+    charts.save_results_to_csv()
+
+    # end
+    print('c1: ' + folders[0] + ', c2: ' + folders[1])
+    timer.stop_timer()
 
 
 def parse_arguments():
@@ -79,26 +103,4 @@ def model_validation():
 
 
 if __name__ == '__main__':
-    start_time = time.time()
-
-    # Set up
-    n_folds, img_directory, folders, img_size, color, n_epochs = parse_arguments()
-    create_folders()
-
-    # Load in images and shuffle order
-    images = ImageImporter(img_directory, folders, img_size, color, SEED)
-    features = images.features
-    labels = images.labels
-
-    # Train model
-    skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=SEED)
-    charts = DataChartIO()
-    for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(features, labels)):
-        model, history, validation_features, validation_labels = model_training(n_epochs)
-        model_validation()
-    charts.save_results_to_csv()
-
-    # end
-    print('c1: ' + folders[0] + ', c2: ' + folders[1])
-    end_time = time.time()
-    print('Completed in %.1f seconds' % (end_time - start_time))
+    main()
