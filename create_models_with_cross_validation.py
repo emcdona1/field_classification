@@ -22,48 +22,49 @@ LEARNING_RATE = 0.0001
 
 
 def main() -> None:
-    timer = Timer('TrainingModels')
     # Set up
-    n_folds, img_directory, folders, img_size, color, n_epochs = parse_arguments()
+    timer = Timer('TrainingModels')
+    parser = initialize_argparse()
+    args = parser.parse_args()
+    color = False if args.bw else True
+    classes = (args.c1, args.c2)
     create_folders()
 
     # Load in images and shuffle order
-    images = ImageImporter(img_directory, folders, img_size, color, SEED)
+    images = ImageImporter(args.dir, classes, args.img_size, color, SEED)
     features = images.features
     labels = images.labels
 
     # Train model
-    skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=SEED)
+    skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=SEED)
     charts = DataChartIO()
     for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(features, labels)):
-        model, history, validation_features, validation_labels = model_training(n_epochs)
+        model, history, validation_features, validation_labels = model_training(args.n_epochs)
         model_validation()
     charts.save_results_to_csv()
 
     # end
-    print('c1: ' + folders[0] + ', c2: ' + folders[1])
+    print('c1: ' + classes[0] + ', c2: ' + classes[1])
     timer.stop_timer()
 
 
-def parse_arguments():
-    parser = argparse.ArgumentParser('import images and train model')
-    parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')
-    parser.add_argument('-c1', '--category1', help='Folder of class 1')
-    parser.add_argument('-c2', '--category2', help='Folder of class 2')
-    parser.add_argument('-s', '--img_size', default=256, help='Image dimension in pixels')
-    parser.add_argument('-cm', '--color_mode', default=1, help='Color mode to use (1=color, 0=grayscale)')
-    parser.add_argument('-n', '--number_folds', default=10, help='Number of folds (minimum 2) for cross validation')
-    parser.add_argument('-e', '--number_epochs', default=25, help='Number of epochs')
-    args = parser.parse_args()
+def initialize_argparse() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        'Create and train CNNs for binary classification of images, using cross-fold validation.')
+    parser.add_argument('dir', default='', help='Base directory containing image directories.')
+    parser.add_argument('c1', '--category1', help='Directory name containing images in class 1')
+    parser.add_argument('c2', '--category2', help='Directory name containing images in class 2')
+    parser.add_argument('-s', '--img_size', type=int, default=256,
+                        help='Image dimension in pixels (must be square)')
+    parser.add_argument('-f', '--n_folds', type=int, default=10,
+                        help='Number of folds (minimum 2) for cross validation')
+    parser.add_argument('-e', '--n_epochs', type=int, default=25, help='Number of epochs')
 
-    img_directory = args.directory
-    folders = [args.category1, args.category2]
-    img_size = int(args.img_size)
-    n_folds = int(args.number_folds)
-    n_epochs = int(args.number_epochs)
-    color = True if int(args.color_mode) == 1 else False
+    color_mode_group = parser.add_mutually_exclusive_group()
+    color_mode_group.add_argument('-color', action='store_true')
+    color_mode_group.add_argument('-bw', action='store_true')
 
-    return n_folds, img_directory, folders, img_size, color, n_epochs
+    return parser
 
 
 def create_folders():
