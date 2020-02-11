@@ -5,8 +5,6 @@ import random
 import numpy as np
 
 
-# todo: use this one, delete image_set asap
-
 class ColorMode(enum.Enum):
     RGB = 1
     BW = 2
