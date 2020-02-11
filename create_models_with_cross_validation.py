@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import StratifiedKFold
 import matplotlib
-from image_handling import import_images, LabeledImages
+from image_handling import import_images
 from neural_network_models import SmithsonianModel
 from data_and_visualization_io import DataChartIO
 
@@ -17,8 +17,6 @@ SEED = 1
 np.random.seed(SEED)
 tf.compat.v1.random.set_random_seed(SEED)
 random.seed(SEED)
-BATCH_SIZE = 64
-LEARNING_RATE = 0.0001
 
 
 def main() -> None:
@@ -38,10 +36,8 @@ def main() -> None:
     skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=SEED)
     charts = DataChartIO()
     for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(features, labels)):
-        model, history, validation_features, validation_labels = model_training(index, args.n_epochs, args.n_folds,
-                                                                                images.features, images.labels,
-                                                                                training_idx_list, validation_idx_list,
-                                                                                args.img_size, color)
+        model, history, validation_features, validation_labels = model_training(index, args, color, images,
+                                                                                training_idx_list, validation_idx_list)
         model_validation(model, validation_features, charts, history, index, validation_labels)
     charts.save_results_to_csv()
 
@@ -54,13 +50,15 @@ def initialize_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         'Create and train CNNs for binary classification of images, using cross-fold validation.')
     parser.add_argument('dir', default='', help='Base directory containing image to classify.')
-    parser.add_argument('c1', help='Directory name containing images in class 1')
-    parser.add_argument('c2', help='Directory name containing images in class 2')
+    parser.add_argument('c1', help='Directory name containing images in class 1.')
+    parser.add_argument('c2', help='Directory name containing images in class 2.')
     parser.add_argument('-s', '--img_size', type=int, default=256,
-                        help='Image dimension in pixels (must be square)')
+                        help='Image dimension in pixels (must be square).')
     parser.add_argument('-f', '--n_folds', type=int, default=10,
-                        help='Number of folds (minimum 2) for cross validation')
-    parser.add_argument('-e', '--n_epochs', type=int, default=25, help='Number of epochs')
+                        help='Number of folds (minimum 2) for cross validation.')
+    parser.add_argument('-e', '--n_epochs', type=int, default=25, help='Number of epochs.')
+    parser.add_argument('-b', '--batch_size', type=int, default=64, help='Batch size for training.')
+    parser.add_argument('-lr', '--learning_rate', type=float, default=0.0001, help='Learning rate for training.')
 
     color_mode_group = parser.add_mutually_exclusive_group()
     color_mode_group.add_argument('-color', action='store_true', help='(default) Images are in RGB color mode.')
@@ -76,20 +74,19 @@ def create_folders():
         os.makedirs('saved_models')
 
 
-def model_training(curr_epoch, n_epochs, n_folds, features, labels, training_idx_list, validation_idx_list, img_size,
-                   color):
+def model_training(curr_epoch, args, color, images, training_idx_list, validation_idx_list):
     # set up training/validation
-    train_features = features[training_idx_list]
-    train_labels = labels[training_idx_list]
-    validation_features = features[validation_idx_list]
-    validation_labels = labels[validation_idx_list]
-    architecture = SmithsonianModel(img_size, color_mode=color, seed=SEED, lr=LEARNING_RATE)
+    train_features = images.features[training_idx_list]
+    train_labels = images.labels[training_idx_list]
+    validation_features = images.features[validation_idx_list]
+    validation_labels = images.labels[validation_idx_list]
+    architecture = SmithsonianModel(args.img_size, color_mode=color, seed=SEED, lr=args.learning_rate)
 
-    print('Training model for fold' + str(curr_epoch + 1) + '/' + str(n_folds))
+    print('Training model for fold' + str(curr_epoch + 1) + '/' + str(args.n_folds))
     # es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', \
     #        mode='min', min_delta = 0.05, patience = 20, restore_best_weights = True)
     history = architecture.model.fit(train_features, train_labels,
-                                     batch_size=BATCH_SIZE, epochs=n_epochs,
+                                     batch_size=args.batch_size, epochs=args.n_epochs,
                                      #        callbacks = [es_callback], \
                                      validation_data=(validation_features, validation_labels),
                                      verbose=2)
