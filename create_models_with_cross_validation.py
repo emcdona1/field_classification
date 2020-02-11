@@ -51,9 +51,9 @@ def main() -> None:
 def initialize_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         'Create and train CNNs for binary classification of images, using cross-fold validation.')
-    parser.add_argument('dir', default='', help='Base directory containing image directories.')
-    parser.add_argument('c1', '--category1', help='Directory name containing images in class 1')
-    parser.add_argument('c2', '--category2', help='Directory name containing images in class 2')
+    parser.add_argument('dir', default='', help='Base directory containing image to classify.')
+    parser.add_argument('c1', help='Directory name containing images in class 1')
+    parser.add_argument('c2', help='Directory name containing images in class 2')
     parser.add_argument('-s', '--img_size', type=int, default=256,
                         help='Image dimension in pixels (must be square)')
     parser.add_argument('-f', '--n_folds', type=int, default=10,
@@ -61,8 +61,8 @@ def initialize_argparse() -> argparse.ArgumentParser:
     parser.add_argument('-e', '--n_epochs', type=int, default=25, help='Number of epochs')
 
     color_mode_group = parser.add_mutually_exclusive_group()
-    color_mode_group.add_argument('-color', action='store_true')
-    color_mode_group.add_argument('-bw', action='store_true')
+    color_mode_group.add_argument('-color', action='store_true', help='(default) Images are in RGB color mode.')
+    color_mode_group.add_argument('-bw', action='store_true', help='Images are in grayscale color mode.')
 
     return parser
 
