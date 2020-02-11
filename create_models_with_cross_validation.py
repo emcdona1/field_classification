@@ -36,9 +36,8 @@ def main() -> None:
     skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=SEED)
     charts = DataChartIO()
     for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(features, labels)):
-        model, history, validation_features, validation_labels = model_training(index, args, color, images,
-                                                                                training_idx_list, validation_idx_list)
-        model_validation(model, validation_features, charts, history, index, validation_labels)
+        model_training_results = model_training(index, args, color, images, training_idx_list, validation_idx_list)
+        model_validation(model_training_results, charts, index)
     charts.save_results_to_csv()
 
     # end
@@ -92,10 +91,11 @@ def model_training(curr_epoch, args, color, images, training_idx_list, validatio
                                      verbose=2)
     architecture.model.save(os.path.join('saved_models', 'CNN_' + str(curr_epoch + 1) + '.model'))
 
-    return architecture.model, history, validation_features, validation_labels
+    return (architecture.model, history, validation_features, validation_labels)
 
 
-def model_validation(model, validation_features, charts, history, index, validation_labels):
+def model_validation(model_training_results, charts, index):
+    model, history, validation_features, validation_labels = model_training_results
     # Classify the validation set
     validation_predicted_probability = model.predict_proba(validation_features)[:, 1]
     validation_predicted_classification = [round(a + 0.0001) for a in validation_predicted_probability]
