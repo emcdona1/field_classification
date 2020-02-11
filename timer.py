@@ -8,7 +8,7 @@ class Timer:
 
     def stop_timer(self):
         end_time = time.time()
-        print('Completed in %.1f seconds' % (end_time - self.start_time))
+        print('Completed %s in %.1f seconds' % (self.name, end_time - self.start_time))
 
     def start_time(self):
         self.start_time = time.time()
