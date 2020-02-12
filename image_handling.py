@@ -10,7 +10,7 @@ class ColorMode(enum.Enum):
     BW = 2
 
 
-def import_images(directory, folders, img_size, import_in_color, seed):
+def import_images(directory, folders, import_in_color, seed):
     color_mode = ColorMode.RGB if import_in_color else ColorMode.BW
     random.seed(seed)
     imgset = LabeledImages()

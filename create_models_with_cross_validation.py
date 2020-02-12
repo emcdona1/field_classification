@@ -24,19 +24,17 @@ def main() -> None:
     timer = Timer('TrainingModels')
     parser = initialize_argparse()
     args = parser.parse_args()
-    color = False if args.bw else True
+    args.color = False if args.bw else True
     create_folders()
 
     # Load in images and shuffle order
-    images = import_images(args.dir, (args.c1, args.c2), args.img_size, color, SEED)
-    features = images.features
-    labels = images.labels
+    images = import_images(args.dir, (args.c1, args.c2), args.color, SEED)
 
     # Train model
     skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=SEED)
     charts = Charts()
-    for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(features, labels)):
-        model_training_results = model_training(index, args, color, images, training_idx_list, validation_idx_list)
+    for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(images.features, images.labels)):
+        model_training_results = model_training(index, args, images, training_idx_list, validation_idx_list)
         model_validation(model_training_results, charts, index, args)
     charts.finalize()
 
@@ -73,13 +71,13 @@ def create_folders() -> None:
         os.makedirs('saved_models')
 
 
-def model_training(curr_epoch, args, color, images, training_idx_list, validation_idx_list):
+def model_training(curr_epoch, args, images, training_idx_list, validation_idx_list):
     # set up training/validation
     train_features = images.features[training_idx_list]
     train_labels = images.labels[training_idx_list]
     validation_features = images.features[validation_idx_list]
     validation_labels = images.labels[validation_idx_list]
-    architecture = SmithsonianModel(args.img_size, color_mode=color, seed=SEED, lr=args.learning_rate)
+    architecture = SmithsonianModel(args.img_size, color_mode=args.color, seed=SEED, lr=args.learning_rate)
 
     print('Training model for fold %i/%i' % (curr_epoch + 1, args.n_folds))
     # es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', \
