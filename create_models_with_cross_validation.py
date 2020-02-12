@@ -34,7 +34,14 @@ def main() -> None:
     skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=SEED)
     charts = Charts()
     for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(images.features, images.labels)):
-        model_training_results = model_training(index, args, images, training_idx_list, validation_idx_list)
+        # set up training/validation groups
+        train_features = images.features[training_idx_list]
+        train_labels = images.labels[training_idx_list]
+        validation_features = images.features[validation_idx_list]
+        validation_labels = images.labels[validation_idx_list]
+
+        model_training_results = model_training(index, args, train_features, train_labels,
+                                                validation_features, validation_labels)
         model_validation(model_training_results, charts, index, args)
     charts.finalize()
 
@@ -71,15 +78,10 @@ def create_folders() -> None:
         os.makedirs('saved_models')
 
 
-def model_training(curr_epoch, args, images, training_idx_list, validation_idx_list):
-    # set up training/validation
-    train_features = images.features[training_idx_list]
-    train_labels = images.labels[training_idx_list]
-    validation_features = images.features[validation_idx_list]
-    validation_labels = images.labels[validation_idx_list]
+def model_training(curr_fold, args, train_features, train_labels, validation_features, validation_labels):
     architecture = SmithsonianModel(args.img_size, color_mode=args.color, seed=SEED, lr=args.learning_rate)
 
-    print('Training model for fold %i/%i' % (curr_epoch + 1, args.n_folds))
+    print('Training model for fold %i of %i' % (curr_fold + 1, args.n_folds))
     # es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', \
     #        mode='min', min_delta = 0.05, patience = 20, restore_best_weights = True)
     history = architecture.model.fit(train_features, train_labels,
@@ -87,7 +89,7 @@ def model_training(curr_epoch, args, images, training_idx_list, validation_idx_l
                                      #        callbacks = [es_callback], \
                                      validation_data=(validation_features, validation_labels),
                                      verbose=2)
-    architecture.model.save(os.path.join('saved_models', 'CNN_%i.model' % curr_epoch + 1))
+    architecture.model.save(os.path.join('saved_models', 'CNN_%i.model' % curr_fold + 1))
 
     return architecture.model, history, validation_features, validation_labels
 
