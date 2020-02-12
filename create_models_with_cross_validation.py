@@ -8,7 +8,7 @@ from sklearn.model_selection import StratifiedKFold
 import matplotlib
 from image_handling import import_images
 from neural_network_models import SmithsonianModel
-from data_and_visualization_io import DataChartIO, Charts
+from data_and_visualization_io import Charts
 
 matplotlib.use('Agg')  # required when running on server
 
@@ -66,7 +66,7 @@ def initialize_argparse() -> argparse.ArgumentParser:
     return parser
 
 
-def create_folders():
+def create_folders() -> None:
     if not os.path.exists('graphs'):
         os.makedirs('graphs')
     if not os.path.exists('saved_models'):
@@ -94,7 +94,7 @@ def model_training(curr_epoch, args, color, images, training_idx_list, validatio
     return architecture.model, history, validation_features, validation_labels
 
 
-def model_validation(model_training_results, charts, index, args):
+def model_validation(model_training_results, charts, index, args) -> None:
     model, history, validation_features, validation_labels = model_training_results
     # Use the model to classify the validation set
     # Keep only col 1 - prediction probability of class 0

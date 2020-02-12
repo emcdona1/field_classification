@@ -1,5 +1,4 @@
 import os
-import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix
 import matplotlib.pyplot as plt
@@ -14,13 +13,16 @@ class Charts:
         self.all_charts.append(LossChart())
         self.all_charts.append(ConfusionMatrix())
 
-    def update(self, history, index, validation_labels, prediction_probability, args):
+    def update(self, history, index, validation_labels, prediction_probability, args) -> None:
         for each in self.all_charts:
             each.update(index, validation_labels, prediction_probability, history, args)
 
-    def finalize(self):
+    def finalize(self) -> None:
+        results = pd.DataFrame()
+        results['Fold'] = range(1, 11)
         for each in self.all_charts:
-            each.finalize()
+            each.finalize(results)
+        results.to_csv(os.path.join('graphs', 'final_data.csv'), encoding='utf-8', index=False)
 
 
 class Chart:
@@ -29,15 +31,15 @@ class Chart:
         self.file_extension = '.png'
 
     @abstractmethod
-    def update(self, index, validation_labels, prediction_probability, history, args):
+    def update(self, index, validation_labels, prediction_probability, history, args) -> None:
         pass
 
-    def save(self, index):
+    def save(self, index) -> None:
         plt.savefig(self.path + str(index) + self.file_extension)
         plt.clf()
 
     @abstractmethod
-    def finalize(self):
+    def finalize(self, results) -> None:
         pass
 
 
@@ -50,29 +52,7 @@ class ROCChart(Chart):
         self.fpr = {}
         self.auc = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, args):
-        """ Updates ROC plot after each fold, and saves to file system.
-
-        Parameters:
-        ------
-        @ mean_fpr : float
-        false positive rate (mean from all folds run so far)
-
-        @ mean_tpr : float
-        true postive rate (mean from all folds run so far)
-
-        @ mean_auc : float
-        area under ROC curve (mean from all folds run so far)
-
-        @ std_auc : float
-        standard deviation of AUC (mean from all folds run so far)
-
-        Output:
-        ------
-        none
-
-        Saves plot as `mean_ROC.png` in graphs folder.
-        """
+    def update(self, index, validation_labels, prediction_probability, history, args) -> None:
         # 1. Compute ROC curve and AUC
         latest_fpr, latest_tpr, thresholds = roc_curve(validation_labels, prediction_probability)
         latest_auc = roc_auc_score(validation_labels, prediction_probability)
@@ -86,7 +66,7 @@ class ROCChart(Chart):
         self.create_chart(index)
         self.save(index)
 
-    def create_chart(self, index):
+    def create_chart(self, index) -> None:
         plt.figure(3)
         plt.xlim([-0.05, 1.05])
         plt.ylim([-0.05, 1.05])
@@ -99,9 +79,8 @@ class ROCChart(Chart):
                  lw=2, alpha=0.8)
         plt.legend(loc="lower right")
 
-    def finalize(self):
-        # TODO
-        pass
+    def finalize(self, results) -> None:
+        results['auc'] = self.auc.values()
 
 
 class AccuracyChart(Chart):
@@ -112,26 +91,26 @@ class AccuracyChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, args):
+    def update(self, index, validation_labels, prediction_probability, history, args) -> None:
         """Create plot of training/validation accuracy, and save it to the file system."""
-        self.training[index] = history.history['acc']
-        self.validation[index] = history.history['val_acc']
+        self.training[index] = history.history['acc'][-1]
+        self.validation[index] = history.history['val_acc'][-1]
 
-        self.create_chart(index)
+        self.create_chart(index, history)
         self.save(index)
 
-    def create_chart(self, index):
+    def create_chart(self, index, history) -> None:
         plt.figure(1)
-        plt.plot(self.training[index], label='Training Accuracy')
-        plt.plot(self.validation[index], label='Validation Accuracy')
+        plt.plot(history.history['acc'], label='Training Accuracy')
+        plt.plot(history.history['val_acc'], label='Validation Accuracy')
         plt.title('Accuracy - Fold %i' % index)
         plt.ylabel('Accuracy (%)')
         plt.xlabel('Epoch')
         plt.legend(loc='upper left')
 
-    def finalize(self):
-        # TODO
-        pass
+    def finalize(self, results) -> None:
+        results['training_acc'] = self.training.values()
+        results['validation_acc'] = self.validation.values()
 
 
 class LossChart(Chart):
@@ -142,25 +121,25 @@ class LossChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, args):
-        self.training[index] = history.history['loss']
-        self.validation[index] = history.history['val_loss']
+    def update(self, index, validation_labels, prediction_probability, history, args) -> None:
+        self.training[index] = history.history['loss'][-1]
+        self.validation[index] = history.history['val_loss'][-1]
 
-        self.create_chart(index)
+        self.create_chart(index, history)
         self.save(index)
 
-    def create_chart(self, index):
+    def create_chart(self, index, history) -> None:
         plt.figure(2)
-        plt.plot(self.training[index], label='Training Loss')
-        plt.plot(self.validation[index], label='Validation Loss')
+        plt.plot(history.history['loss'], label='Training Loss')
+        plt.plot(history.history['val_loss'], label='Validation Loss')
         plt.title('Loss - Fold %i' % index)
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(loc='upper left')
 
-    def finalize(self):
-        # todo
-        pass
+    def finalize(self, results) -> None:
+        results['training_loss'] = self.training.values()
+        results['validation_loss'] = self.validation.values()
 
 
 class ConfusionMatrix(Chart):
@@ -173,7 +152,7 @@ class ConfusionMatrix(Chart):
         self.fp = {}
         self.tn = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, args):
+    def update(self, index, validation_labels, prediction_probability, history, args) -> None:
         # Determine the class of an image, if >= 0.4999 = class 0, otherwise class 1
         validation_predicted_classification = [round(a + 0.0001) for a in prediction_probability]
         cm = confusion_matrix(validation_labels, validation_predicted_classification)
@@ -188,7 +167,7 @@ class ConfusionMatrix(Chart):
         self.create_chart(index, cm, labels)
         self.save(index)
 
-    def create_chart(self, index, cm, labels):
+    def create_chart(self, index, cm, labels) -> None:
         fig = plt.figure(4)
         ax = fig.add_subplot(1, 1, 1)  # todo: figure out what this is about
         cax = ax.matshow(cm)  # todo: figure out what this is about
@@ -199,34 +178,8 @@ class ConfusionMatrix(Chart):
         plt.xlabel('Predicted')
         plt.ylabel('Actual')
 
-    def finalize(self):
-        # todo
-        pass
-
-
-class DataChartIO:
-    def __init__(self):
-        self.index = 0
-        self.history = None
-        self.results = pd.DataFrame()
-
-    def update_values(self, history, index):  # todo: convert this to the finalize() methods
-        self.history = history
-        self.index = (index + 1)  # Change index from 0-based to 1-based
-
-        num_epochs = len(history.history['loss'])
-        # save the stats of the last epoch (i.e. end of the fold) to the results file
-        self.results = self.results.append([[index + 1,
-                                             history.history['loss'][num_epochs - 1],
-                                             history.history['acc'][num_epochs - 1],
-                                             history.history['val_loss'][num_epochs - 1],
-                                             history.history['val_acc'][num_epochs - 1]]])
-
-    def save_results_to_csv(self):
-        self.results.rename(columns={0: 'Fold Number', 1: 'Training Loss', 2: 'Training Accuracy',
-                                     3: 'Validation Loss', 4: 'Validation Accuracy', })
-        self.results.to_csv(os.path.join('graphs', 'final_acc_loss.csv'), encoding='utf-8', index=False)
-
-    def update_and_save_graphs(self, history, index, validation_labels,
-                               validation_predicted_classification, validation_predicted_probability, args):
-        self.update_values(history, index)
+    def finalize(self, results) -> None:
+        results['tp'] = self.tp.values()
+        results['fn'] = self.fn.values()
+        results['fp'] = self.fp.values()
+        results['tn'] = self.tn.values()
