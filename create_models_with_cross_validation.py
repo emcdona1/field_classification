@@ -42,7 +42,7 @@ def main() -> None:
 
     # end
     print('c1: ' + args.c1 + ', c2: ' + args.c2)
-    timer.stop_timer()
+    timer.stop()
 
 
 def initialize_argparse() -> argparse.ArgumentParser:
@@ -81,7 +81,7 @@ def model_training(curr_epoch, args, color, images, training_idx_list, validatio
     validation_labels = images.labels[validation_idx_list]
     architecture = SmithsonianModel(args.img_size, color_mode=color, seed=SEED, lr=args.learning_rate)
 
-    print('Training model for fold' + str(curr_epoch + 1) + '/' + str(args.n_folds))
+    print('Training model for fold %i/%i' % (curr_epoch + 1, args.n_folds))
     # es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', \
     #        mode='min', min_delta = 0.05, patience = 20, restore_best_weights = True)
     history = architecture.model.fit(train_features, train_labels,
@@ -89,9 +89,9 @@ def model_training(curr_epoch, args, color, images, training_idx_list, validatio
                                      #        callbacks = [es_callback], \
                                      validation_data=(validation_features, validation_labels),
                                      verbose=2)
-    architecture.model.save(os.path.join('saved_models', 'CNN_' + str(curr_epoch + 1) + '.model'))
+    architecture.model.save(os.path.join('saved_models', 'CNN_%i.model' % curr_epoch + 1))
 
-    return (architecture.model, history, validation_features, validation_labels)
+    return architecture.model, history, validation_features, validation_labels
 
 
 def model_validation(model_training_results, charts, index):

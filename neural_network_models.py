@@ -2,6 +2,7 @@ from image_handling import ColorMode
 import tensorflow as tf
 from keras import regularizers
 
+# THIS IS THE OLD ONE
 
 class SmithsonianModel:
     def __init__(self, img_size, color_mode, seed, lr):
@@ -23,9 +24,9 @@ class SmithsonianModel:
 
         # -------------First set of Convolutional Layers--------------
         # 1. Convolution Layer: 10 filters of 5px by 5px
-        self.model.add(tf.keras.layers.Conv2D(10, (5, 5)))  # ,
-        # input_shape=(self.img_size, self.img_size,
-        #              3 if self.color == ColorMode.RGB else 1)))
+        self.model.add(tf.keras.layers.Conv2D(10, (5, 5)),
+                       input_shape=(self.img_size, self.img_size,
+                                    3 if self.color == ColorMode.RGB else 1))
         # Output shape: 10 x 252 x 252
 
         # 2. Batch Normalization: Normalizes previous layer to have mean near 0 and S.D. near 1
@@ -98,3 +99,4 @@ class SmithsonianModel:
         self.model.compile(optimizer=opt,
                            loss='sparse_categorical_crossentropy',
                            metrics=['accuracy'])
+
