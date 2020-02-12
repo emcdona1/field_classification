@@ -1,9 +1,9 @@
 import os
 import numpy as np
 import pandas as pd
-# from scipy import interp  # todo : why is it suddenly mad about this import statement?
-from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix, auc
+from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix
 import matplotlib.pyplot as plt
+from abc import abstractmethod
 
 
 # todo: create a class for each type of chart
@@ -26,8 +26,26 @@ class Charts:
     #         each.finalize()
 
 
-class ROCChart:
+class Chart:
     def __init__(self):
+        pass
+
+    @abstractmethod
+    def update(self, index, validation_labels, prediction_probability):
+        pass
+
+    @abstractmethod
+    def create_chart(self, index):
+        pass
+
+    @abstractmethod
+    def save(self, index):
+        pass
+
+
+class ROCChart(Chart):
+    def __init__(self):
+        super().__init__()
         self.path = os.path.join('graphs', 'mean_ROC')
         self.file_extension = '.png'
 
@@ -69,7 +87,7 @@ class ROCChart:
 
         # 3. Create and save ROC chart
         self.create_chart(index)
-        self.save_chart(index)
+        self.save(index)
 
     def create_chart(self, index):
         plt.figure(3)
@@ -84,9 +102,12 @@ class ROCChart:
                  lw=2, alpha=0.8)
         plt.legend(loc="lower right")
 
-    def save_chart(self, index):
+    def save(self, index):
         plt.savefig(self.path + str(index) + self.file_extension)
         plt.clf()
+
+
+
 
 
 class DataChartIO:
