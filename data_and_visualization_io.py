@@ -6,9 +6,6 @@ import matplotlib.pyplot as plt
 from abc import abstractmethod
 
 
-# todo: create a class for each type of chart
-
-
 class Charts:
     def __init__(self):
         self.all_charts = []
@@ -21,9 +18,9 @@ class Charts:
         for each in self.all_charts:
             each.update(index, validation_labels, prediction_probability, history, args)
 
-    # def finalize(self):
-    #     for each in self.all_charts:
-    #         each.finalize()
+    def finalize(self):
+        for each in self.all_charts:
+            each.finalize()
 
 
 class Chart:
@@ -213,7 +210,7 @@ class DataChartIO:
         self.history = None
         self.results = pd.DataFrame()
 
-    def update_values(self, history, index, tp, fn, fp, tn):
+    def update_values(self, history, index):  # todo: convert this to the finalize() methods
         self.history = history
         self.index = (index + 1)  # Change index from 0-based to 1-based
 
@@ -223,16 +220,13 @@ class DataChartIO:
                                              history.history['loss'][num_epochs - 1],
                                              history.history['acc'][num_epochs - 1],
                                              history.history['val_loss'][num_epochs - 1],
-                                             history.history['val_acc'][num_epochs - 1],
-                                             tn, fp, fn, tp]])
+                                             history.history['val_acc'][num_epochs - 1]]])
 
     def save_results_to_csv(self):
         self.results.rename(columns={0: 'Fold Number', 1: 'Training Loss', 2: 'Training Accuracy',
-                                     3: 'Validation Loss', 4: 'Validation Accuracy',
-                                     5: 'True Negatives', 6: 'False Positives', 7: 'False Negatives',
-                                     8: 'True Positives'})
+                                     3: 'Validation Loss', 4: 'Validation Accuracy', })
         self.results.to_csv(os.path.join('graphs', 'final_acc_loss.csv'), encoding='utf-8', index=False)
 
     def update_and_save_graphs(self, history, index, validation_labels,
                                validation_predicted_classification, validation_predicted_probability, args):
-        self.update_values(history, index, tp, fn, fp, tn)
+        self.update_values(history, index)
