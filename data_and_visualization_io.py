@@ -1,28 +1,41 @@
 import os
 import numpy as np
 import pandas as pd
-from scipy import interp  # todo : why is it suddenly mad about this import statement?
-from sklearn.metrics import roc_curve, confusion_matrix, auc
+# from scipy import interp  # todo : why is it suddenly mad about this import statement?
+from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix, auc
 import matplotlib.pyplot as plt
 
 
 # todo: create a class for each type of chart
 
+
+class Charts:
+    def __init__(self):
+        self.all_charts = []
+        self.all_charts.append(ROCChart())
+        # self.all_charts.append(AccuracyChart())
+        # self.all_charts.append(LossChart())
+
+    def update(self, history, index, validation_labels,
+               validation_predicted_classification, prediction_probability):
+        for each in self.all_charts:
+            each.update(index, validation_labels, prediction_probability)
+
+    # def finalize(self):
+    #     for each in self.all_charts:
+    #         each.finalize()
+
+
 class ROCChart:
     def __init__(self):
-        self.tpr = []
-        self.auc = []
-        self.mean_fpr = np.linspace(0, 1, 100)
-        self.index = 0
-        self.path = os.path.join('graphs', 'mean_ROC.png')
+        self.path = os.path.join('graphs', 'mean_ROC')
+        self.file_extension = '.png'
 
-    def update(self, validation_labels, prediction_probability):
-        mean_auc, mean_auc_std, mean_tpr = self.update_values(validation_labels, prediction_probability)
-        self.blank_figure_setup()
-        self.update_graph(mean_auc, mean_auc_std, mean_tpr)
-        self.save_graph()
+        self.tpr = {}
+        self.fpr = {}
+        self.auc = {}
 
-    def update_values(self, validation_labels, prediction_probability):
+    def update(self, index, validation_labels, prediction_probability):
         """ Updates ROC plot after each fold, and saves to file system.
 
         Parameters:
@@ -45,42 +58,34 @@ class ROCChart:
 
         Saves plot as `mean_ROC.png` in graphs folder.
         """
-        # Compute values for ROC curve and area under the curve (AUC)
-        latest_fpr, latest_tpr, _ = roc_curve(validation_labels, prediction_probability)
-        latest_auc = auc(latest_fpr, latest_tpr)
+        # 1. Compute ROC curve and AUC
+        latest_fpr, latest_tpr, thresholds = roc_curve(validation_labels, prediction_probability)
+        latest_auc = roc_auc_score(validation_labels, prediction_probability)
 
-        # Update arrays with latest ROC/AUC values
-        self.tpr.append(interp(self.mean_fpr, latest_fpr, latest_tpr))
-        self.tpr[-1][0] = 0.0
-        self.auc.append(latest_auc)
+        # 2. save new values to instance variables
+        self.fpr[index] = latest_fpr
+        self.tpr[index] = latest_tpr
+        self.auc[index] = latest_auc
 
-        # find/update figures for ROC/AUC so far
-        mean_tpr = np.mean(self.tpr, axis=0)
-        mean_tpr[-1] = 1.0
-        mean_auc = auc(self.mean_fpr, mean_tpr)
-        mean_auc_std = float(np.std(self.auc))
+        # 3. Create and save ROC chart
+        self.create_chart(index)
+        self.save_chart(index)
 
-        return mean_auc, mean_auc_std, mean_tpr
-
-    def blank_figure_setup(self):
+    def create_chart(self, index):
         plt.figure(3)
         plt.xlim([-0.05, 1.05])
         plt.ylim([-0.05, 1.05])
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title('Receiver operating characteristic (ROC) curve after %i folds' % self.index)
-        plt.legend(loc="lower right")
-        plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
-                 color='r', label='random chance', alpha=0.8)
-
-    def update_graph(self, mean_auc, mean_auc_std, mean_tpr):
-        """ Plot ROC and save graph to file system. """
-        plt.plot(self.mean_fpr, mean_tpr, color='blue',
-                 label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, mean_auc_std),
+        plt.title('ROC Curve - Fold %i' % index)
+        plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Random', alpha=0.8)
+        plt.plot(self.fpr[index], self.tpr[index], color='blue',
+                 label='Mean ROC (AUC = %0.2f)' % (self.auc[index]),
                  lw=2, alpha=0.8)
+        plt.legend(loc="lower right")
 
-    def save_graph(self):
-        plt.savefig(self.path)
+    def save_chart(self, index):
+        plt.savefig(self.path + str(index) + self.file_extension)
         plt.clf()
 
 
