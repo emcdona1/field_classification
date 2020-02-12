@@ -19,7 +19,7 @@ class Charts:
     def update(self, history, index, validation_labels,
                validation_predicted_classification, prediction_probability):
         for each in self.all_charts:
-            each.update(index, validation_labels, prediction_probability)
+            each.update(index, validation_labels, prediction_probability, history)
 
     # def finalize(self):
     #     for each in self.all_charts:
@@ -27,8 +27,8 @@ class Charts:
 
 
 class Chart:
-    def __init__(self, path):
-        self.path = path
+    def __init__(self, base_filename):
+        self.path = os.path.join('graphs', base_filename)
         self.file_extension = '.png'
 
     @abstractmethod
@@ -47,10 +47,11 @@ class Chart:
     def finalize(self):
         pass
 
+
 class ROCChart(Chart):
     def __init__(self):
-        path = os.path.join('graphs', 'mean_ROC')
-        super().__init__(path)
+        base_filename = 'mean_ROC'
+        super().__init__(base_filename)
 
         self.tpr = {}
         self.fpr = {}
@@ -116,15 +117,14 @@ class ROCChart(Chart):
 
 class AccuracyChart(Chart):
     def __init__(self):
-        path = os.path.join('graphs', 'accuracy')
-        super().__init__(path)
+        base_filename = 'accuracy'
+        super().__init__(base_filename)
 
         self.training = {}
         self.validation = {}
 
     def update(self, index, validation_labels, prediction_probability, history):
         """Create plot of training/validation accuracy, and save it to the file system."""
-        plt.figure(1)
         self.training[index] = history.history['acc']
         self.validation[index] = history.history['val_acc']
 
@@ -132,6 +132,7 @@ class AccuracyChart(Chart):
         self.save(index)
 
     def create_chart(self, index):
+        plt.figure(1)
         plt.plot(self.training[index], label='Training Accuracy')
         plt.plot(self.validation[index], label='Validation Accuracy')
         plt.title('Accuracy - Fold %i' % index)
@@ -140,13 +141,45 @@ class AccuracyChart(Chart):
         plt.legend(loc='upper left')
 
     def save(self, index):
-        plt.savefig(os.path.join('graphs', 'val_accuracy_' + str(index) + '.png'))
+        plt.savefig(self.path + str(index) + self.file_extension)
         plt.clf()
 
     def finalize(self):
         # TODO
         pass
 
+
+class LossChart(Chart):
+    def __init__(self):
+        base_filename = 'loss'
+        super().__init__(base_filename)
+
+        self.training = {}
+        self.validation = {}
+
+    def update(self, index, validation_labels, prediction_probability, history):
+        self.training[index] = history.history['loss']
+        self.validation[index] = history.history['val_loss']
+
+        self.create_chart(index)
+        self.save(index)
+
+    def create_chart(self, index):
+        plt.figure(2)
+        plt.plot(self.training[index], label='Training Loss')
+        plt.plot(self.validation[index], label='Validation Loss')
+        plt.title('Loss - Fold %i' % index)
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.legend(loc='upper left')
+
+    def save(self, index):
+        plt.savefig(self.path + str(index) + self.file_extension)
+        plt.clf()
+
+    def finalize(self):
+        # todo
+        pass
 
 
 class DataChartIO:
@@ -168,30 +201,6 @@ class DataChartIO:
                                              history.history['val_acc'][num_epochs - 1],
                                              tn, fp, fn, tp]])
 
-    def plot_accuracy(self):
-        """Create plot of training/validation accuracy, and save it to the file system."""
-        plt.figure(1)
-        plt.plot(self.history.history['acc'])
-        plt.plot(self.history.history['val_acc'])
-        plt.title('Training & Validation Accuracy for Fold ' + str(self.index))
-        plt.ylabel('Accuracy (%)')
-        plt.xlabel('Epoch')
-        plt.legend(['Training', 'Validation'], loc='upper left')
-        plt.savefig(os.path.join('graphs', 'val_accuracy_' + str(self.index) + '.png'))
-        plt.clf()
-
-    def plot_loss(self):
-        """Create plot of training/validation loss, and save it to the file system."""
-        plt.figure(2)
-        plt.plot(self.history.history['loss'])
-        plt.plot(self.history.history['val_loss'])
-        plt.title('Training and Validation Loss for Fold' + str(self.index))
-        plt.ylabel('Loss')
-        plt.xlabel('Epoch')
-        plt.legend(['Training', 'Validation'], loc='upper left')
-        plt.savefig(os.path.join('graphs', 'val_loss_' + str(self.index) + '.png'))
-        plt.clf()
-
     def save_results_to_csv(self):
         self.results.rename(columns={0: 'Fold Number', 1: 'Training Loss', 2: 'Training Accuracy',
                                      3: 'Validation Loss', 4: 'Validation Accuracy',
@@ -203,5 +212,3 @@ class DataChartIO:
                                validation_predicted_classification, validation_predicted_probability):
         tn, fp, fn, tp = confusion_matrix(validation_labels, validation_predicted_classification).ravel()
         self.update_values(history, index, tp, fn, fp, tn)
-        self.plot_accuracy()
-        self.plot_loss()
