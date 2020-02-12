@@ -13,13 +13,13 @@ class Charts:
     def __init__(self):
         self.all_charts = []
         self.all_charts.append(ROCChart())
-        # self.all_charts.append(AccuracyChart())
-        # self.all_charts.append(LossChart())
+        self.all_charts.append(AccuracyChart())
+        self.all_charts.append(LossChart())
+        self.all_charts.append(ConfusionMatrix())
 
-    def update(self, history, index, validation_labels,
-               validation_predicted_classification, prediction_probability):
+    def update(self, history, index, validation_labels, prediction_probability, args):
         for each in self.all_charts:
-            each.update(index, validation_labels, prediction_probability, history)
+            each.update(index, validation_labels, prediction_probability, history, args)
 
     # def finalize(self):
     #     for each in self.all_charts:
@@ -32,16 +32,12 @@ class Chart:
         self.file_extension = '.png'
 
     @abstractmethod
-    def update(self, index, validation_labels, prediction_probability, history):
+    def update(self, index, validation_labels, prediction_probability, history, args):
         pass
 
-    @abstractmethod
-    def create_chart(self, index):
-        pass
-
-    @abstractmethod
     def save(self, index):
-        pass
+        plt.savefig(self.path + str(index) + self.file_extension)
+        plt.clf()
 
     @abstractmethod
     def finalize(self):
@@ -57,7 +53,7 @@ class ROCChart(Chart):
         self.fpr = {}
         self.auc = {}
 
-    def update(self, index, validation_labels, prediction_probability, history):
+    def update(self, index, validation_labels, prediction_probability, history, args):
         """ Updates ROC plot after each fold, and saves to file system.
 
         Parameters:
@@ -106,10 +102,6 @@ class ROCChart(Chart):
                  lw=2, alpha=0.8)
         plt.legend(loc="lower right")
 
-    def save(self, index):
-        plt.savefig(self.path + str(index) + self.file_extension)
-        plt.clf()
-
     def finalize(self):
         # TODO
         pass
@@ -123,7 +115,7 @@ class AccuracyChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history):
+    def update(self, index, validation_labels, prediction_probability, history, args):
         """Create plot of training/validation accuracy, and save it to the file system."""
         self.training[index] = history.history['acc']
         self.validation[index] = history.history['val_acc']
@@ -140,10 +132,6 @@ class AccuracyChart(Chart):
         plt.xlabel('Epoch')
         plt.legend(loc='upper left')
 
-    def save(self, index):
-        plt.savefig(self.path + str(index) + self.file_extension)
-        plt.clf()
-
     def finalize(self):
         # TODO
         pass
@@ -157,7 +145,7 @@ class LossChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history):
+    def update(self, index, validation_labels, prediction_probability, history, args):
         self.training[index] = history.history['loss']
         self.validation[index] = history.history['val_loss']
 
@@ -173,9 +161,46 @@ class LossChart(Chart):
         plt.xlabel('Epoch')
         plt.legend(loc='upper left')
 
-    def save(self, index):
-        plt.savefig(self.path + str(index) + self.file_extension)
-        plt.clf()
+    def finalize(self):
+        # todo
+        pass
+
+
+class ConfusionMatrix(Chart):
+    def __init__(self):
+        base_filename = 'confusion_matrix'
+        super().__init__(base_filename)
+
+        self.tp = {}
+        self.fn = {}
+        self.fp = {}
+        self.tn = {}
+
+    def update(self, index, validation_labels, prediction_probability, history, args):
+        # Determine the class of an image, if >= 0.4999 = class 0, otherwise class 1
+        validation_predicted_classification = [round(a + 0.0001) for a in prediction_probability]
+        cm = confusion_matrix(validation_labels, validation_predicted_classification)
+
+        new_tn, new_fp, new_fn, new_tp = cm.ravel()
+        self.tp[index] = new_tp
+        self.fn[index] = new_fn
+        self.fp[index] = new_fp
+        self.tn[index] = new_tn
+
+        labels = [args.c1, args.c2]
+        self.create_chart(index, cm, labels)
+        self.save(index)
+
+    def create_chart(self, index, cm, labels):
+        fig = plt.figure(4)
+        ax = fig.add_subplot(1, 1, 1)  # todo: figure out what this is about
+        cax = ax.matshow(cm)  # todo: figure out what this is about
+        plt.title('Confusion Matrix - Fold %i' % index)
+        fig.colorbar(cax)
+        ax.set_xticklabels([''] + labels)
+        ax.set_yticklabels([''] + labels)
+        plt.xlabel('Predicted')
+        plt.ylabel('Actual')
 
     def finalize(self):
         # todo
@@ -209,6 +234,5 @@ class DataChartIO:
         self.results.to_csv(os.path.join('graphs', 'final_acc_loss.csv'), encoding='utf-8', index=False)
 
     def update_and_save_graphs(self, history, index, validation_labels,
-                               validation_predicted_classification, validation_predicted_probability):
-        tn, fp, fn, tp = confusion_matrix(validation_labels, validation_predicted_classification).ravel()
+                               validation_predicted_classification, validation_predicted_probability, args):
         self.update_values(history, index, tp, fn, fp, tn)

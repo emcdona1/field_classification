@@ -37,7 +37,7 @@ def main() -> None:
     charts = DataChartIO()
     for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(features, labels)):
         model_training_results = model_training(index, args, color, images, training_idx_list, validation_idx_list)
-        model_validation(model_training_results, charts, index)
+        model_validation(model_training_results, charts, index, args)
     charts.save_results_to_csv()
 
     # end
@@ -94,7 +94,7 @@ def model_training(curr_epoch, args, color, images, training_idx_list, validatio
     return architecture.model, history, validation_features, validation_labels
 
 
-def model_validation(model_training_results, charts, index):
+def model_validation(model_training_results, charts, index, args):
     model, history, validation_features, validation_labels = model_training_results
     # Use the model to classify the validation set
     # Keep only col 1 - prediction probability of class 0
@@ -103,7 +103,7 @@ def model_validation(model_training_results, charts, index):
     validation_predicted_classification = [round(a + 0.0001) for a in validation_predicted_probability]
 
     charts.update_and_save_graphs(history, index, validation_labels,
-                                  validation_predicted_classification, validation_predicted_probability)
+                                  validation_predicted_classification, validation_predicted_probability, args)
 
 
 if __name__ == '__main__':
