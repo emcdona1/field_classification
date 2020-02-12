@@ -21,9 +21,9 @@ class Charts:
         for each in self.all_charts:
             each.update(index, validation_labels, prediction_probability, history, args)
 
-    # def finalize(self):
-    #     for each in self.all_charts:
-    #         each.finalize()
+    def finalize(self):
+        for each in self.all_charts:
+            each.finalize()
 
 
 class Chart:
@@ -213,7 +213,7 @@ class DataChartIO:
         self.history = None
         self.results = pd.DataFrame()
 
-    def update_values(self, history, index, tp, fn, fp, tn):
+    def update_values(self, history, index, tp, fn, fp, tn):  # todo: convert this to the finalize() methods
         self.history = history
         self.index = (index + 1)  # Change index from 0-based to 1-based
 

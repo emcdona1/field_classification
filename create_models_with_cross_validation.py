@@ -8,7 +8,7 @@ from sklearn.model_selection import StratifiedKFold
 import matplotlib
 from image_handling import import_images
 from neural_network_models import SmithsonianModel
-from data_and_visualization_io import DataChartIO
+from data_and_visualization_io import DataChartIO, Charts
 
 matplotlib.use('Agg')  # required when running on server
 
@@ -34,11 +34,11 @@ def main() -> None:
 
     # Train model
     skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=SEED)
-    charts = DataChartIO()
+    charts = Charts()
     for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(features, labels)):
         model_training_results = model_training(index, args, color, images, training_idx_list, validation_idx_list)
         model_validation(model_training_results, charts, index, args)
-    charts.save_results_to_csv()
+    charts.finalize()
 
     # end
     print('c1: ' + args.c1 + ', c2: ' + args.c2)
@@ -99,11 +99,8 @@ def model_validation(model_training_results, charts, index, args):
     # Use the model to classify the validation set
     # Keep only col 1 - prediction probability of class 0
     validation_predicted_probability = model.predict_proba(validation_features)[:, 1]
-    # Determine the class of an image, if >= 0.4999 = class 0, otherwise class 1
-    validation_predicted_classification = [round(a + 0.0001) for a in validation_predicted_probability]
 
-    charts.update_and_save_graphs(history, index, validation_labels,
-                                  validation_predicted_classification, validation_predicted_probability, args)
+    charts.update(history, index, validation_labels, validation_predicted_probability, args)
 
 
 if __name__ == '__main__':
