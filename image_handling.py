@@ -10,20 +10,15 @@ class ColorMode(enum.Enum):
     BW = 2
 
 
-def import_images(directory, folders, import_in_color, seed):
-    color_mode = ColorMode.RGB if import_in_color else ColorMode.BW
-    random.seed(seed)
-    imgset = LabeledImages()
-    for (index, folder_name) in enumerate(folders):
-        imgset.load_from_filesystem(directory, folder_name, index, color_mode)
-
-    imgset.randomize_order()
-
-
 class LabeledImages:
-    def __init__(self):
+    def __init__(self, directory, folders, import_in_color, seed):
         self.features = []
         self.labels = []
+        color_mode = ColorMode.RGB if import_in_color else ColorMode.BW
+        random.seed(seed)
+        for (index, folder_name) in enumerate(folders):
+            self.load_from_filesystem(directory, folder_name, index, color_mode)
+        self.randomize_order()
 
     def load_from_filesystem(self, directory, folder_name, class_num, color_mode):
         image_folder_path = os.path.join(directory, folder_name)
