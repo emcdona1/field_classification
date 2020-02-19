@@ -1,14 +1,12 @@
 from image_handling import ColorMode
 import tensorflow as tf
 from keras import regularizers
+from abc import abstractmethod
 
-# THIS IS THE OLD ONE
 
-class SmithsonianModel:
+class CNNModel:
     def __init__(self, img_size, color_mode, seed, lr):
-        """ Creates layers for model and compiles model -- this complies as closely
-        as possible to the model outlined in Schuettpelz, Frandsen, Dikow, Brown, et al. (2017).
-        """
+        """ Creates layers for model and compiles model"""
         self.img_size = img_size
         self.color = ColorMode.RGB if color_mode else ColorMode.BW
         self.seed = seed
@@ -18,6 +16,31 @@ class SmithsonianModel:
         self.convolutional_layers()
         self.hidden_layers()
         self.compile_model(lr)
+
+    @abstractmethod
+    def convolutional_layers(self):
+        pass
+
+    @abstractmethod
+    def hidden_layers(self):
+        pass
+
+    def compile_model(self, learning_rate):
+        opt = tf.keras.optimizers.Adam(lr=learning_rate,
+                                       beta_1=0.9,
+                                       beta_2=0.999,
+                                       epsilon=0.00001,
+                                       decay=0.0,
+                                       amsgrad=False)
+        self.model.compile(optimizer=opt,
+                           loss='sparse_categorical_crossentropy',
+                           metrics=['accuracy'])
+
+
+class SmithsonianModel(CNNModel):
+    def __init__(self, img_size, color_mode, seed, lr):
+        """ Creates the model architecture as outlined in Schuettpelz, Frandsen, Dikow, Brown, et al. (2017). """
+        super().__init__(img_size, color_mode, seed, lr)
 
     def convolutional_layers(self):
         # Input shape = image height x image width x 3 (if color) or 1 (if b&w)
@@ -68,6 +91,7 @@ class SmithsonianModel:
         # 10. Dropout Layer: In Mathematica Dropout[] has a rate of dropping 50% of elements then * by 2 -- ours does not
         self.model.add(tf.keras.layers.Dropout(0.5, seed=self.seed))
 
+        # 11. 2x Dense layers (linear and relu)
         self.model.add(tf.keras.layers.Dense(500,
                                              activation="linear",
                                              activity_regularizer=regularizers.l2(0.01),
@@ -88,15 +112,3 @@ class SmithsonianModel:
                                              activation="softmax",
                                              activity_regularizer=regularizers.l2(0.01),
                                              kernel_regularizer=regularizers.l2(0.05)))
-
-    def compile_model(self, learning_rate):
-        opt = tf.keras.optimizers.Adam(lr=learning_rate,
-                                       beta_1=0.9,
-                                       beta_2=0.999,
-                                       epsilon=0.00001,
-                                       decay=0.0,
-                                       amsgrad=False)
-        self.model.compile(optimizer=opt,
-                           loss='sparse_categorical_crossentropy',
-                           metrics=['accuracy'])
-
