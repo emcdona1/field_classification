@@ -56,7 +56,7 @@ def initialize_argparse() -> argparse.ArgumentParser:
 
 
 def setup():
-    timer = Timer('TrainingModels')
+    timer = Timer('Model training')
     parser = initialize_argparse()
     args = parser.parse_args()
     args.color = False if args.bw else True
