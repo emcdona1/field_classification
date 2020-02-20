@@ -12,12 +12,6 @@ from data_and_visualization_io import Charts
 
 matplotlib.use('Agg')  # required when running on server
 
-# setup
-SEED = 1
-np.random.seed(SEED)
-tf.compat.v1.random.set_random_seed(SEED)
-random.seed(SEED)
-
 
 def main() -> None:
     timer, args, charts = setup()
@@ -99,4 +93,10 @@ def train(curr_fold, args, train_features, train_labels, validation_features, va
 
 
 if __name__ == '__main__':
+    # set up random seeds
+    SEED = 1
+    np.random.seed(SEED)
+    tf.random.set_random_seed(SEED)
+    random.seed(SEED)
+
     main()
