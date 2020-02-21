@@ -59,9 +59,26 @@ def initialize_argparse() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def validate_args(args: argparse.Namespace):
+    image_directory = args.dir
+    if not os.path.isdir(image_directory):
+        raise NotADirectoryError(image_directory + ' is not a valid directory path.')
+    class_labels = (args.c1, args.c2)
+    if not os.path.isdir(class_labels[0]):
+        raise NotADirectoryError(class_labels[0] + ' is not a valid directory path.')
+    if not os.path.isdir(class_labels[1]):
+        raise NotADirectoryError(class_labels[1] + ' is not a valid directory path.')
+
+    # todo: continue to add data validation as needed
+    # img_size, learning rate, folds, epochs, batch size
+
+    return dir, class_labels
+
+
 def setup():
     timer = Timer('Model training')
     args = initialize_argparse()
+    dir, class_labels = validate_args(args)
 
     args.color = False if args.bw else True
 
