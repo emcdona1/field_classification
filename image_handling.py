@@ -11,13 +11,19 @@ class ColorMode(enum.Enum):
 
 
 class LabeledImages:
-    def __init__(self, directory, folders, import_in_color, seed):
+    def __init__(self, directory, folders, color, seed: int):
+        # todo: would it make more sense if images were tuples of features and labels?
         self.features = []
         self.labels = []
-        color_mode = ColorMode.RGB if import_in_color else ColorMode.BW
+
+        self.directory = directory  # todo: check if valid
+        self.folders = folders
+        self.color_mode = ColorMode.RGB if color else ColorMode.BW
         random.seed(seed)
-        for (index, folder_name) in enumerate(folders):
-            self.load_from_filesystem(directory, folder_name, index, color_mode)
+
+    def load_images(self):
+        for (index, folder_name) in enumerate(self.folders):
+            self.load_from_filesystem(self.directory, folder_name, index, self.color_mode)
         self.randomize_order()
 
     def load_from_filesystem(self, directory, folder_name, class_num, color_mode):

@@ -13,9 +13,9 @@ class Charts:
         self.all_charts.append(LossChart())
         self.all_charts.append(ConfusionMatrix())
 
-    def update(self, history, index, validation_labels, prediction_probability, args) -> None:
+    def update(self, history, index, validation_labels, prediction_probability, class_labels) -> None:
         for each in self.all_charts:
-            each.update(index, validation_labels, prediction_probability, history, args)
+            each.update(index, validation_labels, prediction_probability, history, class_labels)
 
     def finalize(self) -> None:
         results = pd.DataFrame()
@@ -31,7 +31,7 @@ class Chart:
         self.file_extension = '.png'
 
     @abstractmethod
-    def update(self, index, validation_labels, prediction_probability, history, args) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels) -> None:
         pass
 
     def save(self, index) -> None:
@@ -52,7 +52,7 @@ class ROCChart(Chart):
         self.fpr = {}
         self.auc = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, args) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels) -> None:
         # 1. Compute ROC curve and AUC
         latest_fpr, latest_tpr, thresholds = roc_curve(validation_labels, prediction_probability)
         latest_auc = roc_auc_score(validation_labels, prediction_probability)
@@ -91,7 +91,7 @@ class AccuracyChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, args) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels) -> None:
         """Create plot of training/validation accuracy, and save it to the file system."""
         self.training[index] = history.history['acc'][-1]
         self.validation[index] = history.history['val_acc'][-1]
@@ -121,7 +121,7 @@ class LossChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, args) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels) -> None:
         self.training[index] = history.history['loss'][-1]
         self.validation[index] = history.history['val_loss'][-1]
 
@@ -152,7 +152,7 @@ class ConfusionMatrix(Chart):
         self.fp = {}
         self.tn = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, args) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels) -> None:
         # Determine the class of an image, if >= 0.4999 = class 0, otherwise class 1
         validation_predicted_classification = [round(a + 0.0001) for a in prediction_probability]
         cm = confusion_matrix(validation_labels, validation_predicted_classification)
@@ -163,7 +163,7 @@ class ConfusionMatrix(Chart):
         self.fp[index] = new_fp
         self.tn[index] = new_tn
 
-        labels = [args.c1, args.c2]
+        labels = [class_labels[0], class_labels[1]]
         self.create_chart(index, cm, labels)
         self.save(index)
 
