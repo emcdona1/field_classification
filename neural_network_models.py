@@ -3,30 +3,37 @@ import tensorflow as tf
 from keras import regularizers
 from abc import abstractmethod
 
-
 class CNNModel:
     def __init__(self, img_size, color_mode, seed, lr):
         """ Creates layers for model and compiles model"""
         self.img_size = img_size
         self.color = ColorMode.RGB if color_mode else ColorMode.BW
         self.seed = seed
-
+        self.lr = lr
         self.model = None
+        self.layer_setup()
+
+    def layer_setup(self):
         self.model = tf.keras.models.Sequential()
-        self.convolutional_layers()
-        self.hidden_layers()
-        self.compile_model(lr)
+        self.add_convolutional_layers()
+        self.add_hidden_layers()
+        self.add_output_layers()
+        self.compile_model()
 
     @abstractmethod
-    def convolutional_layers(self):
-        pass
+    def add_convolutional_layers(self):
+        raise NotImplementedError()
 
     @abstractmethod
-    def hidden_layers(self):
-        pass
+    def add_hidden_layers(self):
+        raise NotImplementedError()
 
-    def compile_model(self, learning_rate):
-        opt = tf.keras.optimizers.Adam(lr=learning_rate,
+    @abstractmethod
+    def add_output_layers(self):
+        raise NotImplementedError()
+
+    def compile_model(self):
+        opt = tf.keras.optimizers.Adam(lr=self.lr,
                                        beta_1=0.9,
                                        beta_2=0.999,
                                        epsilon=0.00001,
@@ -38,72 +45,40 @@ class CNNModel:
 
 
 class SmithsonianModel(CNNModel):
-    def __init__(self, img_size, color_mode, seed, lr):
-        """ Creates the model architecture as outlined in Schuettpelz, Frandsen, Dikow, Brown, et al. (2017). """
-        super().__init__(img_size, color_mode, seed, lr)
+    """ Creates the model architecture as outlined in Schuettpelz, Frandsen, Dikow, Brown, et al. (2017). """
 
     def convolutional_layers(self):
         # Input shape = image height x image width x 3 (if color) or 1 (if b&w)
+        input_image_shape = (self.img_size, self.img_size, 3 if self.color == ColorMode.RGB else 1)
 
-        # -------------First set of Convolutional Layers--------------
-        # 1. Convolution Layer: 10 filters of 5px by 5px
-        self.model.add(tf.keras.layers.Conv2D(10, (5, 5)),
-                       input_shape=(self.img_size, self.img_size,
-                                    3 if self.color == ColorMode.RGB else 1))
-        # Output shape: 10 x 252 x 252
+        # Two sets of convolutional layers
+        for idx in range(0, 2):
+            if idx == 0:
+                self.model.add(tf.keras.layers.Conv2D(10, (5, 5)), input_shape=input_image_shape)
+            else:
+                self.model.add(tf.keras.layers.Conv2D(40, (5, 5)))
+            self.model.add(tf.keras.layers.BatchNormalization())
+            self.model.add(tf.keras.layers.Activation("relu"))
+            self.model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
-        # 2. Batch Normalization: Normalizes previous layer to have mean near 0 and S.D. near 1
-        self.model.add(tf.keras.layers.BatchNormalization())
-        # Output shape: 10 x 252 x 252
-
-        # 3. Activation Layer: ReLU uses the formula of f(x)= x if x>0 and 0 if x<=0
-        # Apparently it's a pretty common one for CNN so we're going with the flow here
-        self.model.add(tf.keras.layers.Activation("relu"))
-        # Output shape: 10 x 252 x 252
-
-        # 4. Pooling function: the paper didn't specify function, but it seems that the Mathematica default is Max
-        self.model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-        # Output shape: 10 x 126 x 126
-
-        # -------------Second set of Convolutional Layers--------------
-        # 5. Convolution Layer: 40 filters of 5px by 5px
-        self.model.add(tf.keras.layers.Conv2D(40, (5, 5)))
-        # Output shape: 40 x 122 x 122
-
-        # 6. Batch Normalization Layer
-        self.model.add(tf.keras.layers.BatchNormalization())
-        # Output shape: 40 x 122 x 122
-
-        # 7. Activation Layer: Same as above
-        self.model.add(tf.keras.layers.Activation("relu"))
-        # Output shape: 40 x 122 x 122
-
-        # 8. Pooling again will decrease "image shape" by half since stride = 2
-        self.model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
         # Output shape: 40 x 61 x 61
-
-    def hidden_layers(self):
-        # ----------Hidden layers-----------
-
-        # 9. Flattening Layer: Make pooled layers (that look like stacks of grids) into one "column" to feed into ANN
         self.model.add(tf.keras.layers.Flatten())
 
-        # 10. Dropout Layer: In Mathematica Dropout[] has a rate of dropping 50% of elements then * by 2 -- ours does not
+    def hidden_layers(self):
+        # TODO: In Mathematica, Dropout[] has a rate of dropping 50% of elements then * by 2 -- ours does not.
         self.model.add(tf.keras.layers.Dropout(0.5, seed=self.seed))
-
-        # 11. 2x Dense layers (linear and relu)
-        self.model.add(tf.keras.layers.Dense(500,
-                                             activation="linear",
+        
+        self.model.add(tf.keras.layers.Dense(500, activation="linear",
                                              activity_regularizer=regularizers.l2(0.01),
                                              kernel_regularizer=regularizers.l2(0.05)))
-        self.model.add(tf.keras.layers.Dense(500,
-                                             activation="relu",
+
+        self.model.add(tf.keras.layers.Dense(500, activation="relu",
                                              activity_regularizer=regularizers.l2(0.01),
                                              kernel_regularizer=regularizers.l2(0.05)))
 
         self.model.add(tf.keras.layers.Dropout(0.25, seed=self.seed))
 
-        # The output layer with 2 neurons, for 2 classes
+    def add_output_layers(self):
         self.model.add(tf.keras.layers.Dense(2,
                                              activation="linear",
                                              activity_regularizer=regularizers.l2(0.01),
