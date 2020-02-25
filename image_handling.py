@@ -47,3 +47,9 @@ class LabeledImages:
         self.labels = np.array(shuffled_labels)
 
         print('Shuffled image order.')
+
+    def subset(self, index_list):
+        subset_features = self.features[index_list]
+        subset_labels = self.labels[index_list]
+
+        return subset_features, subset_labels

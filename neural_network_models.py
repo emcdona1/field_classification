@@ -13,6 +13,10 @@ class CNNModel:
         self.model = None
         self.layer_setup()
 
+    def reset_model(self):
+        self.model = None
+        self.layer_setup()
+
     def layer_setup(self):
         self.model = tf.keras.models.Sequential()
         self.add_convolutional_layers()

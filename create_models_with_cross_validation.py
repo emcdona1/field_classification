@@ -9,29 +9,37 @@ import matplotlib
 from image_handling import LabeledImages
 from neural_network_models import SmithsonianModel
 from data_and_visualization_io import Charts
+from model_training import ModelTrainer
 
 matplotlib.use('Agg')  # required when running on server
 
 
 def main() -> None:
-    timer, args, charts = setup()
-
-    # Load in images and shuffle order
-    images = LabeledImages(args.dir, (args.c1, args.c2), args.color, SEED)
+    timer = Timer('Model training')
+    class_labels, images, architecture, trainer, n_folds = setup()
+    charts = Charts()
 
     # Train model
-    skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=SEED)
+    skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=SEED)
     for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(images.features, images.labels)):
-        architecture = SmithsonianModel(args.img_size, color_mode=args.color, seed=SEED, lr=args.learning_rate)
+        # set up this model run
+        architecture.reset_model()
+        training_set = images.subset(training_idx_list)
+        validation_set = images.subset(validation_idx_list)
 
-        training_set, validation_set = split_image_sets(images, training_idx_list, validation_idx_list)
-        history = train(index, architecture, training_set, validation_set, args.n_folds, args.batch_size, args.n_epochs)
-        model = architecture.model
+        # train model
+        history = trainer.train_blank_model(architecture, training_set, validation_set, index, n_folds)
 
-        validation_predicted_probability = model.predict_proba(validation_set[0])[:, 1]
-        charts.update(history, index, validation_set[1], validation_predicted_probability, (args.c1, args.c2))
+        # validate newly created model
+        validation_predicted_probability = architecture.model.predict_proba(validation_set[0])[:, 1]
+        charts.update(history, index, validation_set[1], validation_predicted_probability, class_labels)
 
-    finalize(charts, (args.c1, args.c2), timer)
+    finalize(charts, class_labels, timer)
+
+
+def get_arguments():
+    args = initialize_argparse()
+    return validate_args(args)
 
 
 def initialize_argparse() -> argparse.Namespace:
@@ -61,26 +69,42 @@ def initialize_argparse() -> argparse.Namespace:
 
 def validate_args(args: argparse.Namespace):
     image_directory = args.dir
-    if not os.path.isdir(image_directory):
+    if not (image_directory == '') and not os.path.isdir(image_directory):
         raise NotADirectoryError(image_directory + ' is not a valid directory path.')
+
     class_labels = (args.c1, args.c2)
     if not os.path.isdir(class_labels[0]):
         raise NotADirectoryError(class_labels[0] + ' is not a valid directory path.')
     if not os.path.isdir(class_labels[1]):
         raise NotADirectoryError(class_labels[1] + ' is not a valid directory path.')
 
-    # todo: continue to add data validation as needed
-    # img_size, learning rate, folds, epochs, batch size
+    img_size = args.img_size
+    if not img_size > 0:
+        raise ValueError('%i is not a valid image size (in pixels)' % img_size)
 
-    return dir, class_labels
+    color_mode = False if args.bw else True
+
+    lr = args.learning_rate
+    if not 0 < lr <= 1:
+        raise ValueError('%f.6 is not a valid learning rate (0, 1]' % lr)
+
+    n_folds = args.n_folds
+    if not n_folds >= 2:
+        raise ValueError('%i is not a valid number of folds (must be 2+)' % n_folds)
+
+    n_epochs = args.n_epochs
+    if not n_epochs >= 10:
+        raise ValueError('%i is not a valid number of epochs (must be 10+)' % n_epochs)
+
+    batch_size = args.batch_size
+    if not batch_size >= 2:
+        raise ValueError('%i is not a valid batch size (must be 2+)' % batch_size)
+
+    return image_directory, class_labels, img_size, color_mode, lr, n_folds, n_epochs, batch_size
 
 
 def setup():
-    timer = Timer('Model training')
-    args = initialize_argparse()
-    dir, class_labels = validate_args(args)
-
-    args.color = False if args.bw else True
+    image_directory, class_labels, img_size, color_mode, lr, n_folds, n_epochs, batch_size = get_arguments()
 
     # create directories
     if not os.path.exists('graphs'):
@@ -88,8 +112,13 @@ def setup():
     if not os.path.exists('saved_models'):
         os.makedirs('saved_models')
 
-    charts = Charts()
-    return timer, args, charts
+    trainer = ModelTrainer(n_epochs, batch_size)
+
+    # Load in images and shuffle order
+    images = LabeledImages(image_directory, class_labels, color_mode, SEED)
+    architecture = SmithsonianModel(img_size, color_mode, SEED, lr)
+
+    return class_labels, images, architecture, trainer, n_folds
 
 
 def split_image_sets(images, training_idx_list, validation_idx_list):
@@ -98,18 +127,6 @@ def split_image_sets(images, training_idx_list, validation_idx_list):
     validation_features = images.features[validation_idx_list]
     validation_labels = images.labels[validation_idx_list]
     return (train_features, train_labels), (validation_features, validation_labels)
-
-
-def train(curr_fold, architecture, training_set, validation_set, n_folds, batch_size, n_epochs):
-    print('Training model for fold %i of %i' % (curr_fold + 1, n_folds))
-    # es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', \
-    #        mode='min', min_delta = 0.05, patience = 20, restore_best_weights = True)
-    history = architecture.model.fit(training_set[0], training_set[1], batch_size=batch_size, epochs=n_epochs,
-                                     #        callbacks = [es_callback], \
-                                     validation_data=(validation_set[0], validation_set[1]), verbose=2)
-    architecture.model.save(os.path.join('saved_models', 'CNN_%i.model' % curr_fold + 1))
-
-    return history
 
 
 def finalize(charts, class_labels, timer):
