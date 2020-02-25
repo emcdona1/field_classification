@@ -16,7 +16,7 @@ class LabeledImages:
         self.features = []
         self.labels = []
 
-        self.directory = directory  # todo: check if valid
+        self.directory = directory
         self.folders = folders
         self.color_mode = ColorMode.RGB if color else ColorMode.BW
         random.seed(seed)
@@ -51,5 +51,4 @@ class LabeledImages:
     def subset(self, index_list):
         subset_features = self.features[index_list]
         subset_labels = self.labels[index_list]
-
         return subset_features, subset_labels

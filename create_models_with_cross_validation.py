@@ -19,7 +19,6 @@ def main() -> None:
     class_labels, images, architecture, trainer, n_folds = setup()
     charts = Charts()
 
-    # Train model
     skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=SEED)
     for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(images.features, images.labels)):
         # set up this model run
