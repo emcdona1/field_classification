@@ -1,13 +1,8 @@
-import enum
 import os
+from labeled_images.colormode import ColorMode
 import cv2
 import random
 import numpy as np
-
-
-class ColorMode(enum.Enum):
-    RGB = 1
-    BW = 2
 
 
 class LabeledImages:

@@ -1,5 +1,5 @@
-from image_handling import ColorMode
-from cnnmodels.cnnmodel import CNNModel
+from labeled_images.colormode import ColorMode
+from models.cnnmodel import CNNModel
 import tensorflow as tf
 from keras import regularizers
 
