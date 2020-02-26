@@ -1,6 +1,5 @@
 import os
 import argparse
-from timer import Timer
 import random
 import numpy as np
 import tensorflow as tf
@@ -10,6 +9,7 @@ from labeled_images.labeledimages import LabeledImages
 from models.smithsonian import SmithsonianModel
 from data_and_visualization_io import Charts
 from model_training import ModelTrainer
+from timer import Timer
 
 matplotlib.use('Agg')  # required when running on server
 

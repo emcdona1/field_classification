@@ -7,31 +7,33 @@ The code in this repository uses Convolutional Neural Networks (CNN) in Tensorfl
 
 ## Workflow
 - Clone the repository locally.
-- Gather test images into two folders (one folder per species or family of plants, e.g. `./coastal/` and `./rostrata/`).  Images must be square for this architecture -- use scripts in the `image_processing` folder to prepare images.
-- Run `create_test_group.py` to split the image sets into two groups: training/validation (90%) and testing (10%).  (This creates four new folders in the same directory -- `folder1test`, `folder1train`, `folder2test`, and `folder2train` -- and new copies of each image file.) Argument flags:
-  + `-d` : directory of the image folders (optional, defaults to working directory)
-  + `-c1` : folder name of the category 1 images
-  + `-c2` : folder name of the category 2 images
-  + `-v` : verbose mode (1 = on, 0 = off)
-- Run `create_models_with_cross_validation.py` on the training/validation image sets.  Currently, all hyperparameters except number of epochs must be adjusted within the code.  Argument flags:
-  + `-d` : directory of the image folders (optional, defaults to working directory)
-  + `-c1` : folder name of the category 1 images
-  + `-c2` : folder name of the category 2 images
-  + `-n` : number of training folds (optional, defaults to 10)
-  + `-e` : maximum number of epochs (optional, defaults to 25)
-  + `-s` : size of image in pixels (option, defaults to 256)
-  + `-cm` : color mode (1 = color, 0 = grayscale) *in development*
-- Run `classify_images_by_vote.py` on the test image set folders to gauge the model performance.  Results are saved as a CSV file in `./predictions/`. Argument flags:
-  + `-d` : directory of the image folders (optional, defaults to working directory)
-  + `-c1` : folder name of the category 1 images
-  + `-c2` : folder name of the category 2 images
-  + `-s` : size of image in pixels (option, defaults to 256, must match training size)
-  + `-m` : folder name containing trained models to use (will run on every file in the folder)
+- From the `utilities/preparation/` directory:
+    - Gather test images into two folders (one folder per species or family of plants, e.g. `./coastal/` and `./rostrata/`).  Images must be square for this architecture -- use `image_resize.py` to prepare images (note that this utility skews images, rather than crop).
+    - Run `create_test_group.py` to split the image sets into two groups: training/validation (90%) and testing (10%).  (This creates four new folders -- `folder1test`, `folder1train`, `folder2test`, and `folder2train` -- and new copies of each image file.) Argument flags:
+      + `-d` : directory of the image folders (optional, defaults to current working directory)
+      + `-c1` : folder name of the category 1 images
+      + `-c2` : folder name of the category 2 images
+      + `-v` : verbose mode (1 = on, 0 = off)
+
+
+- Run `create_models_with_cross_validation.py` on the training/validation image sets.
+    - Execute `python create_models_with_cross_validation.py -h` for a list of required arguments.
+    - Environment package dependencies: `tensorflow`, `numpy`, `sklearn`, `matplotlib`
+    - Local package dependencies: `models` and `labeled_images`
+    - Local file dependencies: `timer.py`, `data_and_visualization_io.py`, and `model_training.py`
+    - ** This program is currently being restructured. **
+
+
+- Run `classify_images_by_vote.py` on the test image set folders to gauge the model performance.  Results are saved as a CSV file in `/predictions/`. Argument flags:
+    - Execute `python classify_images_by_vote.py -h` for a list of required arguments.
+    - ** This program is currently being restructured. **
   
 
 ---
 
 ## Repository layout
+** currently being restructured **
+
 For full details, see section Folder Descriptions below.
 
 - The main files in the root are used for acquiring images, building the model, and training it.
@@ -43,6 +45,7 @@ For full details, see section Folder Descriptions below.
 ---
 
 ## File descriptions
+** currently being restructured **
 
 ### create_models_with_cross_validation.py
 
@@ -69,4 +72,4 @@ This code base has been developed by Beth McDonald ([emcdona1](https://github.co
 This code has been constructed for the Field Museum Gantz Family Collections Center, under the direction of Dr. Matt von Konrat, Head of Botanical Collections at the Field.  Please contact him for licensing inquiries.
 
 ## Software requirements
-All code is written in Python 3 and has been tested in Python 3.4.3. Required Python packages: argparse, csv, cv2 (opencv-python), datetime, keras, matplotlib, numpy, os, pandas, scipy, shutil, sklearn, tensorflow, time,
+All code is written in Python 3 and has been tested in Python 3.4.3 and 3.7.0.
