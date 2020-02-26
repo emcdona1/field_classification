@@ -7,14 +7,14 @@ from abc import abstractmethod
 
 class Charts:
     def __init__(self):
-        self.all_charts = []
-        self.all_charts.append(ROCChart())
-        self.all_charts.append(AccuracyChart())
-        self.all_charts.append(LossChart())
-        self.all_charts.append(ConfusionMatrix())
         self.folder_name = 'graphs'
         if not os.path.exists(self.folder_name):
             os.makedirs(self.folder_name)
+        self.all_charts = []
+        self.all_charts.append(ROCChart(self.folder_name))
+        self.all_charts.append(AccuracyChart(self.folder_name))
+        self.all_charts.append(LossChart(self.folder_name))
+        self.all_charts.append(ConfusionMatrix(self.folder_name))
 
     def update(self, history, index, validation_labels, prediction_probability, class_labels) -> None:
         for each in self.all_charts:
@@ -29,8 +29,8 @@ class Charts:
 
 
 class Chart:
-    def __init__(self, base_filename):
-        self.path = os.path.join(self.folder_name, base_filename)
+    def __init__(self, base_filename, folder_name):
+        self.path = os.path.join(folder_name, base_filename)
         self.file_extension = '.png'
 
     @abstractmethod
@@ -47,9 +47,9 @@ class Chart:
 
 
 class ROCChart(Chart):
-    def __init__(self):
+    def __init__(self, folder_name):
         base_filename = 'mean_ROC'
-        super().__init__(base_filename)
+        super().__init__(base_filename, folder_name)
 
         self.tpr = {}
         self.fpr = {}
@@ -87,9 +87,9 @@ class ROCChart(Chart):
 
 
 class AccuracyChart(Chart):
-    def __init__(self):
+    def __init__(self, folder_name):
         base_filename = 'accuracy'
-        super().__init__(base_filename)
+        super().__init__(base_filename, folder_name)
 
         self.training = {}
         self.validation = {}
@@ -117,9 +117,9 @@ class AccuracyChart(Chart):
 
 
 class LossChart(Chart):
-    def __init__(self):
+    def __init__(self, folder_name):
         base_filename = 'loss'
-        super().__init__(base_filename)
+        super().__init__(base_filename, folder_name)
 
         self.training = {}
         self.validation = {}
@@ -146,9 +146,9 @@ class LossChart(Chart):
 
 
 class ConfusionMatrix(Chart):
-    def __init__(self):
+    def __init__(self, folder_name):
         base_filename = 'confusion_matrix'
-        super().__init__(base_filename)
+        super().__init__(base_filename, folder_name)
 
         self.tp = {}
         self.fn = {}
