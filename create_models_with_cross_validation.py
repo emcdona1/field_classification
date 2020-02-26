@@ -7,7 +7,7 @@ import tensorflow as tf
 from sklearn.model_selection import StratifiedKFold
 import matplotlib
 from image_handling import LabeledImages
-from neural_network_models import SmithsonianModel
+from cnnmodels.smithsonian import SmithsonianModel
 from data_and_visualization_io import Charts
 from model_training import ModelTrainer
 
