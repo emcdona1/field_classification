@@ -69,35 +69,35 @@ def initialize_argparse() -> argparse.Namespace:
 def validate_args(args: argparse.Namespace):
     image_directory = args.dir
     if not (image_directory == '') and not os.path.isdir(image_directory):
-        raise NotADirectoryError(image_directory + ' is not a valid directory path.')
+        raise NotADirectoryError('%s is not a valid directory path.' % image_directory)
 
     class_labels = (args.c1, args.c2)
     if not os.path.isdir(class_labels[0]):
-        raise NotADirectoryError(class_labels[0] + ' is not a valid directory path.')
+        raise NotADirectoryError('%s is not a valid directory path.' % class_labels[0])
     if not os.path.isdir(class_labels[1]):
-        raise NotADirectoryError(class_labels[1] + ' is not a valid directory path.')
+        raise NotADirectoryError('%s is not a valid directory path.' % class_labels[1])
 
     img_size = args.img_size
-    if not img_size > 0:
-        raise ValueError('%i is not a valid image size (in pixels)' % img_size)
+    if not img_size >= 4:
+        raise ValueError('%i is not a valid image dimension (in pixels). Must be >= 4.' % img_size)
 
     color_mode = False if args.bw else True
 
     lr = args.learning_rate
     if not 0 < lr <= 1:
-        raise ValueError('%f.6 is not a valid learning rate (0, 1]' % lr)
+        raise ValueError('%f.6 is not a valid learning rate. Must be in range 0 (exclusive) to 1 (inclusive).' % lr)
 
     n_folds = args.n_folds
     if not n_folds >= 2:
-        raise ValueError('%i is not a valid number of folds (must be 2+)' % n_folds)
+        raise ValueError('%i is not a valid number of folds. Must be >= 2.' % n_folds)
 
     n_epochs = args.n_epochs
     if not n_epochs >= 10:
-        raise ValueError('%i is not a valid number of epochs (must be 10+)' % n_epochs)
+        raise ValueError('%i is not a valid number of epochs. Must be >= 10.)' % n_epochs)
 
     batch_size = args.batch_size
     if not batch_size >= 2:
-        raise ValueError('%i is not a valid batch size (must be 2+)' % batch_size)
+        raise ValueError('%i is not a valid batch size. Must be >= 2.' % batch_size)
 
     return image_directory, class_labels, img_size, color_mode, lr, n_folds, n_epochs, batch_size
 
