@@ -27,13 +27,25 @@ def main() -> None:
         validation_set = images.subset(validation_idx_list)
 
         # train model
-        history = trainer.train_blank_model(architecture, training_set, validation_set, index, n_folds)
+        history = trainer.train_new_model_and_save(architecture, training_set, validation_set, index, n_folds)
 
         # validate newly created model
         validation_predicted_probability = architecture.model.predict_proba(validation_set[0])[:, 1]
         charts.update(history, index, validation_set[1], validation_predicted_probability, class_labels)
 
     finalize(charts, class_labels, timer)
+
+
+def setup():
+    image_directory, class_labels, img_size, color_mode, lr, n_folds, n_epochs, batch_size = get_arguments()
+
+    trainer = ModelTrainer(n_epochs, batch_size)
+
+    # Load in images and shuffle order
+    images = LabeledImages(image_directory, class_labels, color_mode, SEED)
+    architecture = SmithsonianModel(img_size, color_mode, SEED, lr)
+
+    return class_labels, images, architecture, trainer, n_folds
 
 
 def get_arguments():
@@ -100,32 +112,6 @@ def validate_args(args: argparse.Namespace):
         raise ValueError('%i is not a valid batch size. Must be >= 2.' % batch_size)
 
     return image_directory, class_labels, img_size, color_mode, lr, n_folds, n_epochs, batch_size
-
-
-def setup():
-    image_directory, class_labels, img_size, color_mode, lr, n_folds, n_epochs, batch_size = get_arguments()
-
-    # create directories
-    if not os.path.exists('graphs'):
-        os.makedirs('graphs')
-    if not os.path.exists('saved_models'):
-        os.makedirs('saved_models')
-
-    trainer = ModelTrainer(n_epochs, batch_size)
-
-    # Load in images and shuffle order
-    images = LabeledImages(image_directory, class_labels, color_mode, SEED)
-    architecture = SmithsonianModel(img_size, color_mode, SEED, lr)
-
-    return class_labels, images, architecture, trainer, n_folds
-
-
-def split_image_sets(images, training_idx_list, validation_idx_list):
-    train_features = images.features[training_idx_list]
-    train_labels = images.labels[training_idx_list]
-    validation_features = images.features[validation_idx_list]
-    validation_labels = images.labels[validation_idx_list]
-    return (train_features, train_labels), (validation_features, validation_labels)
 
 
 def finalize(charts, class_labels, timer):

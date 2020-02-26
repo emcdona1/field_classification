@@ -12,6 +12,9 @@ class Charts:
         self.all_charts.append(AccuracyChart())
         self.all_charts.append(LossChart())
         self.all_charts.append(ConfusionMatrix())
+        self.folder_name = 'graphs'
+        if not os.path.exists(self.folder_name):
+            os.makedirs(self.folder_name)
 
     def update(self, history, index, validation_labels, prediction_probability, class_labels) -> None:
         for each in self.all_charts:
@@ -22,12 +25,12 @@ class Charts:
         results['Fold'] = range(1, 11)
         for each in self.all_charts:
             each.finalize(results)
-        results.to_csv(os.path.join('graphs', 'final_data.csv'), encoding='utf-8', index=False)
+        results.to_csv(os.path.join(self.folder_name, 'final_data.csv'), encoding='utf-8', index=False)
 
 
 class Chart:
     def __init__(self, base_filename):
-        self.path = os.path.join('graphs', base_filename)
+        self.path = os.path.join(self.folder_name, base_filename)
         self.file_extension = '.png'
 
     @abstractmethod
