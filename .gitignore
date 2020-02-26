@@ -1,6 +1,3 @@
-*.code-workspace
-.vscode
-.vscode/.ropeproject
 config.py
 objectdb
 __pycache__/
@@ -9,3 +6,4 @@ __pycache__/
 /graphs/
 /predictions/
 /images/
+/other_programs_and_utilities/
