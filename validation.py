@@ -5,6 +5,7 @@ import os
 class Validation:
     def __init__(self, parser: argparse.ArgumentParser):
         self.parser: argparse.ArgumentParser = parser
+
         # image arguments
         parser.add_argument('c1', help='Directory name containing images in class 1.')
         parser.add_argument('c2', help='Directory name containing images in class 2.')
@@ -31,14 +32,17 @@ class Validation:
         if not os.path.isdir(self.args.c2):
             raise NotADirectoryError('%s is not a valid directory path.' % self.args.c2)
         image_folders = (self.args.c1, self.args.c2)
-
-        c1 = self.args.c1.strip(os.path.sep)
-        c2 = self.args.c2.strip(os.path.sep)
-        c1 = c1.split(os.path.sep)[c1.count(os.path.sep)]
-        c2 = c2.split(os.path.sep)[c2.count(os.path.sep)]
-        class_labels = (c1, c2)
+        class_labels = self.parse_class_names_from_image_folders()
 
         return image_folders, class_labels
+
+    def parse_class_names_from_image_folders(self) -> tuple:
+        class1 = self.args.c1.strip(os.path.sep)
+        class2 = self.args.c2.strip(os.path.sep)
+        class1 = class1.split(os.path.sep)[class1.count(os.path.sep)]
+        class2 = class2.split(os.path.sep)[class2.count(os.path.sep)]
+
+        return class1, class2
 
     def validate_image_size(self) -> int:
         img_size = self.args.img_size
