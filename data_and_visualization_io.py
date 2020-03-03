@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 
 class Charts:
-    def __init__(self):
+    def __init__(self, n_folds: int):
         self.folder_name = 'graphs'
         if not os.path.exists(self.folder_name):
             os.makedirs(self.folder_name)
@@ -16,13 +16,15 @@ class Charts:
         self.all_charts.append(LossChart(self.folder_name))
         self.all_charts.append(ConfusionMatrix(self.folder_name))
 
+        self.n_folds = n_folds
+
     def update(self, history, index, validation_labels, prediction_probability, class_labels) -> None:
         for each in self.all_charts:
             each.update(index, validation_labels, prediction_probability, history, class_labels)
 
     def finalize(self) -> None:
         results = pd.DataFrame()
-        results['Fold'] = list(range(1, 11))
+        results['Fold'] = list(range(1, self.n_folds + 1))
         print('initial shape: ' + str(results.shape))
         for each in self.all_charts:
             each.finalize(results)

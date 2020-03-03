@@ -17,8 +17,7 @@ matplotlib.use('Agg')  # required when running on server
 
 def main() -> None:
     timer = Timer('Model training')
-    class_labels, images, architecture, trainer, n_folds = setup()
-    charts = Charts()
+    class_labels, images, architecture, trainer, n_folds, charts = setup()
 
     skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=SEED)
     for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(images.features, images.labels)):
@@ -46,7 +45,9 @@ def setup():
     images = LabeledImages(image_directory, class_labels, color_mode, SEED)
     architecture = SmithsonianModel(SEED, lr)
 
-    return class_labels, images, architecture, trainer, n_folds
+    charts = Charts(n_folds)
+
+    return class_labels, images, architecture, trainer, n_folds, charts
 
 
 def get_arguments():
