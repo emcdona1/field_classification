@@ -16,6 +16,8 @@ class LabeledImages:
         self.color_mode = ColorMode.RGB if color else ColorMode.BW
         random.seed(seed)
 
+        self.load_images()
+
     def load_images(self):
         for (index, folder_name) in enumerate(self.folders):
             self.load_from_filesystem(self.directory, folder_name, index, self.color_mode)
