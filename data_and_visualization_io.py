@@ -23,6 +23,7 @@ class Charts:
     def finalize(self) -> None:
         results = pd.DataFrame()
         results['Fold'] = list(range(1, 11))
+        print('initial shape: ' + str(results.shape))
         for each in self.all_charts:
             each.finalize(results)
         results.to_csv(os.path.join(self.folder_name, 'final_data.csv'), encoding='utf-8', index=False)
@@ -83,6 +84,7 @@ class ROCChart(Chart):
         plt.legend(loc="lower right")
 
     def finalize(self, results) -> None:
+        print('auc insert: ' + str(len(self.auc.values())))
         results['auc'] = self.auc.values()
 
 
@@ -112,6 +114,7 @@ class AccuracyChart(Chart):
         plt.legend(loc='upper left')
 
     def finalize(self, results) -> None:
+        print('acc insert: ' + str(len(self.training.values())) + ' and ' + str(len(self.validation.values())))
         results['training_acc'] = self.training.values()
         results['validation_acc'] = self.validation.values()
 

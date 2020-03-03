@@ -130,6 +130,6 @@ if __name__ == '__main__':
     tf.compat.v1.random.set_random_seed(SEED)
     random.seed(SEED)
 
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings('ignore', category=DeprecationWarning)
 
     main()
