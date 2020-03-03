@@ -105,8 +105,8 @@ def validate_args(args: argparse.Namespace):
         raise ValueError('%i is not a valid number of folds. Must be >= 2.' % n_folds)
 
     n_epochs = args.n_epochs
-    if not n_epochs >= 10:
-        raise ValueError('%i is not a valid number of epochs. Must be >= 10.)' % n_epochs)
+    # if not n_epochs >= 10:
+    #     raise ValueError('%i is not a valid number of epochs. Must be >= 10.)' % n_epochs)
 
     batch_size = args.batch_size
     if not batch_size >= 2:
