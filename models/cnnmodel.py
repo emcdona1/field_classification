@@ -4,10 +4,8 @@ from abc import abstractmethod, ABC
 
 
 class CNNModel(ABC):
-    def __init__(self, img_size, color_mode, seed, lr):
+    def __init__(self, seed, lr):
         """ Creates layers for model and compiles model"""
-        self.img_size = img_size
-        self.color = ColorMode.RGB if color_mode else ColorMode.BW
         self.seed = seed
         self.lr = lr
         self.model = None

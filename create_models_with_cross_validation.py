@@ -44,7 +44,7 @@ def setup():
 
     # Load in images and shuffle order
     images = LabeledImages(image_directory, class_labels, color_mode, SEED)
-    architecture = SmithsonianModel(img_size, color_mode, SEED, lr)
+    architecture = SmithsonianModel(SEED, lr)
 
     return class_labels, images, architecture, trainer, n_folds
 
