@@ -52,7 +52,14 @@ def setup():
 
 def get_arguments():
     args = initialize_argparse()
-    return validate_args(args)
+    image_folders, class_labels = validate_image_folders(args)
+    img_size = validate_image_size(args)
+    lr = validate_learning_rate(args)
+    color_mode = False if args.bw else True
+    n_folds = validate_n_folds(args)
+    n_epochs = validate_n_epochs(args)
+    batch_size = validate_batch_size(args)
+    return image_folders, class_labels, img_size, color_mode, lr, n_folds, n_epochs, batch_size
 
 
 def initialize_argparse() -> argparse.Namespace:
@@ -79,44 +86,56 @@ def initialize_argparse() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def validate_args(args: argparse.Namespace):
+def validate_image_folders(args: argparse.Namespace) -> tuple:
     if not os.path.isdir(args.c1):
         raise NotADirectoryError('%s is not a valid directory path.' % args.c1)
     if not os.path.isdir(args.c2):
         raise NotADirectoryError('%s is not a valid directory path.' % args.c2)
     image_folders = (args.c1, args.c2)
-    print('image folders: ' + str(image_folders))
 
     c1 = args.c1.strip(os.path.sep)
     c2 = args.c2.strip(os.path.sep)
     c1 = c1.split(os.path.sep)[c1.count(os.path.sep)]
     c2 = c2.split(os.path.sep)[c2.count(os.path.sep)]
     class_labels = (c1, c2)
-    print('class labels: ' + str(class_labels))
 
+    return image_folders, class_labels
+
+
+def validate_image_size(args: argparse.Namespace) -> int:
     img_size = args.img_size
     if not img_size >= 4:
         raise ValueError('%i is not a valid image dimension (in pixels). Must be >= 4.' % img_size)
+    return img_size
 
-    color_mode = False if args.bw else True
 
+def validate_learning_rate(args: argparse.Namespace) -> float:
     lr = args.learning_rate
     if not 0 < lr <= 1:
         raise ValueError('%f.6 is not a valid learning rate. Must be in range 0 (exclusive) to 1 (inclusive).' % lr)
+    return lr
 
+
+def validate_n_folds(args: argparse.Namespace) -> int:
     n_folds = args.n_folds
     if not n_folds >= 2:
         raise ValueError('%i is not a valid number of folds. Must be >= 2.' % n_folds)
 
+    return n_folds
+
+
+def validate_n_epochs(args: argparse.Namespace) -> int:
     n_epochs = args.n_epochs
     # if not n_epochs >= 10:
     #     raise ValueError('%i is not a valid number of epochs. Must be >= 10.)' % n_epochs)
+    return n_epochs
 
+
+def validate_batch_size(args: argparse.Namespace) -> int:
     batch_size = args.batch_size
     if not batch_size >= 2:
         raise ValueError('%i is not a valid batch size. Must be >= 2.' % batch_size)
-
-    return image_folders, class_labels, img_size, color_mode, lr, n_folds, n_epochs, batch_size
+    return batch_size
 
 
 def finalize(charts, class_labels, timer):
