@@ -37,12 +37,12 @@ def main() -> None:
 
 
 def setup():
-    image_directory, class_labels, img_size, color_mode, lr, n_folds, n_epochs, batch_size = get_arguments()
+    image_folders, class_labels, img_size, color_mode, lr, n_folds, n_epochs, batch_size = get_arguments()
 
     trainer = ModelTrainer(n_epochs, batch_size)
 
     # Load in images and shuffle order
-    images = LabeledImages(image_directory, class_labels, color_mode, SEED)
+    images = LabeledImages(image_folders, color_mode, SEED)
     architecture = SmithsonianModel(SEED, lr)
 
     charts = Charts(n_folds)
@@ -59,7 +59,6 @@ def initialize_argparse() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         'Create and train CNNs for binary classification of images, using cross-fold validation.')
     # image arguments
-    parser.add_argument('dir', default='', help='Base directory containing image to classify.')
     parser.add_argument('c1', help='Directory name containing images in class 1.')
     parser.add_argument('c2', help='Directory name containing images in class 2.')
     parser.add_argument('-s', '--img_size', type=int, default=256,
@@ -81,15 +80,19 @@ def initialize_argparse() -> argparse.Namespace:
 
 
 def validate_args(args: argparse.Namespace):
-    image_directory = args.dir
-    if not (image_directory == '') and not os.path.isdir(image_directory):
-        raise NotADirectoryError('%s is not a valid directory path.' % image_directory)
+    if not os.path.isdir(args.c1):
+        raise NotADirectoryError('%s is not a valid directory path.' % args.c1)
+    if not os.path.isdir(args.c2):
+        raise NotADirectoryError('%s is not a valid directory path.' % args.c2)
+    image_folders = (args.c1, args.c2)
+    print('image folders: ' + str(image_folders))
 
-    class_labels = (args.c1, args.c2)
-    if not os.path.isdir(os.path.join(image_directory, class_labels[0])):
-        raise NotADirectoryError('%s is not a valid directory path.' % class_labels[0])
-    if not os.path.isdir(os.path.join(image_directory, class_labels[1])):
-        raise NotADirectoryError('%s is not a valid directory path.' % class_labels[1])
+    c1 = args.c1.strip(os.path.sep)
+    c2 = args.c2.strip(os.path.sep)
+    c1 = c1.split(os.path.sep)[c1.count(os.path.sep)]
+    c2 = c2.split(os.path.sep)[c2.count(os.path.sep)]
+    class_labels = (c1, c2)
+    print('class labels: ' + str(class_labels))
 
     img_size = args.img_size
     if not img_size >= 4:
@@ -113,7 +116,7 @@ def validate_args(args: argparse.Namespace):
     if not batch_size >= 2:
         raise ValueError('%i is not a valid batch size. Must be >= 2.' % batch_size)
 
-    return image_directory, class_labels, img_size, color_mode, lr, n_folds, n_epochs, batch_size
+    return image_folders, class_labels, img_size, color_mode, lr, n_folds, n_epochs, batch_size
 
 
 def finalize(charts, class_labels, timer):

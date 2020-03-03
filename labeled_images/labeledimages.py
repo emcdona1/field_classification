@@ -6,12 +6,11 @@ import numpy as np
 
 
 class LabeledImages:
-    def __init__(self, directory, folders, color, seed: int):
+    def __init__(self, folders, color, seed: int):
         # todo: would it make more sense if images were tuples of features and labels?
         self.features = []
         self.labels = []
 
-        self.directory = directory
         self.folders = folders
         self.color_mode = ColorMode.RGB if color else ColorMode.BW
         random.seed(seed)
@@ -20,19 +19,18 @@ class LabeledImages:
 
     def load_images(self):
         for (index, folder_name) in enumerate(self.folders):
-            self.load_from_filesystem(self.directory, folder_name, index, self.color_mode)
+            self.load_from_filesystem(folder_name, index)
         self.randomize_order()
 
-    def load_from_filesystem(self, directory, folder_name, class_num, color_mode):
-        image_folder_path = os.path.join(directory, folder_name)
+    def load_from_filesystem(self, image_folder_path, class_num):
         for img in os.listdir(image_folder_path):
             img_array = cv2.imread(os.path.join(image_folder_path, img),
-                                   cv2.IMREAD_COLOR if color_mode == ColorMode.RGB
+                                   cv2.IMREAD_COLOR if self.color_mode == ColorMode.RGB
                                    else cv2.IMREAD_GRAYSCALE)
             img_array = img_array / 255
             self.features.append(img_array)
             self.labels.append(class_num)
-        print('Loaded images from %s.' % folder_name)
+        print('Loaded images from %s.' % image_folder_path)
 
     def randomize_order(self):
         index = list(range(len(self.features)))
