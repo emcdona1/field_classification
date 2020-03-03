@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix
 import matplotlib.pyplot as plt
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 
 class Charts:
@@ -22,13 +22,13 @@ class Charts:
 
     def finalize(self) -> None:
         results = pd.DataFrame()
-        results['Fold'] = range(1, 11)
+        results['Fold'] = list(range(1, 11))
         for each in self.all_charts:
             each.finalize(results)
         results.to_csv(os.path.join(self.folder_name, 'final_data.csv'), encoding='utf-8', index=False)
 
 
-class Chart:
+class Chart(ABC):
     def __init__(self, base_filename, folder_name):
         self.path = os.path.join(folder_name, base_filename)
         self.file_extension = '.png'
