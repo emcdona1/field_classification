@@ -17,6 +17,6 @@ class ModelTrainer:
                                                batch_size=self.batch_size, epochs=self.epochs,
                                                #        callbacks = [es_callback], \
                                                validation_data=(validation_set[0], validation_set[1]), verbose=2)
-        model_architecture.model.save(os.path.join(self.folder_name, 'CNN_%i.model' % curr_fold + 1))
+        model_architecture.model.save(os.path.join(self.folder_name, 'CNN_' + str(curr_fold + 1) + '.model'))
 
         return history
