@@ -84,9 +84,9 @@ def validate_args(args: argparse.Namespace):
         raise NotADirectoryError('%s is not a valid directory path.' % image_directory)
 
     class_labels = (args.c1, args.c2)
-    if not os.path.isdir(class_labels[0]):
+    if not os.path.isdir(os.path.join(image_directory, class_labels[0])):
         raise NotADirectoryError('%s is not a valid directory path.' % class_labels[0])
-    if not os.path.isdir(class_labels[1]):
+    if not os.path.isdir(os.path.join(image_directory, class_labels[1])):
         raise NotADirectoryError('%s is not a valid directory path.' % class_labels[1])
 
     img_size = args.img_size
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     # set up random seeds
     SEED = 1
     np.random.seed(SEED)
-    tf.random.set_random_seed(SEED)
+    tf.compat.v1.random.set_random_seed(SEED)
     random.seed(SEED)
 
     main()
