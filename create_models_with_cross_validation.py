@@ -10,6 +10,7 @@ from models.smithsonian import SmithsonianModel
 from data_and_visualization_io import Charts
 from model_training import ModelTrainer
 from timer import Timer
+import warnings
 
 matplotlib.use('Agg')  # required when running on server
 
@@ -128,5 +129,7 @@ if __name__ == '__main__':
     np.random.seed(SEED)
     tf.compat.v1.random.set_random_seed(SEED)
     random.seed(SEED)
+
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     main()
