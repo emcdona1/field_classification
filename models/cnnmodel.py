@@ -1,4 +1,3 @@
-from labeled_images.colormode import ColorMode
 import tensorflow as tf
 from abc import abstractmethod, ABC
 

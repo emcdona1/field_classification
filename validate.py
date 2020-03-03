@@ -2,7 +2,7 @@ import argparse
 import os
 
 
-class Validation:
+class Validate:
     def __init__(self, parser: argparse.ArgumentParser):
         self.parser: argparse.ArgumentParser = parser
 

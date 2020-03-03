@@ -10,7 +10,7 @@ from data_and_visualization_io import Charts
 from model_training import ModelTrainer
 from timer import Timer
 import warnings
-from validation import Validation
+from validate import Validate
 
 matplotlib.use('Agg')  # required when running on server
 
@@ -53,7 +53,7 @@ def setup():
 def get_arguments():
     parser = argparse.ArgumentParser(
         'Create and train CNNs for binary classification of images, using cross-fold validation.')
-    val = Validation(parser)
+    val = Validate(parser)
     image_folders, class_labels = val.validate_image_folders()
     img_size = val.validate_image_size()
     lr = val.validate_learning_rate()
