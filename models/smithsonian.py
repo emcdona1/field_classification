@@ -14,7 +14,7 @@ class SmithsonianModel(CNNModel):
         # Two sets of convolutional layers
         for idx in range(0, 2):
             if idx == 0:
-                self.model.add(tf.keras.layers.Conv2D(10, (5, 5)), input_shape=input_image_shape)
+                self.model.add(tf.keras.layers.Conv2D(10, (5, 5)))  # , input_shape=input_image_shape)
             else:
                 self.model.add(tf.keras.layers.Conv2D(40, (5, 5)))
             self.model.add(tf.keras.layers.BatchNormalization())
