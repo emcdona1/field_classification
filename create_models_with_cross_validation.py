@@ -10,7 +10,7 @@ from data_and_visualization_io import Charts
 from model_training import ModelTrainer
 from timer import Timer
 import warnings
-from validate import Validate
+from cnnarguments import CNNArguments
 
 matplotlib.use('Agg')  # required when running on server
 
@@ -53,14 +53,14 @@ def setup():
 def get_arguments():
     parser = argparse.ArgumentParser(
         'Create and train CNNs for binary classification of images, using cross-fold validation.')
-    val = Validate(parser)
-    image_folders, class_labels = val.validate_image_folders()
-    img_size = val.validate_image_size()
-    lr = val.validate_learning_rate()
-    color_mode = val.validate_color_mode()
-    n_folds = val.validate_n_folds()
-    n_epochs = val.validate_n_epochs()
-    batch_size = val.validate_batch_size()
+    user_arguments = CNNArguments(parser)
+    image_folders, class_labels = user_arguments.image_folders_and_class_labels()
+    img_size = user_arguments.image_size()
+    lr = user_arguments.learning_rate()
+    color_mode = user_arguments.color_mode()
+    n_folds = user_arguments.n_folds()
+    n_epochs = user_arguments.n_epochs()
+    batch_size = user_arguments.batch_size()
     return image_folders, class_labels, img_size, color_mode, lr, n_folds, n_epochs, batch_size
 
 
