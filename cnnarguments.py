@@ -9,8 +9,6 @@ class CNNArguments:
         # image arguments
         self.parser.add_argument('c1', help='Directory name containing images in class 1.')
         self.parser.add_argument('c2', help='Directory name containing images in class 2.')
-        self.parser.add_argument('-s', '--img_size', type=int, default=256,
-                                 help='Image dimension in pixels (must be square). (Default = 256)')
         color_mode_group = self.parser.add_mutually_exclusive_group()
         color_mode_group.add_argument('-color', action='store_true', help='Images are in RGB color mode. (Default)')
         color_mode_group.add_argument('-bw', action='store_true', help='Images are in grayscale color mode.')
@@ -45,12 +43,6 @@ class CNNArguments:
         class2 = class2.split(os.path.sep)[class2.count(os.path.sep)]
 
         return class1, class2
-
-    def image_size(self) -> int:
-        img_size = self.args.img_size
-        if not img_size >= 4:
-            raise ValueError('%i is not a valid image dimension (in pixels). Must be >= 4.' % img_size)
-        return img_size
 
     def learning_rate(self) -> float:
         lr = self.args.learning_rate
