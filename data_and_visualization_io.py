@@ -174,7 +174,7 @@ class ConfusionMatrix(Chart):
 
     def create_chart(self, index, cm, labels) -> None:
         fig = plt.figure(4)
-        ax = fig.add_subplot(1, 1, 1)  # todo: figure out what this is about
+        ax = fig.add_subplot(1, 1, 1)
         cax = ax.matshow(cm)  # todo: figure out what this is about
         plt.title('Confusion Matrix - Fold %i' % index)
         fig.colorbar(cax)
