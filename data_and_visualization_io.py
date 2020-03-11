@@ -20,7 +20,7 @@ class Charts:
 
     def update(self, history, index, validation_labels, prediction_probability, class_labels) -> None:
         for each in self.all_charts:
-            each.update(index, validation_labels, prediction_probability, history, class_labels)
+            each.update(index + 1, validation_labels, prediction_probability, history, class_labels)
 
     def finalize(self) -> None:
         results = pd.DataFrame()
