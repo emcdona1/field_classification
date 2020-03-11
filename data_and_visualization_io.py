@@ -40,7 +40,7 @@ class Chart(ABC):
         pass
 
     def save(self, index) -> None:
-        plt.savefig(self.path + str(index) + self.file_extension)
+        plt.savefig(self.path + str(index).zfill(2) + self.file_extension)
         plt.clf()
 
     @abstractmethod
