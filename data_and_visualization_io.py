@@ -20,7 +20,8 @@ class Charts:
 
     def update(self, history, index, validation_labels, prediction_probability, class_labels) -> None:
         for each in self.all_charts:
-            each.update(index + 1, validation_labels, prediction_probability, history, class_labels)
+            each.update(index, validation_labels, prediction_probability, history, class_labels)
+            each.save(index)
 
     def finalize(self) -> None:
         results = pd.DataFrame()
@@ -69,7 +70,6 @@ class ROCChart(Chart):
 
         # 3. Create and save ROC chart
         self.create_chart(index)
-        self.save(index)
 
     def create_chart(self, index) -> None:
         plt.figure(3)
@@ -100,9 +100,7 @@ class AccuracyChart(Chart):
         """Create plot of training/validation accuracy, and save it to the file system."""
         self.training[index] = history.history['acc'][-1]
         self.validation[index] = history.history['val_acc'][-1]
-
         self.create_chart(index, history)
-        self.save(index)
 
     def create_chart(self, index, history) -> None:
         plt.figure(1)
@@ -129,9 +127,7 @@ class LossChart(Chart):
     def update(self, index, validation_labels, prediction_probability, history, class_labels) -> None:
         self.training[index] = history.history['loss'][-1]
         self.validation[index] = history.history['val_loss'][-1]
-
         self.create_chart(index, history)
-        self.save(index)
 
     def create_chart(self, index, history) -> None:
         plt.figure(2)
@@ -170,7 +166,6 @@ class ConfusionMatrix(Chart):
 
         labels = [class_labels[0], class_labels[1]]
         self.create_chart(index, cm, labels)
-        self.save(index)
 
     def create_chart(self, index, cm, labels) -> None:
         fig = plt.figure(4)
