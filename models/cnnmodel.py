@@ -3,10 +3,11 @@ from abc import abstractmethod, ABC
 
 
 class CNNModel(ABC):
-    def __init__(self, seed, lr):
+    def __init__(self, seed, lr, size):
         """ Creates layers for model and compiles model"""
         self.seed = seed
         self.lr = lr
+        self.size = size
         self.model = None
         self.layer_setup()
 

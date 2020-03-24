@@ -10,6 +10,7 @@ class LabeledImages:
         # todo: would it make more sense if images were tuples of features and labels?
         self.features = []
         self.labels = []
+        self.size = 0
 
         self.folders = folders
         self.color_mode = ColorMode.RGB if color else ColorMode.BW
@@ -21,6 +22,8 @@ class LabeledImages:
         for (index, folder_name) in enumerate(self.folders):
             self.load_from_filesystem(folder_name, index)
         self.randomize_order()
+        self.size = self.features[0].shape[0]
+        print('img dim: ' + str(self.size))
 
     def load_from_filesystem(self, image_folder_path, class_num):
         for img in os.listdir(image_folder_path):

@@ -10,7 +10,8 @@ class SmithsonianModel(CNNModel):
         # Two sets of convolutional layers
         for idx in range(0, 2):
             if idx == 0:
-                self.model.add(tf.keras.layers.Conv2D(10, (5, 5)))
+                self.model.add(tf.keras.layers.Conv2D(10, (5, 5), input_shape=(
+                self.size, self.size, 3)))  # todo: only works for color images
             else:
                 self.model.add(tf.keras.layers.Conv2D(40, (5, 5)))
             self.model.add(tf.keras.layers.BatchNormalization())

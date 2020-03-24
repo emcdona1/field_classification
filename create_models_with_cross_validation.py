@@ -38,7 +38,7 @@ def setup():
     image_folders, class_labels = user_arguments.image_folders_and_class_labels()
     n_folds = user_arguments.n_folds()
     images = LabeledImages(image_folders, user_arguments.color_mode(), SEED)
-    architecture = SmithsonianModel(SEED, user_arguments.learning_rate())
+    architecture = SmithsonianModel(SEED, user_arguments.learning_rate(), images.size)
     trainer = ModelTrainer(user_arguments.n_epochs(), user_arguments.batch_size(), n_folds, architecture)
     charts = Charts(n_folds)
 
