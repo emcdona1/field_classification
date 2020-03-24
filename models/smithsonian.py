@@ -32,7 +32,7 @@ class SmithsonianModel(CNNModel):
                                              activity_regularizer=regularizers.l2(0.01),
                                              kernel_regularizer=regularizers.l2(0.05)))
 
-        self.model.add(tf.keras.layers.Dropout(0.5, seed=self.seed))
+        self.model.add(tf.keras.layers.Dropout(0.25, seed=self.seed))
 
     def add_output_layers(self):
         self.model.add(tf.keras.layers.Dense(2,
