@@ -37,7 +37,7 @@ class CNNModel(ABC):
     def compile_model(self):
         lr_scheduler = tf.keras.optimizers.schedules.InverseTimeDecay(self.lr, decay_steps=1000,
                                                                       decay_rate=1, staircase=False)
-        opt = tf.keras.optimizers.Adam(lr_scheduler,
+        opt = tf.keras.optimizers.Adam(lr=lr_scheduler,
                                        beta_1=0.9,
                                        beta_2=0.999,
                                        epsilon=0.00001,
