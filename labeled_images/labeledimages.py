@@ -23,7 +23,6 @@ class LabeledImages:
             self.load_from_filesystem(folder_name, index)
         self.randomize_order()
         self.size = self.features[0].shape[0]
-        print('img dim: ' + str(self.size))
 
     def load_from_filesystem(self, image_folder_path, class_num):
         for img in os.listdir(image_folder_path):
