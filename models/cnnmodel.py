@@ -35,11 +35,12 @@ class CNNModel(ABC):
         raise NotImplementedError()
 
     def compile_model(self):
-        opt = tf.keras.optimizers.Adam(lr=self.lr,
+        opt = tf.keras.optimizers.Adam(learning_rate=self.lr,
                                        beta_1=0.9,
                                        beta_2=0.999,
                                        epsilon=0.00001,
-                                       decay=0.0,
+                                       # decay=0.0,
+                                       decay=0.00001,
                                        amsgrad=False)
         self.model.compile(optimizer=opt,
                            loss='sparse_categorical_crossentropy',
