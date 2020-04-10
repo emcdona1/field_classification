@@ -15,9 +15,14 @@ def main():
     model = models.Sequential()
     # convolutional layers
     model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=IMAGE_SHAPE))
+    # STEP 4(1of2): model.add(layers.BatchNormalization())
+    #         model.add(layers.Activation("relu"))
     model.add(layers.MaxPooling2D((2, 2)))
     model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    # STEP 4(2of2): model.add(layers.BatchNormalization())
+    #     #         model.add(layers.Activation("relu"))
     model.add(layers.MaxPooling2D((2, 2)))
+
     model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 
     # hidden layers
@@ -26,11 +31,21 @@ def main():
     model.add(layers.Dense(NUM_CLASSES))
 
     # compile & train
-    model.compile(optimizer='adam',
+    adam_opt = tf.keras.optimizers.Adam(learning_rate=0.001,
+                                        beta_1=0.9,
+                                        beta_2=0.999,
+                                        epsilon=0.00001,
+                                        decay=0.0,
+                                        amsgrad=False)
+    model.compile(optimizer=adam_opt,
                   loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=['accuracy'])
 
-    history = model.fit(train_features, train_labels, epochs=100, validation_data=(test_features, test_labels))
+    history = model.fit(train_features, train_labels,
+                        validation_data=(test_features, test_labels),
+                        epochs=50,
+                        # STEP 3: batch_size=50,
+                        verbose=2)
 
     plt.plot(history.history['accuracy'], label='accuracy')
     plt.plot(history.history['val_accuracy'], label='val_accuracy')
