@@ -39,8 +39,7 @@ class CNNModel(ABC):
                                        beta_1=0.9,
                                        beta_2=0.999,
                                        epsilon=0.00001,
-                                       # decay=0.0,
-                                       decay=0.00001,
+                                       decay=0.0,
                                        amsgrad=False)
         self.model.compile(optimizer=opt,
                            loss='sparse_categorical_crossentropy',

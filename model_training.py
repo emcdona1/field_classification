@@ -19,15 +19,19 @@ class ModelTrainer:
         self.validation_set = None
         self.history = None
 
-    def set_up_new_model(self, images: LabeledImages, training_idx_list: np.ndarray, validation_idx_list: np.ndarray,
-                         curr_fold: int):
+    def training_all_models(self):
+        # for(i in range(self.n_folds)):
+        # train_a_model()
+        pass
+
+    def train_a_model(self, images: LabeledImages, training_idx_list: np.ndarray, validation_idx_list: np.ndarray,
+                      curr_fold: int):
         self.architecture.reset_model()
         self.history = None
         self.training_set = images.subset(training_idx_list)
         self.validation_set = images.subset(validation_idx_list)
         self.curr_fold: int = curr_fold + 1
 
-    def train_new_model(self):
         print('Training model for fold %i of %i.' % (self.curr_fold, self.n_folds))
         # es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', \
         #        mode='min', min_delta = 0.05, patience = 20, restore_best_weights = True)
