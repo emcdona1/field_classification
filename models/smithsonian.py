@@ -8,15 +8,16 @@ class SmithsonianModel(CNNModel):
 
     def add_convolutional_layers(self):
         # Two sets of convolutional layers
-        for idx in range(0, 2):
-            if idx == 0:
-                self.model.add(tf.keras.layers.Conv2D(10, (5, 5), input_shape=(
-                self.size, self.size, 3)))  # todo: only works for color images
-            else:
-                self.model.add(tf.keras.layers.Conv2D(40, (5, 5)))
-            self.model.add(tf.keras.layers.BatchNormalization())
-            self.model.add(tf.keras.layers.Activation("relu"))
-            self.model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+        self.model.add(tf.keras.layers.Conv2D(10, (5, 5), input_shape=(
+            self.size, self.size, 3)))  # todo: only works for color images
+        self.model.add(tf.keras.layers.BatchNormalization())
+        self.model.add(tf.keras.layers.Activation("relu"))
+        self.model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+        self.model.add(tf.keras.layers.Conv2D(40, (5, 5)))
+        self.model.add(tf.keras.layers.BatchNormalization())
+        self.model.add(tf.keras.layers.Activation("relu"))
+        self.model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
         # Output shape: 40 x 61 x 61
         self.model.add(tf.keras.layers.Flatten())
@@ -36,11 +37,11 @@ class SmithsonianModel(CNNModel):
         self.model.add(tf.keras.layers.Dropout(0.25, seed=self.seed))
 
     def add_output_layers(self):
-        self.model.add(tf.keras.layers.Dense(10,
+        self.model.add(tf.keras.layers.Dense(2,
                                              activation="linear",
                                              activity_regularizer=regularizers.l2(0.01),
                                              kernel_regularizer=regularizers.l2(0.05)))
-        self.model.add(tf.keras.layers.Dense(10,
+        self.model.add(tf.keras.layers.Dense(2,
                                              activation="softmax",
                                              activity_regularizer=regularizers.l2(0.01),
                                              kernel_regularizer=regularizers.l2(0.05)))
