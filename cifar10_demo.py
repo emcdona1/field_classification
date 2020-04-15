@@ -15,14 +15,14 @@ def main():
 
     model = models.Sequential()
     # convolutional layers
-    model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=IMAGE_SHAPE))  # remove relu from here in step 4
-    # STEP 4(1of2): model.add(layers.BatchNormalization())
-    #         model.add(layers.Activation("relu"))
+    model.add(layers.Conv2D(32, (3, 3), input_shape=IMAGE_SHAPE))  # activation='relu',
+    model.add(layers.BatchNormalization())
+    model.add(layers.Activation("relu"))
     model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))  # remove relu from here in step 4
-    # STEP 4(2of2): model.add(layers.BatchNormalization())
-    #     #         model.add(layers.Activation("relu"))
-    model.add(layers.MaxPooling2D((2, 2)))  # add strudes=(2, 2) in step 4
+    model.add(layers.Conv2D(64, (3, 3)))  # , activation='relu'
+    model.add(layers.BatchNormalization())
+    model.add(layers.Activation("relu"))
+    model.add(layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
     model.add(layers.Conv2D(64, (3, 3), activation='relu'))  # STEP 6: remove this
 
