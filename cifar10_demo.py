@@ -49,8 +49,8 @@ def main():
                         batch_size=64,
                         verbose=2)
 
-    plt.plot(history.history['accuracy'], label='accuracy')
-    plt.plot(history.history['val_accuracy'], label='val_accuracy')
+    plt.plot(history.history['acc'], label='accuracy')
+    plt.plot(history.history['val_acc'], label='val_accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.ylim([0.49, 1.01])
