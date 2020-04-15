@@ -17,6 +17,7 @@ class LabeledImages:
     def load_images_from_folders(self, folders, color) -> None:
         self.features = []
         self.labels = []
+        self.color_mode = ColorMode.RGB if color else ColorMode.BW
 
         for (class_num, image_folder_path) in enumerate(folders):
             for img in os.listdir(image_folder_path):
@@ -28,8 +29,7 @@ class LabeledImages:
                 self.labels.append(class_num)
             print('Loaded images from %s.' % image_folder_path)
         self.randomize_order()
-        self.size = self.features[0].shape[0]
-        self.color_mode = ColorMode.RGB if color else ColorMode.BW
+        self.n_images = self.features[0].shape[0]
 
     def load_cifar_images(self) -> None:
         (train_features, train_labels), (val_features, val_labels) = datasets.cifar10.load_data()
