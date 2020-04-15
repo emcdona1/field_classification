@@ -46,7 +46,7 @@ def main():
     history = model.fit(train_features, train_labels,
                         validation_data=(test_features, test_labels),
                         epochs=50,
-                        # STEP 3: batch_size=50,
+                        batch_size=64,
                         verbose=2)
 
     plt.plot(history.history['accuracy'], label='accuracy')
