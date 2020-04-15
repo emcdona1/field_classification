@@ -20,8 +20,7 @@ def main() -> None:
 
     skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=SEED)
     for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(images.features, images.labels)):
-        trainer.set_up_new_model(images, training_idx_list, validation_idx_list, index)
-        trainer.train_new_model()
+        trainer.train_a_model(images, training_idx_list, validation_idx_list, index)
         trainer.save_model()
         trainer.validate_model(charts, class_labels)
     charts.finalize()
@@ -37,8 +36,11 @@ def setup():
     user_arguments = CNNArguments(parser)
     image_folders, class_labels = user_arguments.image_folders_and_class_labels()
     n_folds = user_arguments.n_folds()
-    images = LabeledImages(image_folders, user_arguments.color_mode(), SEED)
+    images = LabeledImages(SEED)
     architecture = SmithsonianModel(SEED, user_arguments.learning_rate(), images.size)
+    # images.load_images_from_folders(image_folders, user_arguments.color_mode())
+    images.load_cifar_images()  # TODO: change this back
+    architecture = SmithsonianModel(SEED, user_arguments.learning_rate(), images.n_images)
     trainer = ModelTrainer(user_arguments.n_epochs(), user_arguments.batch_size(), n_folds, architecture)
     charts = Charts(n_folds)
 
