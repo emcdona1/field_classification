@@ -2,12 +2,13 @@ import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
 import matplotlib.pyplot as plt
 import numpy as np
+from datetime import datetime
 
 
 def main():
     # CIFAR, reduced -- color images in 2 classes, 10k train, 2k test
     (train_features, train_labels), (test_features, test_labels) = image_set()
-    NUM_CLASSES = 10
+    NUM_CLASSES = 2
     IMAGE_SHAPE = (32, 32, 3)
 
     # plot_sample_images(train_features, train_labels)
@@ -53,7 +54,7 @@ def main():
     plt.ylabel('Accuracy')
     plt.ylim([0.49, 1.01])
     plt.legend(loc='lower right')
-    plt.savefig('cifar10-catdog.png')
+    plt.savefig('cifar10-cat-dog_acc_' + datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S') + '.png')
 
     test_loss, test_acc = model.evaluate(test_features, test_labels, verbose=2)
     print(test_acc)
