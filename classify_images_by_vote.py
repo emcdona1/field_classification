@@ -6,6 +6,7 @@ from utilities.timer import Timer
 import numpy as np
 from datetime import datetime
 from labeled_images.labeledimages import LabeledImages
+from cnnarguments import parse_class_names_from_image_folders
 
 THRESHOLD = 0.5
 
@@ -161,14 +162,6 @@ def process_input_arguments():
     model_directory = args.models
 
     return image_folders, class_labels, model_directory
-
-
-def parse_class_names_from_image_folders(args) -> tuple:
-    class1 = args.c1.strip(os.path.sep)
-    class2 = args.c2.strip(os.path.sep)
-    class1 = class1.split(os.path.sep)[class1.count(os.path.sep)]
-    class2 = class2.split(os.path.sep)[class2.count(os.path.sep)]
-    return class1, class2
 
 
 if __name__ == '__main__':

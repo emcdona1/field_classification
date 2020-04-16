@@ -32,17 +32,9 @@ class CNNArguments:
         if not os.path.isdir(self.args.c2):
             raise NotADirectoryError('%s is not a valid directory path.' % self.args.c2)
         image_folders = (self.args.c1, self.args.c2)
-        class_labels = self.parse_class_names_from_image_folders()
+        class_labels = parse_class_names_from_image_folders(self.args)
 
         return image_folders, class_labels
-
-    def parse_class_names_from_image_folders(self) -> tuple:
-        class1 = self.args.c1.strip(os.path.sep)
-        class2 = self.args.c2.strip(os.path.sep)
-        class1 = class1.split(os.path.sep)[class1.count(os.path.sep)]
-        class2 = class2.split(os.path.sep)[class2.count(os.path.sep)]
-
-        return class1, class2
 
     def learning_rate(self) -> float:
         lr = self.args.learning_rate
@@ -71,3 +63,12 @@ class CNNArguments:
         if not batch_size >= 2:
             raise ValueError('%i is not a valid batch size. Must be >= 2.' % batch_size)
         return batch_size
+
+
+def parse_class_names_from_image_folders(args) -> tuple:
+    class1 = args.c1.strip(os.path.sep)
+    class2 = args.c2.strip(os.path.sep)
+    class1 = class1.split(os.path.sep)[class1.count(os.path.sep)]
+    class2 = class2.split(os.path.sep)[class2.count(os.path.sep)]
+
+    return class1, class2
