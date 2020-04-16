@@ -60,7 +60,9 @@ class LabeledImages:
         val_labels = np.array([a // 4 for (idx, a) in enumerate(val_labels) if cat_dog_test_mask[idx]])
         self.labels = np.vstack((train_labels, val_labels))
 
-        self.randomize_order()
+        # self.randomize_order()
+        # self.features = np.array(self.features)
+        # self.labels = np.array(self.labels)
         self.n_images = self.features.shape[0]
         self.color_mode = ColorMode.RGB
         self.img_dim = self.features[0].shape[1]
