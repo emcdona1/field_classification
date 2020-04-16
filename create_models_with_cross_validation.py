@@ -5,9 +5,8 @@ import tensorflow as tf
 import matplotlib
 from labeled_images.labeledimages import LabeledImages
 from models.smithsonian import SmithsonianModel
-from data_and_visualization_io import Charts
 from model_training import ModelTrainer
-from timer import Timer
+from utilities.timer import Timer
 from cnnarguments import CNNArguments
 
 matplotlib.use('Agg')  # required when running on server
