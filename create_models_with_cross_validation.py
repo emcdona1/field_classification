@@ -30,16 +30,17 @@ def main() -> None:
     timer.results()
 
 
-def setup():
+def setup() -> (tuple, LabeledImages, ModelTrainer, int, Charts):
     parser = argparse.ArgumentParser(
         'Create and train CNNs for binary classification of images, using cross-fold validation.')
     user_arguments = CNNArguments(parser)
-    image_folders, class_labels = user_arguments.image_folders_and_class_labels()
+    # image_folders, class_labels = user_arguments.image_folders_and_class_labels()
     n_folds = user_arguments.n_folds()
     images = LabeledImages(SEED)
-    images.load_images_from_folders(image_folders, user_arguments.color_mode())
-    # images.load_cifar_images()
-    architecture = SmithsonianModel(SEED, user_arguments.learning_rate(), images.n_images)
+    # images.load_images_from_folders(image_folders, user_arguments.color_mode())
+    images.load_cifar_images()
+    class_labels = ('cat', 'dog')
+    architecture = SmithsonianModel(SEED, user_arguments.learning_rate(), images.img_dim)
     trainer = ModelTrainer(user_arguments.n_epochs(), user_arguments.batch_size(), n_folds, architecture)
     charts = Charts(n_folds)
 

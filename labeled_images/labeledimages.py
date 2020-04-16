@@ -13,6 +13,7 @@ class LabeledImages:
         self.labels = np.array((0, 0))
         self.n_images = 0
         self.color_mode = None
+        self.img_dim = 0
 
     def load_images_from_folders(self, folders, color) -> None:
         self.features = []
@@ -30,6 +31,7 @@ class LabeledImages:
             print('Loaded images from %s.' % image_folder_path)
         self.randomize_order()
         self.n_images = self.features[0].shape[0]
+        self.img_dim = self.features[0].shape[1]
 
     def load_cifar_images(self) -> None:
         (train_features, train_labels), (val_features, val_labels) = datasets.cifar10.load_data()
@@ -51,6 +53,7 @@ class LabeledImages:
         self.randomize_order()
         self.n_images = self.features.shape[0]
         self.color_mode = ColorMode.RGB
+        self.img_dim = self.features[0].shape[1]
 
     def randomize_order(self) -> None:
         index = list(range(len(self.features)))
