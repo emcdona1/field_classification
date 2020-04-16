@@ -2,7 +2,6 @@ import argparse
 import random
 import numpy as np
 import tensorflow as tf
-from sklearn.model_selection import StratifiedKFold
 import matplotlib
 from labeled_images.labeledimages import LabeledImages
 from models.smithsonian import SmithsonianModel
@@ -16,35 +15,42 @@ matplotlib.use('Agg')  # required when running on server
 
 def main() -> None:
     timer = Timer('Model training')
-    class_labels, images, trainer, n_folds, charts = setup()
+    images, cnn_model_trainer = program_setup()
 
-    skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=SEED)
-    for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(images.features, images.labels)):
-        trainer.train_a_model(images, training_idx_list, validation_idx_list, index)
-        trainer.save_model()
-        trainer.validate_model(charts, class_labels)
-    charts.finalize()
+    cnn_model_trainer.train_all_models(images)
 
-    print('class 1: ' + class_labels[0] + ', class 2: ' + class_labels[1])
+    print('class 1: ' + images.class_labels[0] + ', class 2: ' + images.class_labels[1])
     timer.stop()
-    timer.results()
+    timer.print_results()
 
 
-def setup() -> (tuple, LabeledImages, ModelTrainer, int, Charts):
+def program_setup() -> (LabeledImages, ModelTrainer):
     parser = argparse.ArgumentParser(
         'Create and train CNNs for binary classification of images, using cross-fold validation.')
     user_arguments = CNNArguments(parser)
-    # image_folders, class_labels = user_arguments.image_folders_and_class_labels()
-    n_folds = user_arguments.n_folds()
-    images = LabeledImages(SEED)
-    # images.load_images_from_folders(image_folders, user_arguments.color_mode())
-    images.load_cifar_images()
-    class_labels = ('cat', 'dog')
-    architecture = SmithsonianModel(SEED, user_arguments.learning_rate(), images.img_dim)
-    trainer = ModelTrainer(user_arguments.n_epochs(), user_arguments.batch_size(), n_folds, architecture)
-    charts = Charts(n_folds)
 
-    return class_labels, images, trainer, n_folds, charts
+    images = load_image_sets(user_arguments)
+    trainer = initialize_model_trainer(user_arguments, images)
+    return images, trainer
+
+
+def load_image_sets(user_arguments: CNNArguments) -> LabeledImages:
+    images = LabeledImages(SEED)
+    # Option 1: load from filesystem
+    image_folders, class_labels = user_arguments.image_folders_and_class_labels()
+    images.load_images_from_folders(image_folders, user_arguments.color_mode(), class_labels)
+
+    # Option 2: load 2 classes of the CIFAR-10 data set
+    images.load_cifar_images()
+
+    return images
+
+
+def initialize_model_trainer(user_arguments: CNNArguments, images: LabeledImages) -> (ModelTrainer):
+    n_folds = user_arguments.n_folds()
+    architecture = SmithsonianModel(SEED, user_arguments.learning_rate(), images.img_dim)
+    trainer = ModelTrainer(user_arguments.n_epochs(), user_arguments.batch_size(), n_folds, architecture, SEED)
+    return trainer
 
 
 if __name__ == '__main__':

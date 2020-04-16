@@ -3,10 +3,11 @@ from models.smithsonian import SmithsonianModel
 from labeled_images.labeledimages import LabeledImages
 import numpy as np
 from data_and_visualization_io import Charts
+from sklearn.model_selection import StratifiedKFold
 
 
 class ModelTrainer:
-    def __init__(self, epochs: int, batch_size: int, n_folds: int, architecture: SmithsonianModel):
+    def __init__(self, epochs: int, batch_size: int, n_folds: int, architecture: SmithsonianModel, seed: int):
         self.epochs = epochs
         self.batch_size = batch_size
         self.folder_name = 'saved_models'
@@ -18,11 +19,16 @@ class ModelTrainer:
         self.training_set = None
         self.validation_set = None
         self.history = None
+        self.seed: int = seed
+        self.charts = Charts(self.n_folds)
 
-    def training_all_models(self):
-        # for(i in range(self.n_folds)):
-        # train_a_model()
-        pass
+    def train_all_models(self, images: LabeledImages):
+        skf = StratifiedKFold(n_splits=self.n_folds, shuffle=True, random_state=self.seed)
+        for index, (training_idx_list, validation_idx_list) in enumerate(skf.split(images.features, images.labels)):
+            self.train_a_model(images, training_idx_list, validation_idx_list, index)
+            self.save_model()
+            self.validate_model(self.charts, images.class_labels)
+        self.charts.finalize()
 
     def train_a_model(self, images: LabeledImages, training_idx_list: np.ndarray, validation_idx_list: np.ndarray,
                       curr_fold: int):
