@@ -14,10 +14,12 @@ class LabeledImages:
         self.n_images = 0
         self.color_mode = None
         self.img_dim = 0
+        self.class_labels = None
 
-    def load_images_from_folders(self, folders, color) -> None:
+    def load_images_from_folders(self, folders, color, class_labels) -> None:
         self.features = []
         self.labels = []
+        self.class_labels = class_labels
         self.color_mode = ColorMode.RGB if color else ColorMode.BW
 
         for (class_num, image_folder_path) in enumerate(folders):
@@ -39,6 +41,7 @@ class LabeledImages:
         # class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 
         # reduce to just cat and dog images (2 classes)
+        self.class_labels = ('cat', 'dog')
         cat_dog_train_mask = [True if (a == 3 or a == 5) else False for a in train_labels]
         cat_dog_test_mask = [True if (a == 3 or a == 5) else False for a in val_labels]
 
