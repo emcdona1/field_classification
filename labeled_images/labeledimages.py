@@ -11,16 +11,18 @@ class LabeledImages:
         # todo: would it make more sense if images were tuples of features and labels?
         self.features = np.array((0, 0))
         self.labels = np.array((0, 0))
+        self.img_names = None
         self.n_images = 0
         self.color_mode = None
         self.img_dim = 0
         self.class_labels = None
 
-    def load_images_from_folders(self, folders, color, class_labels) -> None:
+    def load_images_from_folders(self, folders, color_mode, class_labels) -> None:
         self.features = []
         self.labels = []
+        self.img_names = []
         self.class_labels = class_labels
-        self.color_mode = ColorMode.RGB if color else ColorMode.BW
+        self.color_mode = ColorMode.RGB if color_mode else ColorMode.BW
 
         for (class_num, image_folder_path) in enumerate(folders):
             for img in os.listdir(image_folder_path):
@@ -30,10 +32,15 @@ class LabeledImages:
                 img_array = img_array / 255
                 self.features.append(img_array)
                 self.labels.append(class_num)
+                self.img_names.append(img)
             print('Loaded images from %s.' % image_folder_path)
         self.randomize_order()
-        self.n_images = self.features[0].shape[0]
-        self.img_dim = self.features[0].shape[1]
+        self.features = np.array(self.features)
+        self.labels = np.array(self.labels)
+        self.img_names = np.array(self.img_names)
+        # self.features.shape = (# of images, img dimension, img dimension, color channels)
+        self.n_images = self.features.shape[0]
+        self.img_dim = self.features.shape[1]
 
     def load_cifar_images(self) -> None:
         (train_features, train_labels), (val_features, val_labels) = datasets.cifar10.load_data()
@@ -64,8 +71,11 @@ class LabeledImages:
 
         shuffled_image_features = [self.features[i] for i in index]
         shuffled_labels = [self.labels[i] for i in index]
-        self.features = np.array(shuffled_image_features)
-        self.labels = np.array(shuffled_labels)
+        if self.img_names:
+            shuffled_names = [self.img_names[i] for i in index]
+            self.img_names = shuffled_names
+        self.features = shuffled_image_features
+        self.labels = shuffled_labels
         print('Shuffled image order.')
 
     def subset(self, index_list) -> (np.array, np.array):
