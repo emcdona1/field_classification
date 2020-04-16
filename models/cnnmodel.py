@@ -3,13 +3,12 @@ from abc import abstractmethod, ABC
 
 
 class CNNModel(ABC):
-    def __init__(self, seed, lr, size):
+    def __init__(self, seed: int, lr: float, img_dim: int):
         """ Creates layers for model and compiles model"""
-        self.seed = seed
-        self.lr = lr
-        self.size = size
+        self.seed: int = seed
+        self.lr: float = lr
+        self.img_dim: int = img_dim
         self.model = None
-        self.layer_setup()
 
     def reset_model(self):
         self.model = None
@@ -35,12 +34,12 @@ class CNNModel(ABC):
         raise NotImplementedError()
 
     def compile_model(self):
-        opt = tf.keras.optimizers.Adam(learning_rate=self.lr,
-                                       beta_1=0.9,
-                                       beta_2=0.999,
-                                       epsilon=0.00001,
-                                       decay=0.0,
-                                       amsgrad=False)
-        self.model.compile(optimizer=opt,
+        adam_optimizer = tf.keras.optimizers.Adam(learning_rate=self.lr,
+                                                  beta_1=0.9,
+                                                  beta_2=0.999,
+                                                  epsilon=0.00001,
+                                                  decay=0.0,
+                                                  amsgrad=False)
+        self.model.compile(optimizer=adam_optimizer,
                            loss='sparse_categorical_crossentropy',
                            metrics=['accuracy'])
