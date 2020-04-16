@@ -56,7 +56,7 @@ class CNNArguments:
     def n_folds(self) -> int:
         n_folds = self.args.n_folds
         if not n_folds >= 1:
-            raise ValueError('%i is not a valid number of folds. Must be >= 2.' % n_folds)
+            raise ValueError('%i is not a valid number of folds. Must be >= 1.' % n_folds)
 
         return n_folds
 
