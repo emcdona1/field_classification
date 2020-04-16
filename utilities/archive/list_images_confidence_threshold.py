@@ -1,22 +1,44 @@
 import pandas as pd
-import os
 import sys
 import argparse
 import time
-import datetime
-from classify_images import write_dataframe_to_CSV
+from datetime import datetime
+import os
+
 
 def process_input_arguments():
     parser = argparse.ArgumentParser('Export predictions below a certain uncertainty.')
-    parser.add_argument('-p', '--predictions', help='Filename or file path for predictions CSV')	
+    parser.add_argument('-p', '--predictions', help='Filename or file path for predictions CSV')
     parser.add_argument('-c', '--certainty', help='Threshold for certainty')
-    parser.add_argument('-s', '--setting', default='l', help ='l for low confidence filter, h for high confidence filter')
+    parser.add_argument('-s', '--setting', default='l',
+                        help='l for low confidence filter, h for high confidence filter')
     args = parser.parse_args()
     filename = args.predictions
     threshold = float(args.certainty)
     setting = args.setting
 
     return filename, threshold, setting
+
+
+def write_dataframe_to_csv(folder, filename, dataframe_to_write):
+    ''' Writes the given DataFrame to a file.
+    Parameters:
+    -----
+    @folder : String to designate folder in which to write file
+    @filename : String to add designation to filename -- file names are timestamp+filename
+    @dataframe_to_write : DataFrame to be written to CSV
+
+    Output:
+    -----
+    File path of the written file
+    '''
+    timestamp = datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
+    filename = timestamp + filename + '.csv'
+    filepath = os.path.join(folder, filename)
+    dataframe_to_write.to_csv(filepath, encoding='utf-8', index=False)
+
+    return filepath
+
 
 if __name__ == '__main__':
     # Start execution and parse arguments
@@ -44,8 +66,8 @@ if __name__ == '__main__':
         sys.exit(0)
 
     # Save to file
-    filepath = write_dataframe_to_CSV('predictions', filename_option, results)
-    print('Predictions saved to %s .' % filepath)
+    file_path = write_dataframe_to_csv('predictions', filename_option, results)
+    print('Predictions saved to %s .' % file_path)
 
     # Finish execution
     end_time = time.time()
