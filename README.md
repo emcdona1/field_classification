@@ -5,34 +5,62 @@ The code in this repository uses Convolutional Neural Networks (CNN) in Tensorfl
 
 ---
 
+## Setup
+1. Clone the repository locally.
+1. Confirm you have Python and the necessary packages installed (see Environment section below).
+1. Prepare two sets of images, each set in a separate directory.  (The directory name indicates the class label, e.g. species.)  Images must be square (1:1 aspect ratio) and of the same dimensions.
+    - To resize and reshape images, use `utilities\image_processing\image_resize.py`.  Note that this tool does not crop images, so rectangular images will be skewed (distorting one dimension).
+    - To use the Keras built-in CIFAR-10 dataset (reduced to 2 classes), you can manually adjust the `load_image_sets()` method in `train_models_image_classification.py`.
+1. If desired, prepare a separate group of test images (not used in training and validation) by using `utilities\image_processing\create_test_group.py`.  By default this program creates a split of 90% for training & validation and 10% for testing.
+    - This creates four new directories  -- *folder1test, folder1train, folder2test*, and *folder2train* -- and copies each image file into one of the four new directories.
+
+
+### Environment
+This code has been tested in Python 3.7 using Anaconda (Windows) and Miniconda (Ubuntu).
+
+**Note**: This system is *not* compatible with Tensorflow 2.x (as of April 2020).
+
+#### Tested Package Versions:
+- keras v2.3.1
+- matplotlib v3.1.3
+- numpy v1.18.1
+- openCV (cv2) v3.4.2
+- pandas v1.0.3
+- scikit-learn v0.22.1
+- tensorflow v1.15.0
+
+---
+
 ## Workflow
-- Clone the repository locally.
-- From the `utilities/preparation/` directory:
-    - Gather test images into two folders (one folder per species or family of plants, e.g. `./coastal/` and `./rostrata/`).  Images must be square for this architecture -- use `image_resize.py` to prepare images (note that this utility skews images, rather than crop).
-    - Run `create_test_group.py` to split the image sets into two groups: training/validation (90%) and testing (10%).  (This creates four new folders -- `folder1test`, `folder1train`, `folder2test`, and `folder2train` -- and new copies of each image file.) Argument flags:
-      + `-d` : directory of the image folders (optional, defaults to current working directory)
-      + `-c1` : folder name of the category 1 images
-      + `-c2` : folder name of the category 2 images
-      + `-v` : verbose mode (1 = on, 0 = off)
+- Run `train_models_image_classification.py`, using arguments to specify image sets and hyper-parameters.
+    - Arguments: (`-h` flag for full details)
+        - `c1` (required) - file path of the first image folder (class 1)
+        - `c2` (required) - file path of the second image folder (class 2)
+        - (`-color`, `-bw`) - number of color channels (RGB or K) boolean flag
+        - `-lr` - learning rate value
+        - `f` - number of folds (1 for no cross-fold validation, 2+ for cross-fold validation)
+        - `-e` - number of epochs per fold (10+)
+        - `-b` - batch size (minimum 2) for updates
+    - Output:
+        - Directory `saved_models` in current working directory, which contains all generated models (file name format `CNN_#.model`).
+        - Directory `graphs` in current working directory, which contains all generated graphs/plots for each run, plus a CSV summary of each fold.
+    - Example command: `python train_models_image_classification.py images\species_a images\species_b -f 10 -e 100 -b 64 > species_a_b_training_output.txt`
 
 
-- Run `create_models_with_cross_validation.py` on the training/validation image sets.
-    - Execute `python create_models_with_cross_validation.py -h` for a list of required arguments.
-    - Environment package dependencies: `tensorflow`, `numpy`, `sklearn`, `matplotlib`
-    - Local package dependencies: `models` and `labeled_images`
-    - Local file dependencies: `timer.py`, `data_and_visualization_io.py`, and `model_training.py`
-    - ** This program is currently being restructured. **
-
-
-- Run `classify_images_by_vote.py` on the test image set folders to gauge the model performance.  Results are saved as a CSV file in `/predictions/`. Argument flags:
-    - Execute `python classify_images_by_vote.py -h` for a list of required arguments.
-    - ** This program is currently being restructured. **
-  
+- After training model(s), classifying images in your test set.  Number of predictions generated = *# of test images * # of model files*
+- Run `classify_images_by_vote.py`.
+    - Arguments: (`-h` flag for full details)
+        - `c1` - file path of the first test image folder (class 1)
+        - `c2` - file path of the second image folder (class 2)
+        - `m` - folder of generated models (i.e. `saved_models` in working directory)
+    - Output:
+        - Results are saved as a CSV file (`yyyy-mm-dd-hh-mm-ssmodel_vote_predict.csv`) in `predictions` directory (which is created if needed).  
 
 ---
 
 ## Repository layout
-** currently being restructured **
+
+*** **being restructured** ***
 
 For full details, see section Folder Descriptions below.
 
@@ -45,20 +73,13 @@ For full details, see section Folder Descriptions below.
 ---
 
 ## File descriptions
-** currently being restructured **
+*** **currently being restructured** ***
 
-### create_models_with_cross_validation.py
+### train_models_image_classification.py
 
 This file is where the architecture of the model is created and the model is trained and validated. It takes in images directly and performs k-fold cross validation. This file can be called from the terminal with arguments for path to category folders, the category folder names, image size, number of folds, and number of epochs. 
 
-Note that the first argument (-d or --directory) is the path from current location to the folder **holding the two class folders**. If the class folders are in the current working directory, leave it blank!
-
 If there are any other parameters that you would like to change in the model, you'd have to directly change the code.
-
-### classify_images.py
-
-After training model(s), you can use this program to classify folders of images (e.g. for testing).  It classifies images based on which folder they are in, i.e. you must have two folders of images (the output names the class based on the name of the folder), and can only be used to test one model at a time.
-The program outputs a CSV file containing the image names, classification, and confusion matrix values.
 
 ### classify_images_by_vote.py
 
@@ -68,8 +89,6 @@ This program depends on functions from the classify_images.py program.
 ---
 
 ## Contributors and licensing
-This code base has been developed by Beth McDonald ([emcdona1](https://github.com/emcdona1)) and Allison Chen ([allisonchen23](https://github.com/allisonchen23)), under the guidance of Dr. Francisco Iacobelli ([fiacobelli](https://github.com/fiacobelli)), Dr. Matt von Konrat, Dr. Rachel Trana([rtrana](https://github.com/rtrana)), and Dr. Tom Campbell.
-This code has been constructed for the Field Museum Gantz Family Collections Center, under the direction of Dr. Matt von Konrat, Head of Botanical Collections at the Field.  Please contact him for licensing inquiries.
+This code has been developed by Beth McDonald ([emcdona1](https://github.com/emcdona1), NEIU) and Allison Chen ([allisonchen23](https://github.com/allisonchen23), UCLA), under the guidance of Dr. Matthew Von Konrat (Field Museum), Dr. Francisco Iacobelli ([fiacobelli](https://github.com/fiacobelli), NEIU), Dr. Rachel Trana ([rtrana](https://github.com/rtrana), NEIU), and Dr. Tom Campbell (NEIU).
 
-## Software requirements
-All code is written in Python 3 and has been tested in Python 3.4.3 and 3.7.0.
+Code development and testing was made possible thanks to [the Grainger Bioinformatics Center](https://www.fieldmuseum.org/science/labs/grainger-bioinformatics-center) at the Field Museum.  This project has been constructed for the Field Museum Gantz Family Collections Center, under the direction of [Dr. Matthew Von Konrat](https://www.fieldmuseum.org/about/staff/profile/16), Head of Botanical Collections at the Field.  Please contact Dr. Von Konrat for licensing inquiries.
