@@ -20,9 +20,10 @@ class CNNArguments:
         # training run arguments
         self.parser.add_argument('-f', '--n_folds', type=int, default=10,
                                  help='Number of folds (minimum 1) for cross validation. (Default = 10)')
-        self.parser.add_argument('-e', '--n_epochs', type=int, default=25, help='Number of epochs. (Default = 25)')
+        self.parser.add_argument('-e', '--n_epochs', type=int, default=25,
+                                 help='Number of epochs (minimum 10) per fold. (Default = 25)')
         self.parser.add_argument('-b', '--batch_size', type=int,
-                                 default=64, help='Batch size for training. (Default = 64)')
+                                 default=64, help='Batch size (minimum 2) for training. (Default = 64)')
 
         self.args: argparse.Namespace = self.parser.parse_args()
 
