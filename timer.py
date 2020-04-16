@@ -11,7 +11,7 @@ class Timer:
         end_time = time.time()
         self.duration = end_time - self.start_time
 
-    def results(self):
+    def print_results(self):
         print('Completed %s in %.1f seconds' % (self.name, self.duration))
 
     def clear(self):
