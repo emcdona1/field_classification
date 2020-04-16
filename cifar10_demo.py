@@ -32,6 +32,7 @@ def main():
     model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dense(NUM_CLASSES))  # STEP 8: change output layers
 
+    print(model.summary())
     # compile & train
     adam_opt = tf.keras.optimizers.Adam(learning_rate=0.001,
                                         beta_1=0.9,
