@@ -28,30 +28,28 @@ def main():
     # model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 
     # hidden layers
-    # model.add(layers.Flatten())
-    # STEP 7: add our hidden layers
+    model.add(layers.Flatten())
     # model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dropout(0.5, seed=SEED))
 
-    model.add(layers.Dense(500, activation="linear"))  # ,
-    # activity_regularizer=regularizers.l2(0.01),
-    # kernel_regularizer=regularizers.l2(0.05)))
+    model.add(layers.Dense(500, activation="linear",
+                           activity_regularizer=regularizers.l2(0.01),
+                           kernel_regularizer=regularizers.l2(0.05)))
     # noting that these are imported from tf.keras, not just keras
-    # STEP: Add all regularizers
 
-    model.add(layers.Dense(500, activation="relu"))  # ,
-    # activity_regularizer=regularizers.l2(0.01),
-    # kernel_regularizer=regularizers.l2(0.05)))
+    model.add(layers.Dense(500, activation="relu",
+                           activity_regularizer=regularizers.l2(0.01),
+                           kernel_regularizer=regularizers.l2(0.05)))
 
     model.add(layers.Dropout(0.25, seed=SEED))
 
     # output layer
-    # model.add(layers.Dense(NUM_CLASSES))
+    model.add(layers.Dense(NUM_CLASSES))
 
-    model.add(layers.Dense(2, activation="linear"))  # ,
-    # activity_regularizer=regularizers.l2(0.01),
-    # kernel_regularizer=regularizers.l2(0.05)))
-    model.add(layers.Dense(2, activation="softmax"))  # ,
+    # model.add(layers.Dense(2, activation="linear"))  # ,
+    # # activity_regularizer=regularizers.l2(0.01),
+    # # kernel_regularizer=regularizers.l2(0.05)))
+    # model.add(layers.Dense(2, activation="softmax"))  # ,
     # activity_regularizer=regularizers.l2(0.01),
     # kernel_regularizer=regularizers.l2(0.05)))
 
