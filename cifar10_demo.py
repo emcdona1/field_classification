@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import datasets, layers, models
+from tensorflow.keras import datasets, layers, models, regularizers
 import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
@@ -10,6 +10,7 @@ def main():
     (train_features, train_labels), (test_features, test_labels) = image_set()
     NUM_CLASSES = 2
     IMAGE_SHAPE = (32, 32, 3)
+    SEED = 1
 
     # plot_sample_images(train_features, train_labels)
 
@@ -27,9 +28,23 @@ def main():
     # model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 
     # hidden layers
-    model.add(layers.Flatten())
+    # model.add(layers.Flatten())
     # STEP 7: add our hidden layers
-    model.add(layers.Dense(64, activation='relu'))
+    # model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dropout(0.5, seed=SEED))
+
+    model.add(layers.Dense(500, activation="linear",
+                           activity_regularizer=regularizers.l2(0.01),
+                           kernel_regularizer=regularizers.l2(0.05)))
+    # noting that these are imported from tf.keras, not just keras
+
+    model.add(layers.Dense(500, activation="relu",
+                           activity_regularizer=regularizers.l2(0.01),
+                           kernel_regularizer=regularizers.l2(0.05)))
+
+    model.add(layers.Dropout(0.25, seed=SEED))
+
+    # output layer
     model.add(layers.Dense(NUM_CLASSES))  # STEP 8: change output layers
 
     print(model.summary())
