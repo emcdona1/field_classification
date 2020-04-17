@@ -15,16 +15,16 @@ def main():
 
     model = models.Sequential()
     # convolutional layers
-    model.add(layers.Conv2D(32, (3, 3), input_shape=IMAGE_SHAPE))  # activation='relu',
+    model.add(layers.Conv2D(10, (5, 5), input_shape=IMAGE_SHAPE))
     model.add(layers.BatchNormalization())
-    model.add(layers.Activation("relu"))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(64, (3, 3)))  # , activation='relu'
+    model.add(layers.Activation('relu'))
+    model.add(layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+    model.add(layers.Conv2D(40, (5, 5)))
     model.add(layers.BatchNormalization())
-    model.add(layers.Activation("relu"))
+    model.add(layers.Activation('relu'))
     model.add(layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))  # STEP 6: remove this
+    # model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 
     # hidden layers
     model.add(layers.Flatten())
