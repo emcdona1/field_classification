@@ -32,19 +32,19 @@ def main():
     # model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dropout(0.5, seed=SEED))
 
-    model.add(layers.Dense(500, activation="linear",
-                           activity_regularizer=regularizers.l2(0.01),
-                           kernel_regularizer=regularizers.l2(0.05)))
+    model.add(layers.Dense(500, activation="linear"))  # ,
+    # activity_regularizer=regularizers.l2(0.01),
+    # kernel_regularizer=regularizers.l2(0.05)))
     # noting that these are imported from tf.keras, not just keras
 
-    model.add(layers.Dense(500, activation="relu",
-                           activity_regularizer=regularizers.l2(0.01),
-                           kernel_regularizer=regularizers.l2(0.05)))
+    model.add(layers.Dense(500, activation="relu"))  # ,
+    # activity_regularizer=regularizers.l2(0.01),
+    # kernel_regularizer=regularizers.l2(0.05)))
 
     model.add(layers.Dropout(0.25, seed=SEED))
 
     # output layer
-    model.add(layers.Dense(NUM_CLASSES))
+    # model.add(layers.Dense(NUM_CLASSES))
 
     # model.add(layers.Dense(2, activation="linear"))  # ,
     # # activity_regularizer=regularizers.l2(0.01),
