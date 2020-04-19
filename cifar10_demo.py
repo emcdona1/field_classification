@@ -41,7 +41,7 @@ def main():
                            activity_regularizer=regularizers.l2(0.01),
                            kernel_regularizer=regularizers.l2(0.05)))
 
-    model.add(layers.Dropout(0.25, seed=SEED))
+    # model.add(layers.Dropout(0.25, seed=SEED))
 
     # output layer
     # model.add(layers.Dense(NUM_CLASSES))
