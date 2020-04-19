@@ -46,9 +46,9 @@ def main():
     # output layer
     # model.add(layers.Dense(NUM_CLASSES))
 
-    model.add(layers.Dense(2, activation="linear",
-                           activity_regularizer=regularizers.l2(0.01),
-                           kernel_regularizer=regularizers.l2(0.05)))
+    # model.add(layers.Dense(2, activation="linear",
+    #                        activity_regularizer=regularizers.l2(0.01),
+    #                        kernel_regularizer=regularizers.l2(0.05)))
     model.add(layers.Dense(2, activation="softmax",
                            activity_regularizer=regularizers.l2(0.01),
                            kernel_regularizer=regularizers.l2(0.05)))
