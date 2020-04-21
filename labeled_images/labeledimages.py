@@ -18,6 +18,7 @@ class LabeledImages:
         self.class_labels = None
 
     def load_images_from_folders(self, folders, color_mode, class_labels) -> None:
+        print('Loading image set from filesystem.')
         self.features = []
         self.labels = []
         self.img_names = []
@@ -43,6 +44,7 @@ class LabeledImages:
         self.img_dim = self.features.shape[1]
 
     def load_cifar_images(self) -> None:
+        print('Loading CIFAR-10 image set (28x28x3).')
         (train_features, train_labels), (val_features, val_labels) = datasets.cifar10.load_data()
         train_features, test_features = train_features / 255.0, val_features / 255.0
         # class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
