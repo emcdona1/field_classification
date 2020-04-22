@@ -26,23 +26,23 @@ class SmithsonianModel(CNNModel):
         # TODO: In Mathematica, Dropout[] has a rate of dropping 50% of elements then * by 2 -- ours does not.
         self.model.add(tf.keras.layers.Dropout(0.5, seed=self.seed))
 
-        self.model.add(tf.keras.layers.Dense(500, activation="linear",
-                                             activity_regularizer=regularizers.l2(0.01),
-                                             kernel_regularizer=regularizers.l2(0.05)))
+        self.model.add(tf.keras.layers.Dense(500, activation="linear"))  # ,
+        # activity_regularizer=regularizers.l2(0.01),
+        # kernel_regularizer=regularizers.l2(0.05)))
 
-        self.model.add(tf.keras.layers.Dense(500, activation="relu",
-                                             activity_regularizer=regularizers.l2(0.01),
-                                             kernel_regularizer=regularizers.l2(0.05)))
+        self.model.add(tf.keras.layers.Dense(500, activation="relu"))  # ,
+        # activity_regularizer=regularizers.l2(0.01),
+        # kernel_regularizer=regularizers.l2(0.05)))
 
         # self.model.add(tf.keras.layers.Dropout(0.25, seed=self.seed))  # TODO: Noting that this layer is not actually in the smithsonian!
 
     def add_output_layers(self):
-        # self.model.add(tf.keras.layers.Dense(2,
-        #                                      activation="linear",
-        #                                      activity_regularizer=regularizers.l2(0.01),
-        #                                      kernel_regularizer=regularizers.l2(0.05)))
         self.model.add(tf.keras.layers.Dense(2,
-                                             activation="softmax",
-                                             activity_regularizer=regularizers.l2(0.01),
-                                             kernel_regularizer=regularizers.l2(0.05)))
+                                             activation="linear"))  # ,
+        # activity_regularizer=regularizers.l2(0.01),
+        # kernel_regularizer=regularizers.l2(0.05)))
+        self.model.add(tf.keras.layers.Dense(2,
+                                             activation="softmax"))  # ,
+        # activity_regularizer=regularizers.l2(0.01),
+        # kernel_regularizer=regularizers.l2(0.05)))
         print(self.model.summary())
