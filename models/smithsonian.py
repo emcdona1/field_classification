@@ -10,13 +10,13 @@ class SmithsonianModel(CNNModel):
         # Two sets of convolutional layers
         self.model.add(tf.keras.layers.Conv2D(10, (5, 5), input_shape=(
             self.img_dim, self.img_dim, 3)))  # todo: only works for color images
-        self.model.add(tf.keras.layers.BatchNormalization())
         self.model.add(tf.keras.layers.Activation("relu"))
+        self.model.add(tf.keras.layers.BatchNormalization())
         self.model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
         self.model.add(tf.keras.layers.Conv2D(40, (5, 5)))
-        self.model.add(tf.keras.layers.BatchNormalization())
         self.model.add(tf.keras.layers.Activation("relu"))
+        self.model.add(tf.keras.layers.BatchNormalization())
         self.model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
         # Output shape: 40 x 61 x 61
