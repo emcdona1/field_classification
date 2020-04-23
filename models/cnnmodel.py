@@ -40,7 +40,8 @@ class CNNModel(ABC):
                                                   epsilon=0.00001,
                                                   decay=0.0,
                                                   amsgrad=False)
-        self.model.compile(optimizer='adam',
-                           # optimizer=adam_optimizer,
-                           loss='sparse_categorical_crossentropy',
-                           metrics=['accuracy'])
+        self.model.compile(
+            # optimizer='adam',
+            optimizer=adam_optimizer,
+            loss='sparse_categorical_crossentropy',
+            metrics=['accuracy'])
