@@ -46,11 +46,11 @@ class ModelTrainer:
         self.curr_fold: int = curr_fold + 1
 
         print('Training model for fold %i of %i.' % (self.curr_fold, self.n_folds))
-        # es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss', \
+        # es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss',
         #        mode='min', min_delta = 0.05, patience = 20, restore_best_weights = True)
         self.history = self.architecture.model.fit(self.training_set[0], self.training_set[1],
                                                    batch_size=self.batch_size, epochs=self.epochs,
-                                                   #        callbacks = [es_callback], \
+                                                   #        callbacks = [es_callback],
                                                    validation_data=self.validation_set, verbose=2)
         self.save_model()
         self.validate_model(images.class_labels)
@@ -59,6 +59,7 @@ class ModelTrainer:
         self.architecture.model.save(os.path.join(self.folder_name, 'CNN_' + str(self.curr_fold) + '.model'))
 
     def validate_model(self, class_labels: tuple) -> None:
+        # TODO: confirm if I do/don't need this predict_proba step.
         validation_predicted_probability = self.architecture.model.predict_proba(self.validation_set[0])[:, 1]
         self.charts.update(self.history, self.curr_fold, self.validation_set[1],
                            validation_predicted_probability, class_labels)
