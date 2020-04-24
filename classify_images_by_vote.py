@@ -20,7 +20,6 @@ def main():
     # TODO: Update this to use the create_models method, and to accept color mode as a param
     images = LabeledImages(1)
     images.load_images_from_folders(image_folders, 3, class_labels)
-    # image_features, actual_class, img_filenames = import_images(img_directory, folders, img_size)
     print('Images imported.')
 
     combined_results = pd.DataFrame()
@@ -32,8 +31,8 @@ def main():
             model_path = os.path.join(model_directory, model_name)
             classify_images_with_a_model(class_labels, combined_results, images, model_name, model_path)
 
-    combined_results['label'] = -1
-    calculate_confusion_matrix(combined_results)
+    combined_results['voted_label'] = -1
+    # calculate_confusion_matrix(combined_results)
 
     if not os.path.exists('predictions'):
         os.makedirs('predictions')
@@ -85,7 +84,7 @@ def classify_images_with_a_model(class_labels, combined_results, images, model_n
         print('Model ' + model_name + ' loaded.')
 
         # Generate predictions and organize results
-        predictions = make_predictions(images.features, images.labels, images.img_names, images.class_labels, model)
+        predictions = make_predictions(images, model)
         print('Predictions generated.')
 
         # if this is the first model being processed, add a column of the file names & actual classification
@@ -94,9 +93,11 @@ def classify_images_with_a_model(class_labels, combined_results, images, model_n
             combined_results['actual_class'] = predictions['actual_class']
         # add newest predictions to results
         combined_results[model_name] = predictions[class_labels[1] + '_pred']  # probability of class = 1
+    else:
+        print('Model file path error: "%s" not loaded.' % model_path)
 
 
-def make_predictions(pixel_values, actual_class, img_filenames, class_labels, model):
+def make_predictions(images: LabeledImages, model: tf.keras.Model):
     ''' Model predicts classifications for all images, and organizes into a DataFrame
 
     Parameters:
@@ -123,18 +124,20 @@ def make_predictions(pixel_values, actual_class, img_filenames, class_labels, mo
     11. True Negative (1 if the image was correctly predicted to be class=0, 0 otherwise)
     '''
     # Predict classes of imported images
-    predictions = model.predict(pixel_values)
-    prediction_integer_func = np.vectorize(lambda t: (1 if t > THRESHOLD else 0))
-    prediction_class = prediction_integer_func(predictions[:, [1]])  # 0/1 labels of predictions
+    predictions: np.array = model.predict(images.features)
+    # prediction_integer_func = np.vectorize(lambda t: (1 if t > THRESHOLD else 0))
+    # prediction_class = prediction_integer_func(predictions[:, [1]])  # 0/1 labels of predictions
+    prediction_class = np.round(predictions[:, [1]], 0)
 
-    prediction_label_func = np.vectorize(lambda t: class_labels[t])
-    pred_actual_class_labels = np.c_[prediction_label_func(prediction_class), prediction_label_func(actual_class)]
+    prediction_label_func = np.vectorize(lambda t: images.class_labels[t])
+    pred_actual_class_labels = np.c_[prediction_label_func(prediction_class), prediction_label_func(images.labels)]
 
     # Join all information into one nparray -> pd.DataFrame
-    headers = ['filename', class_labels[0] + '_pred', class_labels[1] + '_pred', 'pred_class', 'actual_class',
-               'pred_label', 'actual_label']
+    headers = ['filename', images.class_labels[0] + '_pred', images.class_labels[1] + '_pred', 'pred_class',
+               'actual_class',
+               'pred_label', 'actual_label']  # todo: only use filename, actual_class, and images.class_labels[1]_pred !
     joined_arrays = np.c_[
-        img_filenames, predictions, prediction_class, actual_class, pred_actual_class_labels]
+        images.img_names, predictions, prediction_class, images.labels, pred_actual_class_labels]
     predictions_to_write = pd.DataFrame(joined_arrays, columns=headers)
 
     return predictions_to_write
