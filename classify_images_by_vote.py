@@ -23,8 +23,8 @@ def main():
     print('Images imported.')
 
     combined_results = pd.DataFrame()
-    # images.img_names = 'filename'
-    #
+    combined_results['filename'] = images.img_names
+    combined_results['actual_class'] = images.labels
 
     if model_file:
         classify_images_with_a_model(class_labels, combined_results, images, model_file, model_file)
@@ -89,12 +89,6 @@ def classify_images_with_a_model(class_labels, combined_results, images, model_n
         predictions = make_predictions(images, model)
         print('Predictions generated.')
 
-        # if this is the first model being processed, add a column of the file names & actual classification
-        if len(combined_results) == 0:
-            # combined_results['filename'] = predictions['filename']
-            # combined_results['actual_class'] = predictions['actual_class']
-            combined_results['filename'] = images.img_names
-            combined_results['actual_class'] = images.labels
         # add newest predictions to results
         combined_results[model_name] = predictions[class_labels[1] + '_pred']  # probability of class = 1
     else:
@@ -131,17 +125,14 @@ def make_predictions(images: LabeledImages, model: tf.keras.Model):
     predictions: np.array = model.predict(images.features)
     prediction_integer_func = np.vectorize(lambda t: (1 if t > THRESHOLD else 0))
     prediction_class = prediction_integer_func(predictions[:, [1]])  # 0/1 labels of predictions
-    
+
     prediction_label_func = np.vectorize(lambda t: images.class_labels[t])
     pred_actual_class_labels = np.c_[prediction_label_func(prediction_class), prediction_label_func(images.labels)]
 
     # Join all information into one nparray -> pd.DataFrame
-    headers = ['filename', images.class_labels[0] + '_pred', images.class_labels[1] + '_pred', 'pred_class',
-               'actual_class',
-               'pred_label', 'actual_label']  # todo: only use filename, actual_class, and images.class_labels[1]_pred !
-    joined_arrays = np.c_[
-        images.img_names, predictions, prediction_class, images.labels, pred_actual_class_labels]
-    predictions_to_write = pd.DataFrame(joined_arrays, columns=headers)
+    headers = [images.class_labels[0] + '_pred', images.class_labels[1] + '_pred']
+
+    predictions_to_write = pd.DataFrame(predictions, columns=headers)
 
     return predictions_to_write
 
