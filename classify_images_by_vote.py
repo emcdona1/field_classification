@@ -14,7 +14,7 @@ THRESHOLD = 0.5
 def main():
     # Start execution and parse arguments
     timer = Timer('Classifying a test set')
-    image_folders, class_labels, model_directory = process_input_arguments()
+    image_folders, class_labels, model_directory, model_file = process_input_arguments()
 
     # Import images
     # TODO: Update this to use the create_models method, and to accept color mode as a param
@@ -25,25 +25,29 @@ def main():
 
     combined_results = pd.DataFrame()
 
-    for model_name in os.listdir(model_directory):
-        model_path = os.path.join(model_directory, model_name)
-        if os.path.isfile(model_path):
-            # Load model
-            model = tf.keras.models.load_model(model_path)
-            print('Model ' + model_name + ' loaded.')
-
-            # Generate predictions and organize results
-            predictions = make_predictions(images.features, images.labels, images.img_names, images.class_labels, model)
-            print('Predictions generated.')
-
-            # if this is the first model being processed, add a column of the file names & actual classification
-            if len(combined_results) == 0:
-                combined_results['filename'] = predictions['filename']
-                combined_results['actual_class'] = predictions['actual_class']
-            # add newest predictions to results
-            combined_results[model_name] = predictions[class_labels[1] + '_pred']  # probability of class = 1
+    if model_file:
+        classify_images_with_a_model(class_labels, combined_results, images, model_file, model_file)
+    else:
+        for model_name in os.listdir(model_directory):
+            model_path = os.path.join(model_directory, model_name)
+            classify_images_with_a_model(class_labels, combined_results, images, model_name, model_path)
 
     combined_results['label'] = -1
+    calculate_confusion_matrix(combined_results)
+
+    if not os.path.exists('predictions'):
+        os.makedirs('predictions')
+    write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
+
+    # TODO: for each row in chart, vote (simple majority) and give each *image* a final classification
+    # TODO: output: image name, final classification, true classification, tp/fn/fp/tn, then each classification
+
+    # Finish execution
+    timer.stop()
+    timer.print_results()
+
+
+def calculate_confusion_matrix(combined_results):
     combined_results['tp'] = 0
     combined_results['fn'] = 0
     combined_results['fp'] = 0
@@ -73,16 +77,23 @@ def main():
         else:
             print('Invalid image class value')
 
-    if not os.path.exists('predictions'):
-        os.makedirs('predictions')
-    write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
 
-    # TODO: for each row in chart, vote (simple majority) and give each *image* a final classification
-    # TODO: output: image name, final classification, true classification, tp/fn/fp/tn, then each classification
+def classify_images_with_a_model(class_labels, combined_results, images, model_name, model_path):
+    if os.path.isfile(model_path):
+        # Load model
+        model = tf.keras.models.load_model(model_path)
+        print('Model ' + model_name + ' loaded.')
 
-    # Finish execution
-    timer.stop()
-    timer.print_results()
+        # Generate predictions and organize results
+        predictions = make_predictions(images.features, images.labels, images.img_names, images.class_labels, model)
+        print('Predictions generated.')
+
+        # if this is the first model being processed, add a column of the file names & actual classification
+        if len(combined_results) == 0:
+            combined_results['filename'] = predictions['filename']
+            combined_results['actual_class'] = predictions['actual_class']
+        # add newest predictions to results
+        combined_results[model_name] = predictions[class_labels[1] + '_pred']  # probability of class = 1
 
 
 def make_predictions(pixel_values, actual_class, img_filenames, class_labels, model):
@@ -154,14 +165,19 @@ def process_input_arguments():
     parser.add_argument('c1', help='Path of class 1 images')
     parser.add_argument('c2', help='Path of class 2 images')
     parser.add_argument('models', help='Folder of models to use')
-    # TODO: add color mode arg
     args = parser.parse_args()
 
     image_folders = (args.c1, args.c2)
     class_labels = parse_class_names_from_image_folders(args)
-    model_directory = args.models
+    model_location = args.models
+    if os.path.isdir(model_location):
+        model_directory = model_location
+        model_file = None
+    else:
+        model_directory = None
+        model_file = model_location
 
-    return image_folders, class_labels, model_directory
+    return image_folders, class_labels, model_directory, model_file
 
 
 if __name__ == '__main__':
