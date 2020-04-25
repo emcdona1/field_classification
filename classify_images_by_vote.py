@@ -17,7 +17,6 @@ def main():
     image_folders, class_labels, model_directory, model_file = process_input_arguments()
 
     # Import images
-    # TODO: Update this to use the create_models method, and to accept color mode as a param
     images = LabeledImages(1)
     images.load_images_from_folders(image_folders, 3, class_labels)
     print('Images imported.')
@@ -25,16 +24,18 @@ def main():
     combined_results = pd.DataFrame()
     combined_results['filename'] = images.img_names
     combined_results['actual_class'] = images.labels
+    all_predictions = pd.DataFrame()
 
     if model_file:
-        classify_images_with_a_model(class_labels, combined_results, images, model_file, model_file)
+        classify_images_with_a_model(class_labels, all_predictions, images, model_file, model_file)
     else:
         for model_name in os.listdir(model_directory):
             model_path = os.path.join(model_directory, model_name)
-            classify_images_with_a_model(class_labels, combined_results, images, model_name, model_path)
+            classify_images_with_a_model(class_labels, all_predictions, images, model_name, model_path)
 
-    combined_results['voted_label'] = -1
+    all_predictions['voted_label'] = all_predictions.mean(axis=1)
     # calculate_confusion_matrix(combined_results)
+    combined_results = combined_results.join(all_predictions)
 
     if not os.path.exists('predictions'):
         os.makedirs('predictions')
@@ -79,7 +80,8 @@ def calculate_confusion_matrix(combined_results):
             print('Invalid image class value')
 
 
-def classify_images_with_a_model(class_labels, combined_results, images, model_name, model_path):
+def classify_images_with_a_model(class_labels: tuple, combined_results: pd.DataFrame,
+                                 images: LabeledImages, model_name: str, model_path: str) -> None:
     if os.path.isfile(model_path):
         # Load model
         model = tf.keras.models.load_model(model_path)
@@ -95,7 +97,7 @@ def classify_images_with_a_model(class_labels, combined_results, images, model_n
         print('Model file path error: "%s" not loaded.' % model_path)
 
 
-def make_predictions(images: LabeledImages, model: tf.keras.Model):
+def make_predictions(images: LabeledImages, model: tf.keras.Model) -> pd.DataFrame:
     ''' Model predicts classifications for all images, and organizes into a DataFrame
 
     Parameters:
@@ -137,7 +139,7 @@ def make_predictions(images: LabeledImages, model: tf.keras.Model):
     return predictions_to_write
 
 
-def write_dataframe_to_csv(folder, filename, dataframe_to_write):
+def write_dataframe_to_csv(folder, filename, data_to_write):
     ''' Writes the given DataFrame to a file.
     Parameters:
     -----
@@ -152,7 +154,7 @@ def write_dataframe_to_csv(folder, filename, dataframe_to_write):
     timestamp = datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
     filename = timestamp + filename + '.csv'
     filepath = os.path.join(folder, filename)
-    dataframe_to_write.to_csv(filepath, encoding='utf-8', index=False)
+    data_to_write.to_csv(filepath, encoding='utf-8', index=False)
 
     return filepath
 
@@ -165,7 +167,7 @@ def process_input_arguments():
     args = parser.parse_args()
 
     image_folders = (args.c1, args.c2)
-    class_labels = parse_class_names_from_image_folders(args)
+    class_labels: tuple = parse_class_names_from_image_folders(args)
     model_location = args.models
     if os.path.isdir(model_location):
         model_directory = model_location
