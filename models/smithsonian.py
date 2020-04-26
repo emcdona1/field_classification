@@ -1,6 +1,5 @@
 from models.cnnmodel import CNNModel
 import tensorflow as tf
-from keras import regularizers
 
 
 class SmithsonianModel(CNNModel):
@@ -24,24 +23,10 @@ class SmithsonianModel(CNNModel):
 
     def add_hidden_layers(self):
         self.model.add(tf.keras.layers.Dropout(0.5, seed=self.seed))  # drop out 50% and then * 2 (same # of layers)
-
-        self.model.add(tf.keras.layers.Dense(500, activation="linear"))  # ,
-        # activity_regularizer=regularizers.l2(0.01),
-        # kernel_regularizer=regularizers.l2(0.05)))
-
-        self.model.add(tf.keras.layers.Dense(500, activation="relu"))  # ,
-        # activity_regularizer=regularizers.l2(0.01),
-        # kernel_regularizer=regularizers.l2(0.05)))
-
-        # self.model.add(tf.keras.layers.Dropout(0.25, seed=self.seed))
+        self.model.add(tf.keras.layers.Dense(500, activation='linear'))
+        self.model.add(tf.keras.layers.Dense(500, activation='relu'))
 
     def add_output_layers(self):
-        self.model.add(tf.keras.layers.Dense(2,
-                                             activation="linear"))  # ,
-        # activity_regularizer=regularizers.l2(0.01),
-        # kernel_regularizer=regularizers.l2(0.05)))
-        self.model.add(tf.keras.layers.Dense(2,
-                                             activation="softmax"))  # ,
-        # activity_regularizer=regularizers.l2(0.01),
-        # kernel_regularizer=regularizers.l2(0.05)))
+        self.model.add(tf.keras.layers.Dense(2, activation='linear'))
+        self.model.add(tf.keras.layers.Dense(2, activation="softmax"))
         print(self.model.summary())
