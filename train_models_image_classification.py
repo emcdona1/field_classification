@@ -37,7 +37,9 @@ def load_image_sets(user_arguments: CNNArguments) -> LabeledImages:
     images = LabeledImages(SEED)
     # Option 1: load from filesystem
     image_folders, class_labels = user_arguments.image_folders_and_class_labels()
-    images.load_images_from_folders(image_folders, user_arguments.color_mode(), class_labels)
+    color_mode = user_arguments.color_mode()
+    print("color mode: " + str(color_mode))
+    images.load_images_from_folders(image_folders, color_mode, class_labels)
 
     # Option 2: load 2 classes of the CIFAR-10 data set
     # images.load_cifar_images()
