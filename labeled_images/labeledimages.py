@@ -23,6 +23,7 @@ class LabeledImages:
         self.img_names = []
         self.class_labels = class_labels
         self.color_mode = ColorMode.RGB if color_mode else ColorMode.BW
+        print(self.color_mode == ColorMode.RGB)
 
         for (class_num, image_folder_path) in enumerate(folders):
             for img in os.listdir(image_folder_path):
