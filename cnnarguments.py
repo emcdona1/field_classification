@@ -44,7 +44,6 @@ class CNNArguments:
         return lr
 
     def color_mode(self) -> bool:
-        print('args.bw = ' + str(self.args.bw))
         return False if self.args.bw else True
 
     def n_folds(self) -> int:

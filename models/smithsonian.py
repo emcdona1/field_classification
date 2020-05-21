@@ -9,13 +9,13 @@ class SmithsonianModel(CNNModel):
     def add_convolutional_layers(self):
         # Two sets of convolutional layers
         if self.color == ColorMode.RGB:
+            print('Color image input layer')
             self.model.add(layers.Conv2D(10, (5, 5), input_shape=(
                 self.img_dim, self.img_dim, 3)))
-            print("color image input layer")
         else:
+            print('Grayscale image input layer')
             self.model.add(layers.Conv2D(10, (5, 5), input_shape=(
                 self.img_dim, self.img_dim, 1)))
-            print("grayscale image input layer")
         self.model.add(layers.BatchNormalization())
         self.model.add(layers.Activation('relu'))
         self.model.add(layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
