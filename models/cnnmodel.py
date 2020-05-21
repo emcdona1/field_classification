@@ -1,14 +1,16 @@
 import tensorflow as tf
 from abc import abstractmethod, ABC
+from labeled_images.colormode import ColorMode
 
 
 class CNNModel(ABC):
-    def __init__(self, seed: int, lr: float, img_dim: int):
+    def __init__(self, seed: int, lr: float, img_dim: int, color: bool = True):
         """ Creates layers for model and compiles model"""
         self.seed: int = seed
         self.lr: float = lr
         self.img_dim: int = img_dim
         self.model = None
+        self.color = ColorMode.RGB if color else ColorMode.BW
 
     def reset_model(self):
         self.model = None
