@@ -13,7 +13,7 @@ class SmithsonianModel(CNNModel):
                 self.img_dim, self.img_dim, 3)))
         else:
             self.model.add(layers.Conv2D(10, (5, 5), input_shape=(
-                self.img_dim, self.img_dim, 1)))
+                self.img_dim, self.img_dim)))
         self.model.add(layers.BatchNormalization())
         self.model.add(layers.Activation('relu'))
         self.model.add(layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
