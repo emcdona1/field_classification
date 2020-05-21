@@ -30,6 +30,7 @@ class LabeledImages:
                                        cv2.IMREAD_COLOR if self.color_mode == ColorMode.RGB
                                        else cv2.IMREAD_GRAYSCALE)
                 img_array = img_array / 255
+                img_array = img_array.reshape([img_array.shape[0], img_array.shape[1], 1])
                 self.features.append(img_array)
                 self.labels.append(class_num)
                 self.img_names.append(img)
