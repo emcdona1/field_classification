@@ -4,13 +4,13 @@ from labeled_images.colormode import ColorMode
 
 
 class CNNModel(ABC):
-    def __init__(self, seed: int, lr: float, img_dim: int, color: bool = True):
+    def __init__(self, seed: int, lr: float, img_dim: int, color_mode: ColorMode = ColorMode.RGB):
         """ Creates layers for model and compiles model"""
         self.seed: int = seed
         self.lr: float = lr
         self.img_dim: int = img_dim
         self.model = None
-        self.color = ColorMode.RGB if color else ColorMode.BW
+        self.color = color_mode
 
     def reset_model(self):
         self.model = None
