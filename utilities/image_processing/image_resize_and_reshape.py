@@ -10,7 +10,7 @@ def parse_arguments() -> (str, str, int):
     parser.add_argument('-dest', '--destination_directory', default='', help='Path to save resized images')
     parser.add_argument('-size', '--image_size', default=256, help='The new image height & width (output is square)')
     args = parser.parse_args()
-    return args.source, args.destination, int(args.image_size)
+    return args.source_directory, args.destination_directory, int(args.image_size)
 
 
 def reduce_image_dim(filename: str) -> np.ndarray:
