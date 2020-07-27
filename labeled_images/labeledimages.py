@@ -39,6 +39,7 @@ class LabeledImages:
             print('Loaded images from %s.' % image_folder_path)
         self.randomize_order()
         self.features = np.array(self.features)
+        print('Shape: ' + str(self.features.shape))
         self.labels = np.array(self.labels)
         self.img_names = np.array(self.img_names)
         # self.features.shape = (# of images, img dimension, img dimension, color channels)
