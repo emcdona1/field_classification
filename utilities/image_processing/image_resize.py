@@ -2,6 +2,7 @@ import argparse
 import cv2
 import os
 import numpy as np
+from utilities.timer import Timer
 
 
 def parse_arguments() -> (str, str, int):
@@ -31,6 +32,7 @@ def save_image(filename: str, img: np.ndarray) -> None:
 
 
 if __name__ == '__main__':
+    timer = Timer('Resizing images')
     source_folder, destination_folder, img_size = parse_arguments()
     if not os.path.exists(destination_folder):
         os.mkdir(destination_folder)
@@ -40,4 +42,5 @@ if __name__ == '__main__':
         save_image(img_filename, resized_image)
         if idx % 500 == 499:
             print('500 images processed.')
+    timer.stop()
     print('Images resized.')
