@@ -1,24 +1,25 @@
-# field_classification
+# Convolutional Neural Networks and Microplants
+#### _field_classification_ repository
 
-The code in this repository uses Convolutional Neural Networks (CNN) in Tensorflow/Keras to classify images of two sets of plant species (e.g. the morphologically similar plant families *Lycopodieaceae* and *Selaginellaceae*, or two species of the *Frullania* genus) based on the available corpus of images.  Scripts are available to download and preprocess certain images, and the CNN and classification codes are designed to be generic with multiple types of images and species of plants.  We are currently experimenting with different deep learning architectures, convolution kernels, and how each set of processes work on different corpora of images.
+
+The code in this repository uses Convolutional Neural Networks (CNN) in Tensorflow/Keras to classify images of two sets of plant species (e.g. the morphologically similar plant families *Lycopodieaceae* and *Selaginellaceae*, or two species of the *Frullania* genus) based on the available corpus of images.  Scripts are available to download and preprocess images. The CNN and classification programs are designed to accept any standard image file type (per OpenCV standards), and is generic enough to accept images of any species of plants (or other objects!).
 
 
 ---
 
 ## Setup
-1. Clone the repository locally.
+1. Clone the repository to your local machine.
 1. Confirm you have Python and the necessary packages installed (see Environment section below).
-1. Prepare two sets of images, each set in a separate directory.  (The directory name indicates the class label, e.g. species.)  Images must be square (1:1 aspect ratio) and of the same dimensions.
-    - To resize and reshape images, use `utilities\image_processing\image_resize.py`.  Note that this tool does not crop images, so rectangular images will be skewed (distorting one dimension).
-    - To use the Keras built-in CIFAR-10 dataset (reduced to 2 classes), you can manually adjust the `load_image_sets()` method in `train_models_image_classification.py`.
-1. If desired, prepare a separate group of test images (not used in training and validation) by using `utilities\image_processing\create_test_group.py`.  By default this program creates a split of 90% for training & validation and 10% for testing.
-    - This creates four new directories  -- *folder1test, folder1train, folder2test*, and *folder2train* -- and copies each image file into one of the four new directories.
+1. Prepare two sets of images, with each set in a separate directory.  (The directory names will be used as the class label, e.g. *cat* and *dog*.)  Images must be square (1:1 aspect ratio) and all of the same dimensions.
+    - To resize and reshape images, use `utilities\image_processing\image_resize.py`.  Note that rectangular images will be skewed (distorting one dimension) to avoid cropping out useful information.
+    - Instead of providing your own image sets, a modification of the CIFAR-10 built-in data set is available. To use these images, you will need to manually adjust the `load_image_sets()` method in `train_models_image_classification.py`.
+1. If desired, you should prepare a separate group of test images (i.e. images not used in training and validation).  You can do so manually, or via `utilities\image_processing\create_test_group.py`.
+    - By default this script creates a split of 90% for training & validation and 10% for testing, and creates four new directories  -- *folder1test, folder1train, folder2test*, and *folder2train*. The script creates new copies of each image file into one of the four directories (the original image files are retained).
 
 
 ### Environment
 This code has been tested in Python 3.7 using Anaconda (Windows) and Miniconda (Ubuntu).
 
-**Note**: This system is *not* compatible with Tensorflow 2.x (as of April 2020).
 
 #### Tested Package Versions:
 - keras v2.3.1
@@ -27,27 +28,27 @@ This code has been tested in Python 3.7 using Anaconda (Windows) and Miniconda (
 - openCV (cv2) v3.4.2
 - pandas v1.0.3
 - scikit-learn v0.22.1
-- tensorflow v1.15.0
+- tensorflow v1.15.0  (**N.B.**: *This system is not yet compatible with Tensorflow 2.x.*)
 
 ---
 
 ## Workflow
 - Run `train_models_image_classification.py`, using arguments to specify image sets and hyper-parameters.
     - Arguments: (`-h` flag for full details)
-        - `c1` (required) - file path of the first image folder (class 1)
-        - `c2` (required) - file path of the second image folder (class 2)
-        - (`-color`, `-bw`) - number of color channels (RGB or K) boolean flag
-        - `-lr` - learning rate value
-        - `f` - number of folds (1 for no cross-fold validation, 2+ for cross-fold validation)
-        - `-e` - number of epochs per fold (10+)
-        - `-b` - batch size (minimum 2) for updates
+        - `c1` (positional, required) - file path of the first image folder (class 1 training images)
+        - `c2` (positional, required) - file path of the second image folder (class 2 trianing images)
+        - (`-color`, `-bw`) - boolean flag for number of color channels (RGB or K) (*default = color*)
+        - `-lr` - learning rate value (*decimal number*)
+        - `f` - number of folds (1 for no cross-fold validation, 2+ for cross-fold validation) (*integer <= 1*)
+        - `-e` - number of epochs per fold (*integer >= 10*)
+        - `-b` - batch size for updates (*integer >= 2*)
     - Output:
-        - Directory `saved_models` in current working directory, which contains all generated models (file name format `CNN_#.model`).
-        - Directory `graphs` in current working directory, which contains all generated graphs/plots for each run, plus a CSV summary of each fold.
+        - Directory `saved_models` created in current working directory, which contains all generated models (file name format: `CNN_#.model`).
+        - Directory `graphs` created in current working directory, which contains all generated graphs/plots for each run, plus a CSV summary for each cross-validation fold.
     - Example command: `python train_models_image_classification.py images\species_a images\species_b -f 10 -e 100 -b 64 > species_a_b_training_output.txt`
 
 
-- After training model(s), classifying images in your test set.  Number of predictions generated = *# of test images * # of model files*
+- After the training is finished, use the model file(s) to classify test set images.  The number of predictions generated = *# of test images * # of model files*
 - Run `classify_images_by_vote.py`.
     - Arguments: (`-h` flag for full details)
         - `c1` - file path of the first test image folder (class 1)
@@ -55,36 +56,32 @@ This code has been tested in Python 3.7 using Anaconda (Windows) and Miniconda (
         - `m` - folder of generated models (i.e. `saved_models` in working directory)
     - Output:
         - Results are saved as a CSV file (`yyyy-mm-dd-hh-mm-ssmodel_vote_predict.csv`) in `predictions` directory (which is created if needed).  
+    - Example command: `python classify_images_by_vote.py images\species_a_test images\species_b_test saved_models\`
 
 ---
 
 ## Repository layout
 
-*** **being restructured** ***
+##### Folders:
+- **_/_** - Contains the main files used for training and testing models.
+- **_/labeled_images_** - Contains the files for loading in image sets. 
+- **_/models_** - Contains the files used to define neural network layer architectures.
+- **_/utilities_** - Contains image preprocessing scripts, a simple program timer, and archived files.
 
-For full details, see section Folder Descriptions below.
+##### Files:
 
-- The main files in the root are used for acquiring images, building the model, and training it.
-- `archive/` contains an older version of the model and method of uploading images into the model that may still be explored in the future.
-- `image_processing/` contains programs for downloading images of the Field Museum's digital collection of the *Lycopodieaceae* and *Selaginellaceae* families from an online database, as well as a tool to resize images.  See the folder for full instructions.
+- **classify_images_by_vote.py**
+    - _The main testing program -- see Workflow above._
+- **cnnarguments.py**
+    - _Parse and validate command-line argument values._
+- **data_and_visualization_io.py**
+    - _Used to create `graphs` directory during model training (see Workflow above)._
+- **model_training.py**
+    - _A helper class for `train_models_image_classification.py` which takes in two preprocessed image sets and a defined CNN architecture, and trains/validates a model._
+- **train_models_image_classification.py**
+    - _The main training program -- see Workflow above._
 
 
-
----
-
-## File descriptions
-*** **currently being restructured** ***
-
-### train_models_image_classification.py
-
-This file is where the architecture of the model is created and the model is trained and validated. It takes in images directly and performs k-fold cross validation. This file can be called from the terminal with arguments for path to category folders, the category folder names, image size, number of folds, and number of epochs. 
-
-If there are any other parameters that you would like to change in the model, you'd have to directly change the code.
-
-### classify_images_by_vote.py
-
-Given a folder containing multiple models (e.g. from performing k-fold cross validation), this program takes in a folder of model files, generates predictions for each image from each model, and then takes a simple majority vote across all models in order to determine the classification.
-This program depends on functions from the classify_images.py program.
 
 ---
 
