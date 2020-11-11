@@ -1,4 +1,5 @@
-# field_classification
+# Convolutional Neural Networks and Microplants
+#### _utilities\image_processing_ directory
 
 The code here creates and tests a CNN model using Tensorflow and Keras that takes images of two morphologically similar plant families (*Lycopodieaceae* and *Selaginellaceae*) and trains the model to identify which is which. 
 
