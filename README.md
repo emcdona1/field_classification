@@ -64,8 +64,10 @@ See also `requirements.txt`.
 ## Repository layout
 
 ##### Folders:
+
 - **_/_** - Contains the main files used for training and testing models.
-- **_/labeled_images_** - Contains the files for loading in image sets. 
+- **_/data_visualization_** - Contains the files for generating and saving graphs/data visualizations after training. Creates a `graphs` directory, if it doesn't already exist.
+- **_/labeled_images_** - Contains the files for loading in image sets.
 - **_/models_** - Contains the files used to define neural network layer architectures.
 - **_/utilities_** - Contains image preprocessing scripts, a simple program timer, and archived files.
 
@@ -75,8 +77,6 @@ See also `requirements.txt`.
     - _The main testing program -- see Workflow above._
 - **cnnarguments.py**
     - _Parse and validate command-line argument values._
-- **data_and_visualization_io.py**
-    - _Used to create `graphs` directory during model training (see Workflow above)._
 - **model_training.py**
     - _A helper class for `train_models_image_classification.py` which takes in two preprocessed image sets and a defined CNN architecture, and trains/validates a model._
 - **train_models_image_classification.py**
