@@ -2,7 +2,7 @@ import os
 from models.smithsonian import SmithsonianModel
 from labeled_images.labeledimages import LabeledImages
 import numpy as np
-from data_and_visualization_io import Charts
+from data_visualization.visualizationgenerator import VisualizationGenerator
 from sklearn.model_selection import StratifiedKFold
 
 
@@ -20,7 +20,7 @@ class ModelTrainer:
         self.validation_set = None
         self.history = None
         self.seed: int = seed
-        self.charts = Charts(self.n_folds)
+        self.charts = VisualizationGenerator(self.n_folds)
 
     def train_and_save_all_models(self, images: LabeledImages):
         training_and_validation_groups = self.generate_image_splits(images)
