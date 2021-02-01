@@ -22,13 +22,14 @@ This code has been tested in Python 3.7 using Anaconda (Windows) and Miniconda (
 
 
 #### Tested Package Versions:
-See also `requirements.txt`
-- keras v2.3.1
-- matplotlib v3.1.3
-- numpy v1.18.1
-- openCV (cv2) v3.4.2
-- pandas v1.0.3
-- tensorflow v1.15.0  (**N.B.**: *This system is not yet compatible with Tensorflow 2.x.*)
+See also `requirements.txt`.
+- tensorflow 1.15.0  (**N.B.**: *This system is not yet compatible with Tensorflow 2.x.*)
+- keras 2.3.1
+- matplotlib 3.1.3
+- numpy 1.18.1
+- opencv-python 3.4.2.17
+- pandas 1.0.3
+- scikit-learn 0.22.1
 
 ---
 
