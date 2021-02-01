@@ -16,7 +16,8 @@ def main() -> None:
     timer = Timer('Model training')
     images, cnn_model_trainer = program_setup()
 
-    cnn_model_trainer.train_all_models(images)
+    cnn_model_trainer.train_and_save_all_models(images)
+    cnn_model_trainer.charts.finalize()
 
     print('class 1: ' + images.class_labels[0] + ', class 2: ' + images.class_labels[1])
     timer.stop()

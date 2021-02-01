@@ -22,16 +22,14 @@ class ModelTrainer:
         self.seed: int = seed
         self.charts = Charts(self.n_folds)
 
-    def train_all_models(self, images: LabeledImages):
+    def train_and_save_all_models(self, images: LabeledImages):
         training_and_validation_groups = self.generate_image_splits(images)
 
         for index, (training_idx_list, validation_idx_list) in training_and_validation_groups:
             self.curr_fold = index + 1
-            self.train_a_model(images, training_idx_list, validation_idx_list)
+            self.train_model(images, training_idx_list, validation_idx_list)
             self.save_model()
             self.validate_model(images.class_labels)
-
-        self.charts.finalize()
 
     def generate_image_splits(self, images: LabeledImages) -> enumerate:
         if self.n_folds <= 1:
@@ -47,8 +45,8 @@ class ModelTrainer:
 
         return training_and_validation_groups
 
-    def train_a_model(self, images: LabeledImages, training_idx_list: np.ndarray,
-                      validation_idx_list: np.ndarray):
+    def train_model(self, images: LabeledImages, training_idx_list: np.ndarray,
+                    validation_idx_list: np.ndarray):
         self.architecture.reset_model()
         self.history = None
         self.training_set = images.subset(training_idx_list)
