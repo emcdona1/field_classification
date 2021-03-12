@@ -25,21 +25,18 @@ def main() -> None:
 
 
 def program_setup() -> (LabeledImages, ModelTrainer):
-    parser = argparse.ArgumentParser(
-        'Create and train CNNs for binary classification of images, using cross-fold validation.')
-    user_arguments = CNNArguments(parser)
+    cnn_arguments = CNNArguments()
 
-    images = load_image_sets(user_arguments)
-    trainer = initialize_model_trainer(user_arguments, images)
+    images = load_image_sets(cnn_arguments)
+    trainer = initialize_model_trainer(cnn_arguments, images)
     return images, trainer
 
 
 def load_image_sets(user_arguments: CNNArguments) -> LabeledImages:
-    images = LabeledImages(SEED)
+    images = LabeledImages()
     # Option 1: load from filesystem
-    image_folders, class_labels = user_arguments.image_folders_and_class_labels()
-    color_mode = user_arguments.color_mode()
-    images.load_images_from_folders(image_folders, color_mode, class_labels)
+    images.load_images_from_folders(user_arguments.image_folders, user_arguments.color_mode,
+                                    user_arguments.class_labels)
 
     # Option 2: load 2 classes of the CIFAR-10 data set
     # images.load_cifar_images()
@@ -48,9 +45,9 @@ def load_image_sets(user_arguments: CNNArguments) -> LabeledImages:
 
 
 def initialize_model_trainer(user_arguments: CNNArguments, images: LabeledImages) -> (ModelTrainer):
-    n_folds = user_arguments.n_folds()
-    architecture = SmithsonianModel(SEED, user_arguments.learning_rate(), images.img_dim, images.color_mode)
-    trainer = ModelTrainer(user_arguments.n_epochs(), user_arguments.batch_size(), n_folds, architecture, SEED)
+    n_folds = user_arguments.n_folds
+    architecture = SmithsonianModel(SEED, user_arguments.lr, images.img_dimension, images.color_mode)
+    trainer = ModelTrainer(user_arguments.n_epochs, user_arguments.batch_size, n_folds, architecture, SEED)
     return trainer
 
 

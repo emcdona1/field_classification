@@ -7,23 +7,24 @@ from tensorflow.keras import datasets
 
 
 class LabeledImages:
-    def __init__(self, seed: int):
+    """ Class to hold image sets for training and testing in a neural network. Images must be square."""
+    def __init__(self):
         self.features = np.array((0, 0))
         self.labels = np.array((0, 0))
         self.img_names = None
-        self.n_images = 0
+        self.img_count = 0
         self.color_mode = None
-        self.img_dim = 0
+        self.img_dimension = 0
         self.class_labels = None
 
-    def load_images_from_folders(self, folders, color_mode, class_labels) -> None:
-        print('Loading image set from filesystem.')
+    def load_images_from_folders(self, folders: (str, str), color_mode: ColorMode, class_labels: (str, str)) -> None:
+        """ Given a pair of folders - one for each class, using a specified color mode (RGB or BW), and a pair
+        of class labels, load the images and labels from the filesystem into memory."""
         self.features = []
         self.labels = []
         self.img_names = []
         self.class_labels = class_labels
-        self.color_mode = ColorMode.RGB if color_mode else ColorMode.BW
-        print(self.color_mode == ColorMode.RGB)
+        self.color_mode = color_mode
 
         for (class_num, image_folder_path) in enumerate(folders):
             for img in os.listdir(image_folder_path):
@@ -36,18 +37,22 @@ class LabeledImages:
                 self.features.append(img_array)
                 self.labels.append(class_num)
                 self.img_names.append(img)
-            print('Loaded images from %s.' % image_folder_path)
+            print('Loaded "%s" class images from: %s' % (self.class_labels[class_num], image_folder_path))
+        self.img_count = len(self.features)
         self.randomize_order()
         self.features = np.array(self.features)
         print('Image collection shape: ' + str(self.features.shape))
         self.labels = np.array(self.labels)
         self.img_names = np.array(self.img_names)
         # self.features.shape = (# of images, img dimension, img dimension, color channels)
-        self.n_images = self.features.shape[0]
-        self.img_dim = self.features.shape[1]
+        print(self.features.shape)
+        self.img_dimension = self.features.shape[1]
+
+    def load_from_csv(self, csv_filename: str, class_labels: (str, str)):
+        pass
 
     def load_cifar_images(self) -> None:
-        print('Loading CIFAR-10 image set (28x28x3).')
+        print('Loading 2 classes from the CIFAR-10 image set (28x28x3).')
         (train_features, train_labels), (val_features, val_labels) = datasets.cifar10.load_data()
         train_features, test_features = train_features / 255.0, val_features / 255.0
         # class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
@@ -65,12 +70,12 @@ class LabeledImages:
         val_labels = np.array([a // 4 for (idx, a) in enumerate(val_labels) if cat_dog_test_mask[idx]])
         self.labels = np.vstack((train_labels, val_labels))
 
-        self.n_images = self.features.shape[0]
+        self.img_count = self.features.shape[0]
         self.color_mode = ColorMode.RGB
-        self.img_dim = self.features[0].shape[1]
+        self.img_dimension = self.features[0].shape[1]
 
     def randomize_order(self) -> None:
-        index = list(range(len(self.features)))
+        index = list(range(0, self.img_count))
         random.shuffle(index)
 
         shuffled_image_features = [self.features[i] for i in index]

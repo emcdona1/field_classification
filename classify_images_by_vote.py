@@ -17,7 +17,7 @@ def main():
     image_folders, class_labels, model_directory, model_file = process_input_arguments()
 
     # Import images
-    images = LabeledImages(1)
+    images = LabeledImages()
     images.load_images_from_folders(image_folders, 3, class_labels)
     print('Images imported.')
 
@@ -164,6 +164,9 @@ def process_input_arguments():
     parser.add_argument('c1', help='Path of class 1 images')
     parser.add_argument('c2', help='Path of class 2 images')
     parser.add_argument('models', help='Folder of models to use')
+    color_mode_group = parser.add_mutually_exclusive_group()
+    color_mode_group.add_argument('-color', action='store_true', help='Images are in RGB color mode. (Default)')
+    color_mode_group.add_argument('-bw', action='store_true', help='Images are in grayscale color mode.')
     args = parser.parse_args()
 
     image_folders = (args.c1, args.c2)
