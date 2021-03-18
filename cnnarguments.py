@@ -3,6 +3,14 @@ import os
 from labeled_images.colormode import ColorMode
 
 
+def parse_class_names_from_image_folders(image_folders) -> (str, str):
+    class1 = image_folders[0].strip(os.path.sep)
+    class2 = image_folders[1].strip(os.path.sep)
+    class1 = class1.split(os.path.sep)[class1.count(os.path.sep)]
+    class2 = class2.split(os.path.sep)[class2.count(os.path.sep)]
+    return class1, class2
+
+
 class CNNArguments:
     def __init__(self):
         parser = argparse.ArgumentParser(
@@ -10,7 +18,7 @@ class CNNArguments:
         self.args: argparse.Namespace = self.set_up_parser_arguments(parser)
 
         self.image_folders = self.validate_image_folders()
-        self.class_labels = self.parse_class_names_from_image_folders()
+        self.class_labels = parse_class_names_from_image_folders(self.image_folders)
         self.color_mode = self.set_color_mode()
         self.lr = self.validate_learning_rate()
         self.n_folds = self.validate_n_folds()
@@ -42,13 +50,6 @@ class CNNArguments:
         if not os.path.isdir(self.args.c2):
             raise NotADirectoryError('C2 value "%s" is not a valid directory path.' % self.args.c2)
         return self.args.c1, self.args.c2
-
-    def parse_class_names_from_image_folders(self) -> (str, str):
-        class1 = self.image_folders[0].strip(os.path.sep)
-        class2 = self.image_folders[1].strip(os.path.sep)
-        class1 = class1.split(os.path.sep)[class1.count(os.path.sep)]
-        class2 = class2.split(os.path.sep)[class2.count(os.path.sep)]
-        return class1, class2
 
     def set_color_mode(self):
         color_mode = ColorMode.BW if self.args.bw else ColorMode.RGB
