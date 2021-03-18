@@ -1,10 +1,6 @@
-import cv2
-import tensorflow as tf
-import numpy as np
-import pandas as pd
-import os
-import random
 import pickle
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 model = tf.keras.models.load_model("saved_models/CNN_8.13.19_13.47.model") #, custom_objects={'custom_activation':Activation(custom_activation)})
 

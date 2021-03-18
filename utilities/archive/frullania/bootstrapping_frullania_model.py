@@ -3,7 +3,6 @@
 
 import os
 import argparse
-import logging
 import random
 import cv2
 import numpy as np
@@ -11,13 +10,12 @@ from numpy.random import seed
 import matplotlib.pyplot as plt
 import pandas as pd
 import logging
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import BatchNormalization, Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 from keras import regularizers
-from keras.models import model_from_json
-from keras.models import load_model
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import StratifiedKFold
@@ -28,7 +26,7 @@ logger = logging.getLogger(__name__)
 global img_directory, folders, img_size, n_folds, n_epochs
 SEED = 1
 seed(SEED)
-tf.compat.v1.random.set_random_seed(SEED)
+tf.random.set_random_seed(SEED)
 random.seed(SEED)
 
 

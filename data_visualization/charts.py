@@ -71,14 +71,14 @@ class AccuracyChart(Chart):
 
     def update(self, index, validation_labels, prediction_probability, history, class_labels) -> None:
         """Create plot of training/validation accuracy, and save it to the file system."""
-        self.training[index] = history.history['acc'][-1]
-        self.validation[index] = history.history['val_acc'][-1]
+        self.training[index] = history.history['accuracy'][-1]
+        self.validation[index] = history.history['val_accuracy'][-1]
         self.create_chart(index, history)
 
     def create_chart(self, index, history) -> None:
         plt.figure(1)
-        plt.plot(history.history['acc'], label='Training Accuracy')
-        plt.plot(history.history['val_acc'], label='Validation Accuracy')
+        plt.plot(history.history['accuracy'], label='Training Accuracy')
+        plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
         plt.title('Accuracy - Fold %i' % index)
         plt.ylabel('Accuracy (%)')
         plt.xlabel('Epoch')
