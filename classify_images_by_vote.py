@@ -7,6 +7,7 @@ import numpy as np
 from datetime import datetime
 from labeled_images.labeledimages import LabeledImages
 from cnnarguments import parse_class_names_from_image_folders
+from labeled_images.colormode import ColorMode
 
 THRESHOLD = 0.5
 
@@ -14,11 +15,11 @@ THRESHOLD = 0.5
 def main():
     # Start execution and parse arguments
     timer = Timer('Classifying a test set')
-    image_folders, class_labels, model_directory, model_file = process_input_arguments()
+    image_folders, class_labels, list_of_models = process_input_arguments()
 
     # Import images
     images = LabeledImages()
-    images.load_images_from_folders(image_folders, 3, class_labels)
+    images.load_images_from_folders(image_folders, ColorMode.RGB, class_labels)
     print('Images imported.')
 
     combined_results = pd.DataFrame()
@@ -26,12 +27,8 @@ def main():
     combined_results['actual_class'] = images.labels
     all_predictions = pd.DataFrame()
 
-    if model_file:
-        classify_images_with_a_model(class_labels, all_predictions, images, model_file, model_file)
-    else:
-        for model_name in os.listdir(model_directory):
-            model_path = os.path.join(model_directory, model_name)
-            classify_images_with_a_model(class_labels, all_predictions, images, model_name, model_path)
+    for model_path in list_of_models:
+        classify_images_with_a_model(class_labels, all_predictions, images, os.path.basename(model_path), model_path)
 
     all_predictions['voted_label'] = all_predictions.mean(axis=1)
     # calculate_confusion_matrix(combined_results)
@@ -82,7 +79,7 @@ def calculate_confusion_matrix(combined_results):
 
 def classify_images_with_a_model(class_labels: tuple, combined_results: pd.DataFrame,
                                  images: LabeledImages, model_name: str, model_path: str) -> None:
-    if os.path.isfile(model_path):
+    if ".model" in model_path:
         # Load model
         model = tf.keras.models.load_model(model_path)
         print('Model ' + model_name + ' loaded.')
@@ -94,7 +91,7 @@ def classify_images_with_a_model(class_labels: tuple, combined_results: pd.DataF
         # add newest predictions to results
         combined_results[model_name] = predictions[class_labels[1] + '_pred']  # probability of class = 1
     else:
-        print('Model file path error: "%s" not loaded.' % model_path)
+        print('Model file path error: "%s" is not a *.model file.' % model_path)
 
 
 def make_predictions(images: LabeledImages, model: tf.keras.Model) -> pd.DataFrame:
@@ -170,16 +167,18 @@ def process_input_arguments():
     args = parser.parse_args()
 
     image_folders = (args.c1, args.c2)
-    class_labels: tuple = parse_class_names_from_image_folders(args)
-    model_location = args.models
-    if os.path.isdir(model_location):
-        model_directory = model_location
-        model_file = None
+    class_labels: tuple = parse_class_names_from_image_folders(image_folders)
+    list_of_models = None
+    if ".model" in args.models:
+        list_of_models = [args.models]
     else:
-        model_directory = None
-        model_file = model_location
+        list_of_models = os.listdir(args.models)
+        list_of_models = [(args.models + os.path.sep + filename) for filename in list_of_models]
 
-    return image_folders, class_labels, model_directory, model_file
+    print(list_of_models)
+    print(os.path.basename(list_of_models[0]))
+
+    return image_folders, class_labels, list_of_models
 
 
 if __name__ == '__main__':
