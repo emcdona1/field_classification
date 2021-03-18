@@ -18,13 +18,12 @@ The code in this repository uses Convolutional Neural Networks (CNN) in Tensorfl
 
 
 ### Environment
-This code has been tested in Python 3.7.6 using Anaconda (Windows) and Miniconda (Ubuntu).
-
+This code has been tested in Python 3.7.x in Windows and Ubuntu, using Anaconda 
+for virtual environments.  Please consult `requirements.txt` or the list below 
+for necessary Python packages.
 
 #### Tested Package Versions:
-See also `requirements.txt`.
-- tensorflow 1.15.0  (**N.B.**: *This system is not yet compatible with Tensorflow 2.x.*)
-- keras 2.3.1
+- tensorflow 2.0.0 (*Release v1.0 and earlier are compatible with TensorFlow 1.15.0*)
 - matplotlib 3.1.3
 - numpy 1.18.1
 - opencv-python 3.4.2.17
