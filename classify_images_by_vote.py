@@ -175,9 +175,6 @@ def process_input_arguments():
         list_of_models = os.listdir(args.models)
         list_of_models = [(args.models + os.path.sep + filename) for filename in list_of_models]
 
-    print(list_of_models)
-    print(os.path.basename(list_of_models[0]))
-
     return image_folders, class_labels, list_of_models
 
 
