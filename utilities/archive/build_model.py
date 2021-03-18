@@ -4,7 +4,8 @@ seed(1)
 from tensorflow.compat.v1 import set_random_seed
 set_random_seed(2)
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import BatchNormalization, Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 import pickle

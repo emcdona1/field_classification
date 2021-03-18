@@ -1,10 +1,8 @@
-import cv2
-import tensorflow as tf
 import numpy as np
 import pandas as pd
-import os
-import random
 import pickle
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 # CATEGORIES = ['Lycopodiaceae', 'Selaginellaceae']
 CATEGORIES = ['lyco_sample_test', 'sela_sample_test']
