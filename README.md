@@ -23,12 +23,12 @@ for virtual environments.  Please consult `requirements.txt` or the list below
 for necessary Python packages.
 
 #### Tested Package Versions:
-- tensorflow 2.0.0 (*Release v1.0 and earlier are compatible with TensorFlow 1.15.0*)
-- matplotlib 3.1.3
-- numpy 1.18.1
+- tensorflow 2.0.0, 2.4.1 (*Release v1.0 and earlier are compatible with TensorFlow 1.15.0*)
+- matplotlib 3.1.3, 3.2.2
+- numpy 1.18.1, 1.19.2
 - opencv-python 3.4.2.17
-- pandas 1.0.3
-- scikit-learn 0.22.1
+- pandas 1.0.3, 1.2.3
+- scikit-learn 0.22.1, 0.24.1
 
 ---
 
