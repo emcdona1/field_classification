@@ -64,7 +64,7 @@ class ModelTrainer:
         self.architecture.model.save(os.path.join(self.folder_name, 'CNN_' + str(self.curr_fold) + '.model'))
 
     def validate_model(self, class_labels: tuple) -> None:
-        # TODO: confirm if I do/don't need this predict_proba step.
-        validation_predicted_probability = self.architecture.model.predict_proba(self.validation_set[0])[:, 1]
+        # validation_predicted_probability = self.architecture.model.predict_proba(self.validation_set[0])[:, 1]
+        validation_predicted_probability = self.architecture.model.predict(self.validation_set[0])[:, 1]
         self.charts.update(self.history, self.curr_fold, self.validation_set[1],
                            validation_predicted_probability, class_labels)
