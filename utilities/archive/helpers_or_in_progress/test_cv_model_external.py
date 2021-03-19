@@ -1,13 +1,13 @@
 # test_model.py uses the images in the same folders in the training/validation folders. 
 # This file allows us to test with other folders of images without retraining model
 import cv2
-import tensorflow as tf
 import numpy as np
 import pandas as pd
 import os
 import random
-import pickle
 import argparse
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 IMG_SIZE = 256
 root = 'data'

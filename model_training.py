@@ -4,6 +4,7 @@ from labeled_images.labeledimages import LabeledImages
 import numpy as np
 from data_visualization.visualizationgenerator import VisualizationGenerator
 from sklearn.model_selection import StratifiedKFold
+from tensorflow.keras.models import save_model
 
 
 class ModelTrainer:
@@ -61,7 +62,7 @@ class ModelTrainer:
                                                    validation_data=self.validation_set, verbose=2)
 
     def save_model(self):
-        self.architecture.model.save(os.path.join(self.folder_name, 'CNN_' + str(self.curr_fold) + '.model'))
+        save_model(self.architecture.model, os.path.join(self.folder_name, 'CNN_' + str(self.curr_fold) + '.model'))
 
     def validate_model(self, class_labels: tuple) -> None:
         # validation_predicted_probability = self.architecture.model.predict_proba(self.validation_set[0])[:, 1]

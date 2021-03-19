@@ -18,7 +18,9 @@
 # display_activations(activations)
 
 from keras.models import Model
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+
 model = tf.keras.models.load_model("saved_models/8.22.19_12.20_model/CNN_1.model") 
 model.summary()
 for layer in model.layers:
