@@ -16,7 +16,7 @@ def main(zooniverse_classifications_path: str, image_folder_path: str):
 
 def parse_raw_zooniverse_file(raw_zooniverse_classifications: pd.DataFrame) -> pd.DataFrame:
     filtered_raw_zooniverse = raw_zooniverse_classifications.query(
-        'workflow_id == 17842 and workflow_version >= 25.103')
+        'workflow_id == 17842 and workflow_version >= 25.103').copy()
     filtered_raw_zooniverse.loc[:, 'annotations'] = filtered_raw_zooniverse['annotations'].apply(ast.literal_eval)
 
     def clean_subject_data(sd: str):
@@ -35,9 +35,10 @@ def parse_raw_zooniverse_file(raw_zooniverse_classifications: pd.DataFrame) -> p
 
     def parse_subject(s):
         barcode = s['barcode'].split('-')[0]
-        col_names = ['barcode', 'block', 'paragraph', 'word', 'symbol', 'gcv_identification']
+        image_name = s['image_of_boxed_letter'].replace('symbox', 'symbol')
+        col_names = ['barcode', 'block', 'paragraph', 'word', 'symbol', 'gcv_identification', 'image_location']
         result = pd.Series([barcode, s['block_no'], s['paragraph_no'], s['word_no'], s['symbol_no'],
-                          s['#GCV_identification']], index=col_names)
+                          s['#GCV_identification'], image_name], index=col_names)
         return result
 
     location = filtered_raw_zooniverse['subject_data'].apply(parse_subject)
@@ -74,35 +75,26 @@ def vote(df: pd.DataFrame, col_name: str) -> (any, float):
 
 def consolidate_classifications(zooniverse_classifications: pd.DataFrame) -> pd.DataFrame:
     duplicates = zooniverse_classifications[zooniverse_classifications['seen_count'] > 1]
-    ids = set(duplicates['id'])
+    ids = set(duplicates['image_location'])
     for id_name in ids:
-        subset = duplicates[duplicates['id'] == id_name]
-        new_row = subset.head(1)
-        voted = mode(list(subset.loc[:, 'human_transcription']))
-        voted_count = subset[subset['human_transcription'] == voted].shape[0]
-        total = subset.shape[0]
-        new_row.loc[:, 'human_transcription'] = voted
+        subset = duplicates[duplicates['image_location'] == id_name]
+        new_row = subset.head(1).copy()
+        new_row.loc[:, 'human_transcription'], new_row.loc[:, 'confidence'] = vote(subset, 'human_transcription')
+        new_row.loc[:, 'unclear'], _ = vote(subset, 'unclear')
+        new_row.loc[:, 'handwritten'], _ = (subset, 'handwritten')
 
-        voted_unclear = mode(list(subset.loc[:, 'unclear']))
-        new_row.loc[:, 'unclear'] = voted_unclear
-        # new_row.loc[:, 'confidence'] = voted_count/total todo
         zooniverse_classifications = zooniverse_classifications.drop(subset.index)
         zooniverse_classifications = zooniverse_classifications.append(new_row)
-        print('Group %s vote is %s with a confidence of %i / %i = %.0f' %
-              (id_name, voted, voted_count, total, (voted_count/total)*100) + '%.')
+        print('Group %s vote is %s with a confidence of %.0f' %
+              (id_name, new_row['human_transcription'].values[0], (new_row['confidence'].values[0])*100) + '%.')
     return zooniverse_classifications.sort_values(by=['block', 'paragraph', 'word', 'symbol'], ascending=True)
 
 
 def load_letter_images(image_folder_path: str, zooniverse_classifications: pd.DataFrame) -> None:
-    # images = os.listdir(image_folder_path)
-    zooniverse_classifications.at[:, 'image_location'] = None
     for idx, row in zooniverse_classifications.iterrows():
-        image_name = 'symbol-%s-label-b%ip%iw%is%i.jpg' % \
-                     (row['barcode'], row['block'], row['paragraph'], row['word'], row['symbol'])
+        image_name = row['image_location']
         if not os.path.isfile(os.path.join(image_folder_path, image_name)):
-            image_name = image_name.replace('label-', '')
-            if not os.path.isfile(os.path.join(image_folder_path, image_name)):
-                print('Warning: %s doesn\'t exist.' % image_name)
+            print('Warning: %s doesn\'t exist in this location.' % image_name)
         zooniverse_classifications.at[idx, 'image_location'] = os.path.join(image_folder_path, image_name)
 
 
