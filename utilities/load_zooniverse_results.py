@@ -11,7 +11,7 @@ def main(zooniverse_classifications_path: str, image_folder_path: str):
     zooniverse_classifications = parse_raw_zooniverse_file(raw_zooniverse_classifications)
     zooniverse_classifications = consolidate_classifications(zooniverse_classifications)
     load_letter_images(image_folder_path, zooniverse_classifications)
-    save_dataframe_as_csv('file_resources', zooniverse_classifications)
+    save_dataframe_as_csv('file_resources', 'zooniverse_parsed', zooniverse_classifications)
 
 
 def parse_raw_zooniverse_file(raw_zooniverse_classifications: pd.DataFrame) -> pd.DataFrame:
