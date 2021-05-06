@@ -2,7 +2,7 @@ import os
 import sys
 import ast
 import pandas as pd
-from statistics import mode
+from statistics import mode, StatisticsError
 from utilities.dataloader import save_dataframe_as_csv
 
 
@@ -59,6 +59,17 @@ def parse_raw_zooniverse_file(raw_zooniverse_classifications: pd.DataFrame) -> p
     parsed_zooniverse_classifications['word'] = pd.to_numeric(parsed_zooniverse_classifications['word'])
     parsed_zooniverse_classifications['symbol'] = pd.to_numeric(parsed_zooniverse_classifications['symbol'])
     return parsed_zooniverse_classifications
+
+
+def vote(df: pd.DataFrame, col_name: str) -> (any, float):
+    try:
+        voted = mode(list(df.loc[:, col_name]))  # todo: Note if upgrade to Python 3.8, can use multimode instead
+    except StatisticsError as se:
+        # If there's a tie, it has to be 1-1 (max 3 votes/image).  So, arbitrarily pick the first option.
+        voted = list(df.loc[:, col_name])[0]
+    voted_count = df[df[col_name] == voted].shape[0]
+    total = df.shape[0]
+    return voted, voted_count/total
 
 
 def consolidate_classifications(zooniverse_classifications: pd.DataFrame) -> pd.DataFrame:
