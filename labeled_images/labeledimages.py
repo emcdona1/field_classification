@@ -1,30 +1,34 @@
+import codecs
 import os
 from labeled_images.colormode import ColorMode
 import cv2
-import random
 import numpy as np
 from tensorflow.keras import datasets
+from typing import Tuple, Union, List
 
 
 class LabeledImages:
     """ Class to hold image sets for training and testing in a neural network. Images must be square."""
-    def __init__(self):
-        self.features = np.array((0, 0))
-        self.labels = np.array((0, 0))
-        self.img_names = None
-        self.img_count = 0
-        self.color_mode = None
-        self.img_dimension = 0
-        self.class_labels = None
 
-    def load_images_from_folders(self, folders: (str, str), color_mode: ColorMode, class_labels: (str, str)) -> None:
+    def __init__(self, seed=None):
+        self.features: np.ndarray = np.array([])
+        self.labels: np.ndarray = np.array([])
+        self.img_names: np.ndarray = np.array([])
+        self.img_count: int = 0
+        self.color_mode: ColorMode = ColorMode.RGB
+        self.img_dimension: int = 0
+        self.class_labels: Union[Tuple[str, str], List[str, ...]] = ('', '')
+        self.seed = seed
+
+    def load_images_from_folders(self, folders: Tuple[str, str], color_mode: ColorMode, class_labels: Tuple[str, str]) \
+            -> None:
         """ Given a pair of folders - one for each class, using a specified color mode (RGB or BW), and a pair
         of class labels, load the images and labels from the filesystem into memory."""
-        self.features = []
-        self.labels = []
-        self.img_names = []
-        self.class_labels = class_labels
-        self.color_mode = color_mode
+        features = []
+        labels = []
+        img_names = []
+        self.class_labels: (str, str) = class_labels
+        self.color_mode: ColorMode = color_mode
 
         for (class_num, image_folder_path) in enumerate(folders):
             for img in os.listdir(image_folder_path):
