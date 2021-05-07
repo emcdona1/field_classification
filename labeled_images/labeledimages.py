@@ -98,7 +98,7 @@ class LabeledImages:
 
 
 class MulticlassLabeledImages(LabeledImages):
-    def load_nist_letter_images(self, base_folder: str, color_mode: ColorMode, seed=None) -> None:
+    def load_nist_letter_images(self, base_folder: str, color_mode=ColorMode.BW, seed=None) -> None:
         """ Given an arbitrary number of folders containing images for an arbitrary number of classes
         (named by class_labels), load the images and labels from the filesystem into memory.
 
