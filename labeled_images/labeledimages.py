@@ -38,16 +38,16 @@ class LabeledImages:
                 img_array = img_array / 255
                 img_array = img_array.reshape([img_array.shape[0], img_array.shape[1],
                                                3 if self.color_mode == ColorMode.RGB else 1])
-                self.features.append(img_array)
-                self.labels.append(class_num)
-                self.img_names.append(img)
+                features.append(img_array)
+                labels.append(class_num)
+                img_names.append(img)
             print('Loaded "%s" class images from: %s' % (self.class_labels[class_num], image_folder_path))
-        self.img_count = len(self.features)
+        self.img_count = len(features)
         self.randomize_order()
-        self.features = np.array(self.features)
+        self.features = np.array(features)
         print('Image collection shape: ' + str(self.features.shape))
-        self.labels = np.array(self.labels)
-        self.img_names = np.array(self.img_names)
+        self.labels = np.array(labels)
+        self.img_names = np.array(img_names)
         # self.features.shape = (# of images, img dimension, img dimension, color channels)
         print(self.features.shape)
         self.img_dimension = self.features.shape[1]
