@@ -79,16 +79,16 @@ class LabeledImages:
         self.img_dimension = self.features[0].shape[1]
 
     def randomize_order(self) -> None:
-        index = list(range(0, self.img_count))
-        random.shuffle(index)
-
-        shuffled_image_features = [self.features[i] for i in index]
-        shuffled_labels = [self.labels[i] for i in index]
-        if self.img_names:
-            shuffled_names = [self.img_names[i] for i in index]
-            self.img_names = shuffled_names
-        self.features = shuffled_image_features
-        self.labels = shuffled_labels
+        seed = self.seed
+        if not seed:
+            print('Warning: no random seed set for LabeledImages.')
+            seed = np.random.randint(0,10000)
+        np.random.seed(seed)
+        np.random.shuffle(self.features)
+        np.random.seed(seed)
+        np.random.shuffle(self.labels)
+        np.random.seed(seed)
+        np.random.shuffle(self.img_names)
         print('Shuffled image order.')
 
     def subset(self, index_list) -> (np.array, np.array):
