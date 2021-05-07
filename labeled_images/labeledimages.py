@@ -134,7 +134,15 @@ class MulticlassLabeledImages(LabeledImages):
             self.randomize_order()
         print('Images loaded: %i (%i x %i images in %i-channel color)' % self.features.shape)
 
-    def get_class_names(self, base_folder) -> list:
+    def parse_nist_image_class(self, dir_path: str) -> str:
+        image_class = dir_path.split(os.path.sep)[-2]
+        image_class = image_class.split('_')[0]
+        image_class = codecs.decode(image_class, 'hex')
+        image_class = str(image_class, 'ascii')
+        image_class = image_class.lower()
+        return image_class
+
+    def get_class_names(self, base_folder: str) -> list:
         _, classes, _ = os.walk(base_folder).__next__()
         classes_list = [c.split('_')[0] for c in classes]
         classes_list = [str(codecs.decode(c, 'hex'), 'ascii').lower() for c in classes_list]
