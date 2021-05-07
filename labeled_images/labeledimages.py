@@ -124,6 +124,8 @@ class MulticlassLabeledImages(LabeledImages):
                                                 cv2.IMREAD_COLOR if self.color_mode == ColorMode.RGB
                                                 else cv2.IMREAD_GRAYSCALE)
                     image_features = image_features / 255
+                    if self.color_mode == ColorMode.BW:
+                        image_features = image_features.reshape([image_features.shape[0], image_features.shape[1], 1])
 
                     features.append(image_features)
                     labels.append(self.class_labels.index(image_class.lower()))
