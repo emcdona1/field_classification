@@ -95,3 +95,59 @@ class LabeledImages:
         subset_features = self.features[index_list]
         subset_labels = self.labels[index_list]
         return subset_features, subset_labels
+
+
+class MulticlassLabeledImages(LabeledImages):
+    def load_nist_letter_images(self, base_folder: str, color_mode: ColorMode, seed=None) -> None:
+        """ Given an arbitrary number of folders containing images for an arbitrary number of classes
+        (named by class_labels), load the images and labels from the filesystem into memory.
+
+        (optional) seed argument will set the random seed when shuffling images.  (If a seed has been loaded previously,
+        that seed will be used.) """
+        if seed:
+            self.seed = seed
+        features = []
+        labels = []
+        img_names = []
+        class_labels = set()
+        self.class_labels: List[str, ...] = []
+        self.color_mode: ColorMode = color_mode
+        classes = self.get_class_names(base_folder)
+        for dir_path, contained_dirs, contained_files in os.walk(base_folder):
+            print('Currently loading: %s' % dir_path)
+            for file in contained_files:
+                if '.png' in os.path.join(dir_path, file):
+                    image_class = dir_path.split(os.path.sep)[-2]
+                    image_class = image_class.split('_')[0]
+                    image_class = codecs.decode(image_class, 'hex')
+                    image_class = str(image_class, 'ascii')
+                    image_name = file
+                    # image_features = cv2.imread(os.path.join(dir_path, file),
+                    #                             cv2.IMREAD_COLOR if self.color_mode == ColorMode.RGB
+                    #                             else cv2.IMREAD_GRAYSCALE)
+                    # # image_features = cv2.resize(image_features, (image))
+                    # image_features = image_features / 255
+                    #
+                    # features.append(image_features)
+                    labels.append(image_class)
+                    img_names.append(image_name)
+                    class_labels.add(image_class)
+        self.img_count = len(features)
+        self.features = np.array(features)
+        print('Image collection shape: ' + str(self.features.shape))
+        self.labels = np.array(labels)
+        self.img_names = np.array(img_names)
+        self.img_dimension = self.features.shape[1]
+        self.class_labels = list(class_labels)
+
+        if self.seed:
+            self.randomize_order()
+        print('Images loaded: %i (%i x %i images in %i-channel color)' % self.features.shape)
+
+    def get_class_names(self, base_folder) -> list:
+        _, classes, _ = os.walk(base_folder).__next__()
+        classes_list = [c.split('_')[0] for c in classes]
+        classes_list = [str(codecs.decode(c, 'hex'), 'ascii').lower() for c in classes_list]
+        classes_set = set(classes_list)
+        classes_list_consolidated = sorted(classes_set)
+        return classes_list_consolidated
