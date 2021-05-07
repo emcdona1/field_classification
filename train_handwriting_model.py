@@ -32,7 +32,8 @@ def program_setup() -> (LabeledImages, ModelTrainer):
 
 
 def load_image_sets(user_arguments: CNNArguments) -> LabeledImages:
-    images = LabeledImages()
+    # load from hex-->ascii = import codecs;codecs.decode('<folder name>', 'hex')
+    images = LabeledImages(SEED)
     # Option 1: load from filesystem
     images.load_images_from_folders(user_arguments.image_folders, user_arguments.color_mode,
                                     user_arguments.class_labels)
@@ -54,7 +55,8 @@ if __name__ == '__main__':
     # set up random seeds
     SEED = 1
     np.random.seed(SEED)
-    tf.compat.v1.random.set_random_seed(SEED)
+    tf.random.set_seed(SEED)
+    tf.compat.v1.random.set_random_seed(SEED)  # todo: remove this?
     random.seed(SEED)
 
     main()

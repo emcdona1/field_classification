@@ -32,7 +32,7 @@ def program_setup() -> (LabeledImages, ModelTrainer):
 
 
 def load_image_sets(user_arguments: CNNArguments) -> LabeledImages:
-    images = LabeledImages()
+    images = LabeledImages(SEED)
     # Option 1: load from filesystem
     images.load_images_from_folders(user_arguments.image_folders, user_arguments.color_mode,
                                     user_arguments.class_labels)
