@@ -46,7 +46,7 @@ def load_image_sets(user_arguments: CNNArguments) -> LabeledImages:
 
 def initialize_model_trainer(user_arguments: CNNArguments, images: LabeledImages) -> (ModelTrainer):
     n_folds = user_arguments.n_folds
-    architecture = SmithsonianModel(SEED, user_arguments.lr, images.img_dimension, images.color_mode)
+    architecture = SmithsonianModel(SEED, user_arguments.lr, images.image_dimension, images.color_mode)
     trainer = ModelTrainer(user_arguments.n_epochs, user_arguments.batch_size, n_folds, architecture, SEED)
     return trainer
 

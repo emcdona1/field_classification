@@ -12,10 +12,10 @@ class LabeledImages:
     def __init__(self, seed=None):
         self.features: np.ndarray = np.array([])
         self.labels: np.ndarray = np.array([])
-        self.img_names: np.ndarray = np.array([])
-        self.img_count: int = 0
+        self.image_names: np.ndarray = np.array([])
+        self.no_of_images: int = 0
         self.color_mode: ColorMode = ColorMode.RGB
-        self.img_dimension: int = 0
+        self.image_dimension: int = 0
         self.class_labels: List[str, ...] = ['', '']
         self.seed = seed
 
@@ -25,31 +25,35 @@ class LabeledImages:
         of class labels, load the images and labels from the filesystem into memory."""
         features = []
         labels = []
-        img_names = []
+        image_names = []
         self.class_labels: List[str, ...] = class_labels
         self.color_mode: ColorMode = color_mode
 
         for (class_num, image_folder_path) in enumerate(folders):
-            for img in os.listdir(image_folder_path):
-                img_array = cv2.imread(os.path.join(image_folder_path, img),
-                                       cv2.IMREAD_COLOR if self.color_mode == ColorMode.RGB
-                                       else cv2.IMREAD_GRAYSCALE)
-                img_array = img_array / 255
-                img_array = img_array.reshape([img_array.shape[0], img_array.shape[1],
-                                               3 if self.color_mode == ColorMode.RGB else 1])
-                features.append(img_array)
+            for image in os.listdir(image_folder_path):
+                image_features = self.load_cv2_image(os.path.join(image_folder_path, image))
+                features.append(image_features)
                 labels.append(class_num)
-                img_names.append(img)
+                image_names.append(image)
             print('Loaded "%s" class images from: %s' % (self.class_labels[class_num], image_folder_path))
-        self.img_count = len(features)
+        self.no_of_images = len(features)
         self.randomize_order()
         self.features = np.array(features)
         print('Image collection shape: ' + str(self.features.shape))
         self.labels = np.array(labels)
-        self.img_names = np.array(img_names)
-        # self.features.shape = (# of images, img dimension, img dimension, color channels)
+        self.image_names = np.array(image_names)
+        # self.features.shape = (# of images, image dimension, image dimension, color channels)
         print(self.features.shape)
-        self.img_dimension = self.features.shape[1]
+        self.image_dimension = self.features.shape[1]
+
+    def load_cv2_image(self, image_path):
+        image_array = cv2.imread(image_path,
+                               cv2.IMREAD_COLOR if self.color_mode == ColorMode.RGB
+                               else cv2.IMREAD_GRAYSCALE)
+        image_array = image_array / 255
+        if self.color_mode == ColorMode.BW:
+            image_array = image_array.reshape([image_array.shape[0], image_array.shape[1], 1])
+        return image_array
 
     def load_from_csv(self, csv_filename: str, class_labels: (str, str)):
         pass
@@ -73,9 +77,9 @@ class LabeledImages:
         val_labels = np.array([a // 4 for (idx, a) in enumerate(val_labels) if cat_dog_test_mask[idx]])
         self.labels = np.vstack((train_labels, val_labels))
 
-        self.img_count = self.features.shape[0]
+        self.no_of_images = self.features.shape[0]
         self.color_mode = ColorMode.RGB
-        self.img_dimension = self.features[0].shape[1]
+        self.image_dimension = self.features[0].shape[1]
 
     def randomize_order(self) -> None:
         seed = self.seed
@@ -87,7 +91,7 @@ class LabeledImages:
         np.random.seed(seed)
         np.random.shuffle(self.labels)
         np.random.seed(seed)
-        np.random.shuffle(self.img_names)
+        np.random.shuffle(self.image_names)
         print('Shuffled image order.')
 
     def subset(self, index_list) -> (np.array, np.array):
@@ -107,34 +111,24 @@ class MulticlassLabeledImages(LabeledImages):
             self.seed = seed
         features = []
         labels = []
-        img_names = []
+        image_names = []
         self.color_mode: ColorMode = color_mode
         self.class_labels: List[str, ...] = self.get_class_names(base_folder)
         for dir_path, contained_dirs, contained_files in os.walk(base_folder):
             print('Currently loading: %s' % dir_path)
-            for file in contained_files:
-                if '.png' in os.path.join(dir_path, file):
-                    image_class = dir_path.split(os.path.sep)[-2]
-                    image_class = image_class.split('_')[0]
-                    image_class = codecs.decode(image_class, 'hex')
-                    image_class = str(image_class, 'ascii')
-                    image_name = file
-                    image_features = cv2.imread(os.path.join(dir_path, file),
-                                                cv2.IMREAD_COLOR if self.color_mode == ColorMode.RGB
-                                                else cv2.IMREAD_GRAYSCALE)
-                    image_features = image_features / 255
-                    if self.color_mode == ColorMode.BW:
-                        image_features = image_features.reshape([image_features.shape[0], image_features.shape[1], 1])
-
+            for filename in contained_files:
+                if '.png' in os.path.join(dir_path, filename):
+                    image_features = self.load_cv2_image(os.path.join(dir_path, filename))
                     features.append(image_features)
-                    labels.append(self.class_labels.index(image_class.lower()))
-                    img_names.append(image_name)
-        self.img_count = len(features)
+                    image_class = self.parse_nist_image_class(dir_path)
+                    labels.append(self.class_labels.index(image_class))
+                    image_names.append(filename)
+        self.no_of_images = len(features)
         self.features = np.array(features)
         print('Image collection shape: ' + str(self.features.shape))
         self.labels = np.array(labels)
-        self.img_names = np.array(img_names)
-        self.img_dimension = self.features.shape[1]
+        self.image_names = np.array(image_names)
+        self.image_dimension = self.features.shape[1]
 
         if self.seed:
             self.randomize_order()

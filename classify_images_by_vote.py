@@ -23,7 +23,7 @@ def main():
     print('Images imported.')
 
     combined_results = pd.DataFrame()
-    combined_results['filename'] = images.img_names
+    combined_results['filename'] = images.image_names
     combined_results['actual_class'] = images.labels
     all_predictions = pd.DataFrame()
 

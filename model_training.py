@@ -37,8 +37,8 @@ class ModelTrainer:
         if self.n_folds <= 1:
             print('Training without cross-fold validation.')
             # 90% training, 10% validation
-            training_idx_list = np.array(range(int(images.img_count * 0.9)))
-            validation_idx_list = np.array(range(len(training_idx_list), images.img_count))
+            training_idx_list = np.array(range(int(images.no_of_images * 0.9)))
+            validation_idx_list = np.array(range(len(training_idx_list), images.no_of_images))
             training_and_validation_groups = enumerate([(training_idx_list, validation_idx_list)])
         else:
             print('Training with %i-fold validation.' % self.n_folds)
