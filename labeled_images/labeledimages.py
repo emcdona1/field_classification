@@ -109,10 +109,8 @@ class MulticlassLabeledImages(LabeledImages):
         features = []
         labels = []
         img_names = []
-        class_labels = set()
-        self.class_labels: List[str, ...] = []
         self.color_mode: ColorMode = color_mode
-        classes = self.get_class_names(base_folder)
+        self.class_labels: List[str, ...] = self.get_class_names(base_folder)
         for dir_path, contained_dirs, contained_files in os.walk(base_folder):
             print('Currently loading: %s' % dir_path)
             for file in contained_files:
@@ -122,23 +120,20 @@ class MulticlassLabeledImages(LabeledImages):
                     image_class = codecs.decode(image_class, 'hex')
                     image_class = str(image_class, 'ascii')
                     image_name = file
-                    # image_features = cv2.imread(os.path.join(dir_path, file),
-                    #                             cv2.IMREAD_COLOR if self.color_mode == ColorMode.RGB
-                    #                             else cv2.IMREAD_GRAYSCALE)
-                    # # image_features = cv2.resize(image_features, (image))
-                    # image_features = image_features / 255
-                    #
-                    # features.append(image_features)
-                    labels.append(image_class)
+                    image_features = cv2.imread(os.path.join(dir_path, file),
+                                                cv2.IMREAD_COLOR if self.color_mode == ColorMode.RGB
+                                                else cv2.IMREAD_GRAYSCALE)
+                    image_features = image_features / 255
+
+                    features.append(image_features)
+                    labels.append(self.class_labels.index(image_class.lower()))
                     img_names.append(image_name)
-                    class_labels.add(image_class)
         self.img_count = len(features)
         self.features = np.array(features)
         print('Image collection shape: ' + str(self.features.shape))
         self.labels = np.array(labels)
         self.img_names = np.array(img_names)
         self.img_dimension = self.features.shape[1]
-        self.class_labels = list(class_labels)
 
         if self.seed:
             self.randomize_order()
