@@ -81,7 +81,7 @@ class LabeledImages:
     def randomize_order(self) -> None:
         seed = self.seed
         if not seed:
-            print('Warning: no random seed set for LabeledImages.')
+            print('Warning: no random seed set for LabeledImages, picking a random integer.')
             seed = np.random.randint(0,10000)
         np.random.seed(seed)
         np.random.shuffle(self.features)
