@@ -5,6 +5,7 @@ import numpy as np
 from data_visualization.visualizationgenerator import VisualizationGenerator
 from sklearn.model_selection import StratifiedKFold
 from tensorflow.keras.models import save_model
+from typing import Union, Tuple, List
 
 
 class ModelTrainer:
@@ -64,7 +65,7 @@ class ModelTrainer:
     def save_model(self):
         save_model(self.architecture.model, os.path.join(self.folder_name, 'CNN_' + str(self.curr_fold) + '.model'))
 
-    def validate_model(self, class_labels: tuple) -> None:
+    def validate_model(self, class_labels: Union[Tuple[str, ...], List[str, ...]]) -> None:
         # validation_predicted_probability = self.architecture.model.predict_proba(self.validation_set[0])[:, 1]
         validation_predicted_probability = self.architecture.model.predict(self.validation_set[0])[:, 1]
         self.charts.update(self.history, self.curr_fold, self.validation_set[1],
