@@ -4,12 +4,11 @@ from labeled_images.colormode import ColorMode
 import cv2
 import numpy as np
 from tensorflow.keras import datasets
-from typing import Tuple, Union, List
+from typing import Tuple, List
 
 
 class LabeledImages:
     """ Class to hold image sets for training and testing in a neural network. Images must be square."""
-
     def __init__(self, seed=None):
         self.features: np.ndarray = np.array([])
         self.labels: np.ndarray = np.array([])
