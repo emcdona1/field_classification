@@ -17,17 +17,17 @@ class LabeledImages:
         self.img_count: int = 0
         self.color_mode: ColorMode = ColorMode.RGB
         self.img_dimension: int = 0
-        self.class_labels: Union[Tuple[str, str], List[str, ...]] = ('', '')
+        self.class_labels: List[str, ...] = ['', '']
         self.seed = seed
 
-    def load_images_from_folders(self, folders: Tuple[str, str], color_mode: ColorMode, class_labels: Tuple[str, str]) \
+    def load_images_from_folders(self, folders: Tuple[str, str], color_mode: ColorMode, class_labels: List[str, ...]) \
             -> None:
         """ Given a pair of folders - one for each class, using a specified color mode (RGB or BW), and a pair
         of class labels, load the images and labels from the filesystem into memory."""
         features = []
         labels = []
         img_names = []
-        self.class_labels: (str, str) = class_labels
+        self.class_labels: List[str, ...] = class_labels
         self.color_mode: ColorMode = color_mode
 
         for (class_num, image_folder_path) in enumerate(folders):

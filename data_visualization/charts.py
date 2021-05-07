@@ -137,8 +137,7 @@ class ConfusionMatrix(Chart):
         self.fp[index] = new_fp
         self.tn[index] = new_tn
 
-        labels = [class_labels[0], class_labels[1]]
-        self.create_chart(index, cm, labels)
+        self.create_chart(index, cm, class_labels)
 
     def create_chart(self, index, cm, labels) -> None:
         fig = plt.figure(4)
