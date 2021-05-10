@@ -79,11 +79,13 @@ def consolidate_classifications(zooniverse_classifications: pd.DataFrame) -> pd.
             new_row.loc[:, 'status'] = 'Complete'
         new_row.loc[:, 'unclear'], _, _ = vote(subset, 'unclear')
         new_row.loc[:, 'handwritten'], _, _ = vote(subset, 'handwritten')
-
+        # discard any results where the majority voted for unclear & blank
+        if (new_row.loc[:, 'status'] == 'Complete').all() and (new_row.loc[:, 'human_transcription'] == '').all():
+            new_row.loc[:, 'status'] = 'Discard'
         zooniverse_classifications = zooniverse_classifications.drop(subset.index)
         zooniverse_classifications = zooniverse_classifications.append(new_row)
-        print('Group %s vote is %s with a confidence of %.0f' %
-              (id_name, new_row['human_transcription'].values[0], (new_row['confidence'].values[0])*100) + '%.')
+        # print('Group %s vote is %s with a confidence of %.0f' %
+        #       (id_name, new_row['human_transcription'].values[0], (new_row['confidence'].values[0])*100) + '%.')
     return zooniverse_classifications.sort_values(by=['block', 'paragraph', 'word', 'symbol'], ascending=True)
 
 
@@ -130,6 +132,11 @@ def expert_manual_review(df: pd.DataFrame) -> None:
         ('f', 1, 'Expert Reviewed')
     df.loc[df['id'] == 'C0602766F-b2p1w1s1', ('human_transcription', 'confidence', 'status')] = \
         ('o', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0601389F-b1p0w1s10', ('unclear', 'status')] = \
+        (False, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0601389F-b1p2w1s0', ('unclear', 'status')] = \
+        (False, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0045392F-b6p0w3s0', 'status'] = 'Discard'
 
 
 if __name__ == '__main__':
