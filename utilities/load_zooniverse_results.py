@@ -11,7 +11,9 @@ def main(zooniverse_classifications_path: str, image_folder_path: str):
     zooniverse_classifications = parse_raw_zooniverse_file(raw_zooniverse_classifications)
     zooniverse_classifications = consolidate_classifications(zooniverse_classifications)
     load_letter_images(image_folder_path, zooniverse_classifications)
-    save_dataframe_as_csv('file_resources', 'zooniverse_parsed', zooniverse_classifications)
+    expert_manual_review(zooniverse_classifications)
+    save_location = save_dataframe_as_csv('file_resources', 'zooniverse_parsed', zooniverse_classifications)
+    print('Saved to %s' % save_location)
 
 
 def parse_raw_zooniverse_file(raw_zooniverse_classifications: pd.DataFrame) -> pd.DataFrame:
@@ -113,6 +115,21 @@ def load_letter_images(image_folder_path: str, zooniverse_classifications: pd.Da
         if not os.path.isfile(os.path.join(image_folder_path, image_name)):
             print('Warning: %s doesn\'t exist in this location.' % image_name)
         zooniverse_classifications.at[idx, 'image_location'] = os.path.join(image_folder_path, image_name)
+
+
+def expert_manual_review(df: pd.DataFrame) -> None:
+    df.loc[df['id'] == 'C0603620F-b1p0w0s8', ('human_transcription', 'status')] = ('r', 'Expert Reviewed')
+    df.loc[df['id'] == 'C0602626F-b1p0w0s6', ('unclear', 'status')] = (True, 'Discard')
+    df.loc[df['id'] == 'C0601389F-b1p0w1s8', ('human_transcription', 'confidence', 'status')] = \
+        ('l', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0604908F-b1p0w1s8', ('human_transcription', 'confidence', 'status')] = \
+        ('i', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0604948F-b1p0w3s18', ('human_transcription', 'confidence', 'status')] = \
+        ('k', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0604908F-b1p1w1s0', ('human_transcription', 'confidence', 'status')] = \
+        ('f', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0602766F-b2p1w1s1', ('human_transcription', 'confidence', 'status')] = \
+        ('o', 1, 'Expert Reviewed')
 
 
 if __name__ == '__main__':
