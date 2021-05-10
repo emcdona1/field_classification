@@ -3,7 +3,7 @@ import sys
 import ast
 import pandas as pd
 from statistics import mode, StatisticsError
-from utilities.dataloader import save_dataframe_as_csv
+from dataloader import save_dataframe_as_csv
 
 
 def main(zooniverse_classifications_path: str, image_folder_path: str):
@@ -59,18 +59,8 @@ def parse_raw_zooniverse_file(raw_zooniverse_classifications: pd.DataFrame) -> p
     parsed_zooniverse_classifications['paragraph'] = pd.to_numeric(parsed_zooniverse_classifications['paragraph'])
     parsed_zooniverse_classifications['word'] = pd.to_numeric(parsed_zooniverse_classifications['word'])
     parsed_zooniverse_classifications['symbol'] = pd.to_numeric(parsed_zooniverse_classifications['symbol'])
+    parsed_zooniverse_classifications['status'] = 'In Progress'
     return parsed_zooniverse_classifications
-
-
-def vote(df: pd.DataFrame, col_name: str) -> (any, float):
-    try:
-        voted = mode(list(df.loc[:, col_name]))  # todo: Note if upgrade to Python 3.8, can use multimode instead
-    except StatisticsError as se:
-        # If there's a tie, it has to be 1-1 (max 3 votes/image).  So, arbitrarily pick the first option.
-        voted = list(df.loc[:, col_name])[0]
-    voted_count = df[df[col_name] == voted].shape[0]
-    total = df.shape[0]
-    return voted, voted_count/total
 
 
 def consolidate_classifications(zooniverse_classifications: pd.DataFrame) -> pd.DataFrame:
@@ -79,15 +69,42 @@ def consolidate_classifications(zooniverse_classifications: pd.DataFrame) -> pd.
     for id_name in ids:
         subset = duplicates[duplicates['image_location'] == id_name]
         new_row = subset.head(1).copy()
-        new_row.loc[:, 'human_transcription'], new_row.loc[:, 'confidence'] = vote(subset, 'human_transcription')
-        new_row.loc[:, 'unclear'], _ = vote(subset, 'unclear')
-        new_row.loc[:, 'handwritten'], _ = (subset, 'handwritten')
+        new_row.loc[:, 'human_transcription'], count, total = vote(subset, 'human_transcription')
+        new_row.loc[:, 'confidence'] = count/total
+        if total == 3 and count == 0:
+            new_row.loc[:, 'status'] = 'Expert Required'
+        elif total == 3:
+            new_row.loc[:, 'status'] = 'Complete'
+        new_row.loc[:, 'unclear'], _, _ = vote(subset, 'unclear')
+        new_row.loc[:, 'handwritten'], _, _ = vote(subset, 'handwritten')
 
         zooniverse_classifications = zooniverse_classifications.drop(subset.index)
         zooniverse_classifications = zooniverse_classifications.append(new_row)
         print('Group %s vote is %s with a confidence of %.0f' %
               (id_name, new_row['human_transcription'].values[0], (new_row['confidence'].values[0])*100) + '%.')
     return zooniverse_classifications.sort_values(by=['block', 'paragraph', 'word', 'symbol'], ascending=True)
+
+
+def vote(df: pd.DataFrame, col_name: str) -> (any, int, int):
+    total = df.shape[0]
+    if total > 3:
+        df = df[-3:]
+        total = 3
+    try:
+        voted = mode(list(df.loc[:, col_name]))  # todo: Note if upgrade to Python 3.8, can use multimode instead
+        voted_count = df[df[col_name] == voted].shape[0]
+    except StatisticsError as se:
+        # If there's a tie
+        # Option 1: It's a 1-1 vote on 2 images. Arbitrarily pick the first option.
+        if total == 2:
+            voted = list(df.loc[:, col_name])[0]
+            voted_count = 1
+        # Option 2: It's a 1-1-1 tie on 3 images. Flag for expert review.
+        else:
+            voted = str(list(df.loc[:, col_name]))
+            voted_count = 0
+
+    return voted, voted_count, total
 
 
 def load_letter_images(image_folder_path: str, zooniverse_classifications: pd.DataFrame) -> None:
@@ -101,8 +118,8 @@ def load_letter_images(image_folder_path: str, zooniverse_classifications: pd.Da
 if __name__ == '__main__':
     assert len(sys.argv) == 3, 'Include 2 arguments: (1) the location of the classification results from Zooniverse, ' + \
                                'and (2) the folder of images of letters.'
-    zooniverse = 'file_resources\\herbarium-handwriting-transcription-classifications.csv'  # sys.argv[1]
+    zooniverse = sys.argv[1]  # 'file_resources\\herbarium-handwriting-transcription-classifications.csv'  # sys.argv[1]
     assert os.path.isfile(zooniverse), 'Invalid 1st argument: must be a file on the local computer.'
-    image_folder = 'file_resources\\gcv_letter_images'  # sys.argv[2]
+    image_folder = sys.argv[2]  # 'file_resources\\gcv_letter_images'  # sys.argv[2]
     assert os.path.isdir(image_folder), 'Invalid 2nd argument: must be a folder on the local computer.'
     main(zooniverse, image_folder)
