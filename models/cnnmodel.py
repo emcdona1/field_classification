@@ -1,6 +1,6 @@
 import tensorflow as tf
 from abc import abstractmethod, ABC
-from labeled_images.colormode import ColorMode
+from labeled_images import ColorMode
 
 
 class CNNModel(ABC):

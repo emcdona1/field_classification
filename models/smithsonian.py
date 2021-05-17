@@ -1,6 +1,6 @@
-from models.cnnmodel import CNNModel
+from models import CNNModel
 from tensorflow.keras import layers
-from labeled_images.colormode import ColorMode
+from labeled_images import ColorMode
 
 
 class SmithsonianModel(CNNModel):
