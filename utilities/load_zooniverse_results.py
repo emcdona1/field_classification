@@ -195,10 +195,44 @@ def expert_manual_review(df: pd.DataFrame) -> None:
         ('f', 1, 'Expert Reviewed')
     df.loc[df['id'] == 'C0602766F-b2p1w1s1', ('human_transcription', 'confidence', 'status')] = \
         ('o', 1, 'Expert Reviewed')
-    df.loc[df['id'] == 'C0601389F-b1p0w1s10', ('unclear', 'status')] = \
-        (False, 'Expert Reviewed')
-    df.loc[df['id'] == 'C0601389F-b1p2w1s0', ('unclear', 'status')] = \
-        (False, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0605417F-b0p0w4s3', ('human_transcription', 'confidence', 'status')] = \
+        ('.', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0601392F-b1p0w22s1', ('human_transcription', 'confidence', 'status')] = \
+        ('i', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0605417F-b0p0w4s2', ('human_transcription', 'confidence', 'status')] = \
+        ('r', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0045392F-b1p0w0s5', ('human_transcription', 'confidence', 'status')] = \
+        ('t', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0045392F-b1p0w1s0', ('human_transcription', 'confidence', 'status')] = \
+        ('b', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0603620F-b1p0w1s5', ('human_transcription', 'confidence', 'status')] = \
+        ('i', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0601164F-b1p0w1s9', ('human_transcription', 'confidence', 'status')] = \
+        ('o', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0045392F-b1p0w2s3', ('human_transcription', 'confidence', 'status')] = \
+        ('l', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0604948F-b1p0w3s6', ('human_transcription', 'confidence', 'status')] = \
+        ('s', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0602760F-b1p0w5s2', ('human_transcription', 'confidence', 'status')] = \
+        ('l', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0601392F-b1p0w6s5', ('human_transcription', 'confidence', 'status')] = \
+        ('t', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0601392F-b1p0w12s3', ('human_transcription', 'confidence', 'status')] = \
+        ('e', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0601392F-b1p1w1s1', ('human_transcription', 'confidence', 'status')] = \
+        ('5', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0603620F-b1p1w10s3', ('human_transcription', 'confidence', 'status')] = \
+        ('t', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0603620F-b1p1w18s1', ('human_transcription', 'confidence', 'status')] = \
+        ('i', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0601164F-b1p3w1s1', ('human_transcription', 'confidence', 'status')] = \
+        ('1', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0604908F-b1p3w3s0', ('human_transcription', 'confidence', 'status')] = \
+        (',', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0605403F-b1p3w4s0', ('human_transcription', 'confidence', 'status')] = \
+        (',', 1, 'Expert Reviewed')
+    df.loc[df['id'] == 'C0602766F-b2p1w6s6', ('human_transcription', 'confidence', 'status')] = \
+        ('t', 1, 'Expert Reviewed')
     df.loc[df['id'] == 'C0045392F-b6p0w3s0', 'status'] = 'Discard - Reviewed'
     df.loc[df['id'] == 'C0045392F-b1p0w1s1', 'status'] = 'Discard - Reviewed'
     df.loc[df['id'] == 'C0604052F-b1p0w2s1', 'status'] = 'Discard - Reviewed'
@@ -222,6 +256,16 @@ def expert_manual_review(df: pd.DataFrame) -> None:
     df.loc[df['id'] == 'C0602766F-b2p1w1s0', 'status'] = 'Discard - Reviewed'
     df.loc[df['id'] == 'C0602766F-b2p2w0s0', 'status'] = 'Discard - Reviewed'
     df.loc[df['id'] == 'C0045392F-b6p0w3s0', 'status'] = 'Discard - Reviewed'
+    df.loc[df['id'] == 'C0602626F-b1p0w1s3', 'status'] = 'Discard - Reviewed'
+    df.loc[df['id'] == 'C0045392F-b1p0w1s6', 'status'] = 'Discard - Reviewed'
+    df.loc[df['id'] == 'C0601155F-b1p0w9s1', 'status'] = 'Discard - Reviewed'
+    df.loc[df['id'] == 'C0604908F-b1p1w0s3', 'status'] = 'Discard - Reviewed'
+    df.loc[df['id'] == 'C0605403F-b1p1w1s3', 'status'] = 'Discard - Reviewed'
+    df.loc[df['id'] == 'C0604948F-b1p1w1s4', 'status'] = 'Discard - Reviewed'
+    df.loc[df['id'] == 'C0604908F-b1p1w8s0', 'status'] = 'Discard - Reviewed'
+    df.loc[df['id'] == 'C0603620F-b1p1w22s3', 'status'] = 'Discard - Reviewed'
+    df.loc[df['id'] == 'C0604948F-b1p2w12s5', 'status'] = 'Discard - Reviewed'
+    df.loc[df['id'] == 'C0601389F-b1p0w1s12', 'status'] = 'Discard - Reviewed'
 
 
 if __name__ == '__main__':
