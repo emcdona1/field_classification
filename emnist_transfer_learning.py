@@ -7,11 +7,12 @@ import matplotlib.pyplot as plt
 SEED = 1
 
 if __name__ == '__main__':
-    tf.random.set_seed(SEED)
-    (train_ds, validation_ds, test_ds), info = tfds.load(
-        'emnist/balanced',
+    # tf.random.set_seed(SEED)
+    # (train_ds, validation_ds, test_ds), info = tfds.load(
+    train_ds, validation_ds, test_ds = tfds.load(
+            'emnist/balanced',
         split=['train[:40%]', 'train[40%:50%]', 'train[50%:60%]'],
-        as_supervised=True, with_info=True
+        as_supervised=True  # , with_info=True
     )
     print('No of training samples: %d' % tf.data.experimental.cardinality(train_ds))
     print('No of validation samples: %d' % tf.data.experimental.cardinality(validation_ds))
@@ -24,7 +25,7 @@ if __name__ == '__main__':
                    36: 'a', 37: 'b', 38: 'd', 39: 'e', 40: 'f', 41: 'g', 42: 'h', 43: 'n',
                    44: 'q', 45: 'r', 46: 't'}
     # reused: c, i, j, k, l, m, o, p, s, u, v, w, x, y, z
-    label_values = info.features['label'].names
+    # label_values = info.features['label'].names
     # plt.figure(figsize=(7, 7))
     # for i, (image, label) in enumerate(train_ds.take(25)):
     #     ax = plt.subplot(5, 5, i + 1)
@@ -92,8 +93,8 @@ if __name__ == '__main__':
     x = keras.layers.GlobalAveragePooling2D()(x)  # input (batch_size, row, col, ch) --> output (batch_size, ch)
     x = keras.layers.Dropout(0.2)(x)  # Regularize with dropout, 20% of inputs are set to 0 during training
                                       # (and remaining 80% are scaled up).  Only happens when training=True
-    outputs = keras.layers.Dense(1)(x)
-    model = keras.Model(inputs, outputs)  # inputs=a keras.Input object or a list of those objects
+    outputs = keras.layers.Dense(47)(x) # todo: test if this change works
+    model = keras.Model(inputs, outputs, name="enist_balanced_model")  # inputs=a keras.Input object or a list of those objects
                                           # outputs=this uses the Functional API, so outputs is the chain of layers
     # Functional API output e.g. from docs:
     # x = keras.layers.Dense(4, activation=tf.nn.relu)(inputs)
@@ -106,11 +107,12 @@ if __name__ == '__main__':
     # Train the top layer
     model.compile(
         optimizer=keras.optimizers.Adam(),
-        loss=keras.losses.BinaryCrossentropy(from_logits=True),
-        metrics=[keras.metrics.BinaryAccuracy()],
+        loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),  # todo: try this
+        metrics=[keras.metrics.Accuracy()],  # todo: try this, or just 'accuracy'
     )
-    epochs = 20
+    epochs = 10
     model.fit(train_ds, epochs=epochs, validation_data=validation_ds)
+    model.save('emnist.model')
 
     # Then, fine tuning
     base_model.trainable = True
@@ -118,12 +120,15 @@ if __name__ == '__main__':
 
     model.compile(
         optimizer=keras.optimizers.Adam(1e-5),  # Low learning rate
-        loss=keras.losses.BinaryCrossentropy(from_logits=True),
-        metrics=[keras.metrics.BinaryAccuracy()],
+        loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        metrics=[keras.metrics.Accuracy()],
     )
 
-    epochs = 10
-    model.fit(train_ds, epochs=epochs, validation_data=validation_ds)
+    epochs = 5
+    history = model.fit(train_ds, epochs=epochs, validation_data=validation_ds)
+    model.save('emnist.model')
 
-    pass
-
+    # todo: try test data set
+    test_scores = model.evaluate(test_ds, verbose=2)
+    print("Test loss:", test_scores[0])
+    print("Test accuracy:", test_scores[1])
