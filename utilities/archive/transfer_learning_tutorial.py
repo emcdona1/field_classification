@@ -91,12 +91,12 @@ def basic_examples():
     # layer in inference mode by passing training=False when you call the base model.
 
 
-def full_cat_dog_example():
+if __name__ == '__main__':
     # Note: If you have your own dataset, you'll probably want to use the utility
     # tf.keras.preprocessing.image_dataset_from_directory to generate similar labeled dataset objects from
     # a set of images on disk filed into class-specific folders.
-    tfds.disable_progress_bar()
-    tfds.enable_progress_bar()
+    # tfds.disable_progress_bar()
+    # tfds.enable_progress_bar()
     # view all available data sets: tfds.list_builders()
     train_ds, validation_ds, test_ds = tfds.load(
         'cats_vs_dogs',
@@ -109,12 +109,12 @@ def full_cat_dog_example():
 
     label_name = ['cat', 'dog']
     # view first 9 images in training set -- note that they all different dims
-    plt.figure(figsize=(10, 10))
-    for i, (image, label) in enumerate(train_ds.take(9)):
-        ax = plt.subplot(3, 3, i + 1)
-        plt.imshow(image)
-        plt.title(label_name[label])
-        plt.axis('off')
+    # plt.figure(figsize=(10, 10))
+    # for i, (image, label) in enumerate(train_ds.take(9)):
+    #     ax = plt.subplot(3, 3, i + 1)
+    #     plt.imshow(image)
+    #     plt.title(label_name[label])
+    #     plt.axis('off')
 
     # resize the images
     size = (150, 150)
@@ -133,17 +133,17 @@ def full_cat_dog_example():
             keras.layers.experimental.preprocessing.RandomFlip("horizontal"),
             keras.layers.experimental.preprocessing.RandomRotation(0.1),
         ])
-    for images, labels in train_ds.take(1):
-        plt.figure(figsize=(10, 10))
-        first_image = images[0]
-        for i in range(9):
-            ax = plt.subplot(3, 3, i + 1)
-            augmented_image = data_augmentation(
-                tf.expand_dims(first_image, 0), training=True
-            )
-            plt.imshow(augmented_image[0].numpy().astype("int32"))
-            plt.title(int(labels[i]))
-            plt.axis("off")
+    # for images, labels in train_ds.take(1):
+    #     plt.figure(figsize=(10, 10))
+    #     first_image = images[0]
+    #     for i in range(9):
+    #         ax = plt.subplot(3, 3, i + 1)
+    #         augmented_image = data_augmentation(
+    #             tf.expand_dims(first_image, 0), training=True
+    #         )
+    #         plt.imshow(augmented_image[0].numpy().astype("int32"))
+    #         plt.title(int(labels[i]))
+    #         plt.axis("off")
 
     # build model
     base_model = keras.applications.Xception(
@@ -181,8 +181,9 @@ def full_cat_dog_example():
         loss=keras.losses.BinaryCrossentropy(from_logits=True),
         metrics=[keras.metrics.BinaryAccuracy()],
     )
-    epochs = 20
+    epochs = 10
     model.fit(train_ds, epochs=epochs, validation_data=validation_ds)
+    model.save('cat_dog.model')
 
     # Then, fine tuning
     base_model.trainable = True
@@ -194,7 +195,6 @@ def full_cat_dog_example():
         metrics=[keras.metrics.BinaryAccuracy()],
     )
 
-    epochs = 10
+    epochs = 5
     model.fit(train_ds, epochs=epochs, validation_data=validation_ds)
-
-    pass
+    model.save('cat_dog.model')
