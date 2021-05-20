@@ -278,30 +278,27 @@ def save_images_to_folders(zooniverse_classifications: pd.DataFrame, dest_folder
         .query("handwritten == True and (status == 'Complete' or status == 'Expert Reviewed')").copy()
     if not os.path.exists(dest_folder):
         os.makedirs(dest_folder)
-    # image_class_mappings = {'0': '0', '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8',
-    #                         '9': '9', 'A': '10', 'B': '11', 'C': '12', 'D': '13', 'E': '14', 'F': '15', 'G': '16',
-    #                         'H': '17', 'I': '18', 'J': '19', 'K': '20', 'L': '21', 'M': '22', 'N': '23', 'O': '24',
-    #                         'P': '25', 'Q': '26', 'R': '27', 'S': '28', 'T': '29', 'U': '30', 'V': '31', 'W': '32',
-    #                         'X': '33', 'Y': '34', 'Z': '35', 'a': '36', 'b': '37', 'c': '12', 'd': '38', 'e': '39',
-    #                         'f': '40', 'g': '41', 'h': '42', 'i': '18', 'j': '19', 'k': '20', 'l': '21', 'm': '22',
-    #                         'n': '43', 'o': '24', 'p': '25', 'q': '44', 'r': '45', 's': '28', 't': '46', 'u': '31',
-    #                         'v': '31', 'w': '32', 'x': '33', 'y': '34', 'z': '35'}
-    all_values = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-                  'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'd', 'e',
-                  'f', 'g', 'h', 'n', 'q', 'r', 't']
-
-    for v in all_values:
+    image_class_mappings = {'0': '0', '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8',
+                            '9': '9', 'A': '10', 'B': '11', 'C': '12', 'D': '13', 'E': '14', 'F': '15', 'G': '16',
+                            'H': '17', 'I': '18', 'J': '19', 'K': '20', 'L': '21', 'M': '22', 'N': '23', 'O': '24',
+                            'P': '25', 'Q': '26', 'R': '27', 'S': '28', 'T': '29', 'U': '30', 'V': '31', 'W': '32',
+                            'X': '33', 'Y': '34', 'Z': '35', 'a': '36', 'b': '37', 'c': '12', 'd': '38', 'e': '39',
+                            'f': '40', 'g': '41', 'h': '42', 'i': '18', 'j': '19', 'k': '20', 'l': '21', 'm': '22',
+                            'n': '43', 'o': '24', 'p': '25', 'q': '44', 'r': '45', 's': '28', 't': '46', 'u': '31',
+                            'v': '31', 'w': '32', 'x': '33', 'y': '34', 'z': '35'}
+    for v in image_class_mappings.values():
         path = os.path.join(dest_folder, v)
         if not os.path.exists(path):
             os.makedirs(path)
+    os.makedirs(os.path.join(dest_folder, 'punctuation'))
     for idx, row in filtered_zooniverse.iterrows():
         image_location = row['image_location']
-        if row['human_transcription'] in all_values:
-            dest = os.path.join(dest_folder, row['human_transcription'])
-            shutil.copy(image_location, dest)
-        elif row['human_transcription'].upper() in all_values:
-            dest = os.path.join(dest_folder, row['human_transcription'].upper())
-            shutil.copy(image_location, dest)
+        if row['human_transcription'] in image_class_mappings.keys():
+            image_class = image_class_mappings[row['human_transcription']]
+        else:
+            image_class = 'punctuation'
+        dest = os.path.join(dest_folder, image_class)
+        shutil.copy(image_location, dest)
 
 
 if __name__ == '__main__':
