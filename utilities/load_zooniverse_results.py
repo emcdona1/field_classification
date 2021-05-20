@@ -1,12 +1,13 @@
 import os
 import sys
+import shutil
 import ast
 import pandas as pd
 from statistics import mode, StatisticsError
-from dataloader import save_dataframe_as_csv
+from utilities.dataloader import save_dataframe_as_csv
 
 
-def main(zooniverse_classifications_path: str, image_folder_path: str):
+def main(zooniverse_classifications_path: str, image_folder_path: str, create_image_folders=False):
     raw_zooniverse_classifications = pd.read_csv(zooniverse_classifications_path)
     zooniverse_classifications = parse_raw_zooniverse_file(raw_zooniverse_classifications)
     zooniverse_classifications = consolidate_classifications(zooniverse_classifications)
@@ -14,6 +15,9 @@ def main(zooniverse_classifications_path: str, image_folder_path: str):
     expert_manual_review(zooniverse_classifications)
     save_location = save_dataframe_as_csv('file_resources', 'zooniverse_parsed', zooniverse_classifications)
     print('Saved to %s' % save_location)
+    if create_image_folders:
+        destination_folder = os.path.join('file_resources', 'zooniverse_letter_images')
+        save_images_to_folders(zooniverse_classifications, destination_folder)
 
 
 def parse_raw_zooniverse_file(raw_zooniverse_classifications: pd.DataFrame) -> pd.DataFrame:
@@ -269,11 +273,41 @@ def expert_manual_review(df: pd.DataFrame) -> None:
     df.loc[df['id'] == 'C0601389F-b1p0w1s12', 'status'] = 'Discard - Reviewed'
 
 
+def save_images_to_folders(zooniverse_classifications: pd.DataFrame, dest_folder: str):
+    filtered_zooniverse: pd.DataFrame = zooniverse_classifications\
+        .query("handwritten == True and (status == 'Complete' or status == 'Expert Reviewed')").copy()
+    if not os.path.exists(dest_folder):
+        os.makedirs(dest_folder)
+    image_class_mappings = {'0': '0', '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8',
+                            '9': '9', 'A': '10', 'B': '11', 'C': '12', 'D': '13', 'E': '14', 'F': '15', 'G': '16',
+                            'H': '17', 'I': '18', 'J': '19', 'K': '20', 'L': '21', 'M': '22', 'N': '23', 'O': '24',
+                            'P': '25', 'Q': '26', 'R': '27', 'S': '28', 'T': '29', 'U': '30', 'V': '31', 'W': '32',
+                            'X': '33', 'Y': '34', 'Z': '35', 'a': '36', 'b': '37', 'c': '12', 'd': '38', 'e': '39',
+                            'f': '40', 'g': '41', 'h': '42', 'i': '18', 'j': '19', 'k': '20', 'l': '21', 'm': '22',
+                            'n': '43', 'o': '24', 'p': '25', 'q': '44', 'r': '45', 's': '28', 't': '46', 'u': '31',
+                            'v': '31', 'w': '32', 'x': '33', 'y': '34', 'z': '35'}
+    for v in image_class_mappings.values():
+        path = os.path.join(dest_folder, v)
+        if not os.path.exists(path):
+            os.makedirs(path)
+    os.makedirs(os.path.join(dest_folder, 'punctuation'))
+    for idx, row in filtered_zooniverse.iterrows():
+        image_location = row['image_location']
+        if row['human_transcription'] in image_class_mappings.keys():
+            image_class = image_class_mappings[row['human_transcription']]
+        else:
+            image_class = 'punctuation'
+        dest = os.path.join(dest_folder, image_class)
+        shutil.copy(image_location, dest)
+
+
 if __name__ == '__main__':
-    assert len(sys.argv) == 3, 'Include 2 arguments: (1) the location of the classification results from Zooniverse, ' \
-                               + 'and (2) the folder of images of letters.'
+    assert 3 <= len(sys.argv) <= 4, 'Include 2 or 3 arguments: (1) the location of the classification results ' +\
+            'from Zooniverse, (2) the folder of images of letters, and (3-opt) "True" to create image folders (for tf).'
     zooniverse = sys.argv[1]  # 'file_resources\\herbarium-handwriting-transcription-classifications.csv'  # sys.argv[1]
     assert os.path.isfile(zooniverse), 'Invalid 1st argument: must be a file on the local computer.'
     image_folder = sys.argv[2]  # 'file_resources\\gcv_letter_images'  # sys.argv[2]
     assert os.path.isdir(image_folder), 'Invalid 2nd argument: must be a folder on the local computer.'
-    main(zooniverse, image_folder)
+    if len(sys.argv) == 4:
+        flag = True if sys.argv[3] == 'True' else False
+    main(zooniverse, image_folder, flag)
