@@ -27,7 +27,7 @@ def parse_raw_zooniverse_file(raw_zooniverse_classifications: pd.DataFrame) -> p
         subject_list = [*sd.values()]
         return subject_list[0]
 
-    filtered_raw_zooniverse.loc[:, 'subject_data'] = filtered_raw_zooniverse['subject_data']\
+    filtered_raw_zooniverse.loc[:, 'subject_data'] = filtered_raw_zooniverse['subject_data'] \
         .apply(clean_subject_data)
 
     parsed_zooniverse_classifications = pd.DataFrame()
@@ -40,7 +40,7 @@ def parse_raw_zooniverse_file(raw_zooniverse_classifications: pd.DataFrame) -> p
         image_name = s['image_of_boxed_letter'].replace('symbox', 'symbol')
         col_names = ['barcode', 'block', 'paragraph', 'word', 'symbol', 'gcv_identification', 'image_location']
         result = pd.Series([barcode, s['block_no'], s['paragraph_no'], s['word_no'], s['symbol_no'],
-                          s['#GCV_identification'], image_name], index=col_names)
+                            s['#GCV_identification'], image_name], index=col_names)
         return result
 
     location = filtered_raw_zooniverse['subject_data'].apply(parse_subject)
@@ -51,7 +51,8 @@ def parse_raw_zooniverse_file(raw_zooniverse_classifications: pd.DataFrame) -> p
         lambda annotation: annotation[1]['value'])
     parsed_zooniverse_classifications['unclear'] = parsed_zooniverse_classifications['human_transcription'].apply(
         lambda transcription: '[unclear][/unclear]' in transcription)
-    parsed_zooniverse_classifications['human_transcription'] = parsed_zooniverse_classifications['human_transcription']\
+    parsed_zooniverse_classifications['human_transcription'] = \
+        parsed_zooniverse_classifications['human_transcription'] \
         .apply(lambda transcription: transcription.replace('[unclear][/unclear]', ''))
 
     parsed_zooniverse_classifications['seen_count'] = parsed_zooniverse_classifications.groupby('id')[
@@ -73,7 +74,7 @@ def consolidate_classifications(zooniverse_classifications: pd.DataFrame) -> pd.
         new_row = subset.head(1).copy()
         idx = new_row.index[0]
         new_row.loc[idx, 'human_transcription'], count, total = vote(subset, 'human_transcription')
-        new_row.loc[idx, 'confidence'] = count/total
+        new_row.loc[idx, 'confidence'] = count / total
         if total == 3 and count == 0:
             new_row.loc[idx, 'status'] = 'Expert Required'
         elif total == 3:
@@ -99,9 +100,9 @@ def vote(df: pd.DataFrame, col_name: str) -> (any, int, int):
         df = df[-3:]
         total = 3
     try:
-        voted = mode(list(df.loc[:, col_name]))  # todo: Note if upgrade to Python 3.8, can use multimode instead
+        voted = mode(list(df.loc[:, col_name]))  # todo: Note if upgrade to Python 3.8, can use "multimode" instead
         voted_count = df[df[col_name] == voted].shape[0]
-    except StatisticsError as se:
+    except StatisticsError:
         # If there's a tie
         # Option 1: It's a 1-1 vote on 2 images. Arbitrarily pick the first option.
         if total == 2:
@@ -119,7 +120,7 @@ def load_letter_images(image_folder_path: str, zooniverse_classifications: pd.Da
     for idx, row in zooniverse_classifications.iterrows():
         image_name = row['image_location']
         if not os.path.isfile(os.path.join(image_folder_path, image_name)):
-            print('Warning: %s doesn\'t exist in this location.' % image_name)
+            print("Warning: %s doesn't exist in this location." % image_name)
         zooniverse_classifications.at[idx, 'image_location'] = os.path.join(image_folder_path, image_name)
 
 
@@ -269,8 +270,8 @@ def expert_manual_review(df: pd.DataFrame) -> None:
 
 
 if __name__ == '__main__':
-    assert len(sys.argv) == 3, 'Include 2 arguments: (1) the location of the classification results from Zooniverse, ' + \
-                               'and (2) the folder of images of letters.'
+    assert len(sys.argv) == 3, 'Include 2 arguments: (1) the location of the classification results from Zooniverse, ' \
+                               + 'and (2) the folder of images of letters.'
     zooniverse = sys.argv[1]  # 'file_resources\\herbarium-handwriting-transcription-classifications.csv'  # sys.argv[1]
     assert os.path.isfile(zooniverse), 'Invalid 1st argument: must be a file on the local computer.'
     image_folder = sys.argv[2]  # 'file_resources\\gcv_letter_images'  # sys.argv[2]
