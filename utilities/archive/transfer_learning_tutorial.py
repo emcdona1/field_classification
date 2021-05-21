@@ -91,7 +91,7 @@ def basic_examples():
     # layer in inference mode by passing training=False when you call the base model.
 
 
-if __name__ == '__main__':
+def cat_dog_from_tutorial():
     # Note: If you have your own dataset, you'll probably want to use the utility
     # tf.keras.preprocessing.image_dataset_from_directory to generate similar labeled dataset objects from
     # a set of images on disk filed into class-specific folders.
@@ -106,7 +106,6 @@ if __name__ == '__main__':
     print('No of training samples: %d' % tf.data.experimental.cardinality(train_ds))
     print('No of validation samples: %d' % tf.data.experimental.cardinality(validation_ds))
     print('No of training samples: %d' % tf.data.experimental.cardinality(test_ds))
-
     label_name = ['cat', 'dog']
     # view first 9 images in training set -- note that they all different dims
     # plt.figure(figsize=(10, 10))
@@ -130,9 +129,9 @@ if __name__ == '__main__':
 
     # add data augmentation & visualize it on one image
     data_augmentation = keras.Sequential([
-            keras.layers.experimental.preprocessing.RandomFlip("horizontal"),
-            keras.layers.experimental.preprocessing.RandomRotation(0.1),
-        ])
+        keras.layers.experimental.preprocessing.RandomFlip("horizontal"),
+        keras.layers.experimental.preprocessing.RandomRotation(0.1),
+    ])
     # for images, labels in train_ds.take(1):
     #     plt.figure(figsize=(10, 10))
     #     first_image = images[0]
@@ -160,7 +159,7 @@ if __name__ == '__main__':
     # normalize the inputs from [0,255] to [-1, 1]
     # Normalization calculates as outputs = (inputs - mean) / sqrt(var)
     norm_layer = keras.layers.experimental.preprocessing.Normalization()
-    mean = np.array([255/2] * 3)
+    mean = np.array([255 / 2] * 3)
     var = mean ** 2
     x = norm_layer(x)
     norm_layer.set_weights([mean, var])
