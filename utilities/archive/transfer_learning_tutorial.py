@@ -197,3 +197,75 @@ def cat_dog_from_tutorial():
     epochs = 5
     model.fit(train_ds, epochs=epochs, validation_data=validation_ds)
     model.save('cat_dog.model')
+
+
+def binary_classification_from_file_system():
+    # from this tutorial: https://www.tensorflow.org/tutorials/load_data/images#load_using_keraspreprocessing
+    data_dir = 'frullania_tmp'
+    # Required if running in Colab:
+    # import os
+    # for f in os.walk('frullania'):
+    #     curr_dir = f[0]
+    #     sub_folders = f[1]
+    #     contained_files = f[2]
+    #     for folder in sub_folders:
+    #         if '.ipynb_checkpoints' in folder:
+    #             os.removedirs(os.path.join('frullania', folder))
+
+    image_size = (71, 71)
+    # NOTE: doesn't load in TIFs
+    train_ds = tf.keras.preprocessing.image_dataset_from_directory(data_dir,
+                                                                         image_size=image_size,
+                                                                         labels='inferred', seed=1,
+                                                                         validation_split=0.3, subset='training')
+    validation_ds = tf.keras.preprocessing.image_dataset_from_directory(data_dir,
+                                                                              image_size=image_size,
+                                                                              labels='inferred', seed=1,
+                                                                              validation_split=0.3, subset='validation')
+    label_name = train_ds.class_names
+
+    plt.figure(figsize=(10, 10))
+    for images, labels in train_ds.take(1):
+        for i in range(9):
+            ax = plt.subplot(3, 3, i + 1)
+            plt.imshow(images[i].numpy().astype("uint8"))
+            plt.title(label_name[labels[i]])
+            plt.axis("off")
+    for image_batch, labels_batch in train_ds:
+        print(image_batch.shape)  # (# of images, image dimensions, channels)
+        print(labels_batch.shape)  # (# of images, )
+        break
+
+    # below is an alternative way to do buffered prefetching
+    AUTOTUNE = tf.data.AUTOTUNE
+    train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
+    validation_ds = validation_ds.cache().prefetch(buffer_size=AUTOTUNE)
+
+    # add data augmentation & visualize it on one image
+    data_augmentation = keras.Sequential([
+        keras.layers.experimental.preprocessing.RandomFlip("horizontal"),
+        keras.layers.experimental.preprocessing.RandomRotation(0.2),
+    ])
+    normalization_layer = tf.keras.layers.experimental.preprocessing.Rescaling(1. / 255)  # [0, 1]
+
+    num_classes = 2
+    model = tf.keras.Sequential([
+        data_augmentation,
+        normalization_layer,
+        keras.layers.Conv2D(32, 3, activation='relu'),
+        keras.layers.MaxPooling2D(),
+        keras.layers.Conv2D(32, 3, activation='relu'),
+        keras.layers.MaxPooling2D(),
+        keras.layers.Conv2D(32, 3, activation='relu'),
+        keras.layers.MaxPooling2D(),
+        keras.layers.Flatten(),
+        keras.layers.Dense(128, activation='relu'),
+        keras.layers.Dense(num_classes)
+    ])
+    model.compile(optimizer='adam', loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
+                  metrics=['accuracy'])
+    model.fit(
+        train_ds,
+        validation_data=validation_ds,
+        epochs=10
+    )
