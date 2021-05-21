@@ -215,22 +215,22 @@ def binary_classification_from_file_system():
     image_size = (71, 71)
     # NOTE: doesn't load in TIFs
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(data_dir,
-                                                                         image_size=image_size,
-                                                                         labels='inferred', seed=1,
-                                                                         validation_split=0.3, subset='training')
+                                                                   image_size=image_size,
+                                                                   labels='inferred', seed=1,
+                                                                   validation_split=0.3, subset='training')
     validation_ds = tf.keras.preprocessing.image_dataset_from_directory(data_dir,
-                                                                              image_size=image_size,
-                                                                              labels='inferred', seed=1,
-                                                                              validation_split=0.3, subset='validation')
+                                                                        image_size=image_size,
+                                                                        labels='inferred', seed=1,
+                                                                        validation_split=0.3, subset='validation')
     label_name = train_ds.class_names
 
-    plt.figure(figsize=(10, 10))
-    for images, labels in train_ds.take(1):
-        for i in range(9):
-            ax = plt.subplot(3, 3, i + 1)
-            plt.imshow(images[i].numpy().astype("uint8"))
-            plt.title(label_name[labels[i]])
-            plt.axis("off")
+    # plt.figure(figsize=(10, 10))
+    # for images, labels in train_ds.take(1):
+    #     for i in range(9):
+    #         ax = plt.subplot(3, 3, i + 1)
+    #         plt.imshow(images[i].numpy().astype("uint8"))
+    #         plt.title(label_name[labels[i]])
+    #         plt.axis("off")
     for image_batch, labels_batch in train_ds:
         print(image_batch.shape)  # (# of images, image dimensions, channels)
         print(labels_batch.shape)  # (# of images, )
@@ -246,9 +246,63 @@ def binary_classification_from_file_system():
         keras.layers.experimental.preprocessing.RandomFlip("horizontal"),
         keras.layers.experimental.preprocessing.RandomRotation(0.2),
     ])
-    normalization_layer = tf.keras.layers.experimental.preprocessing.Rescaling(1. / 255)  # [0, 1]
-
     num_classes = 2
+
+    # model = old_model_from_tfhub_tutorial(data_augmentation, num_classes)
+    # build model
+    base_model = keras.applications.Xception(
+        weights="imagenet",  # Load weights pre-trained on ImageNet.
+        # Note that these weights are tuned to [-1,1], so scale the input.
+        input_shape=(image_size[0], image_size[1], 3),
+        include_top=False,  # Do not include the ImageNet classifier at the top.
+    )
+    base_model.trainable = False
+    # Create new model on top
+    inputs = keras.Input(shape=(image_size[0], image_size[1], 3))
+    x = data_augmentation(inputs)  # Apply random data augmentation
+
+    # normalize the inputs from [0,255] to [-1, 1]
+    # Normalization calculates as outputs = (inputs - mean) / sqrt(var)
+    norm_layer = keras.layers.experimental.preprocessing.Normalization()
+    mean = np.array([255 / 2] * 3)
+    var = mean ** 2
+    x = norm_layer(x)
+    norm_layer.set_weights([mean, var])
+
+    # The base model contains batch norm layers, so we want to keep those in inference mode even once we unfreeze the
+    # base model for fine-tuning.  The steps below make sure that base_model is running in inference mode.
+    x = base_model(x, training=False)
+    x = keras.layers.GlobalAveragePooling2D()(x)
+    x = keras.layers.Dropout(0.2)(x)  # Regularize with dropout
+    outputs = keras.layers.Dense(num_classes)(x)
+    model = keras.Model(inputs, outputs)
+
+    model.summary()
+
+    # Train the top layer
+    model.compile(
+        optimizer=keras.optimizers.Adam(),
+        loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
+        metrics=['accuracy'])
+    epochs = 10
+    model.fit(train_ds, epochs=epochs, validation_data=validation_ds)
+
+    # Then, fine tuning
+    base_model.trainable = True
+    model.summary()
+
+    model.compile(
+        optimizer=keras.optimizers.Adam(1e-5),  # Low learning rate
+        loss=keras.losses.BinaryCrossentropy(from_logits=True),
+        metrics=[keras.metrics.BinaryAccuracy()],
+    )
+
+    epochs = 5
+    model.fit(train_ds, epochs=epochs, validation_data=validation_ds)
+
+
+def old_model_from_tfhub_tutorial(data_augmentation, num_classes):
+    normalization_layer = tf.keras.layers.experimental.preprocessing.Rescaling(1. / 255)  # [0, 1]
     model = tf.keras.Sequential([
         data_augmentation,
         normalization_layer,
@@ -262,10 +316,7 @@ def binary_classification_from_file_system():
         keras.layers.Dense(128, activation='relu'),
         keras.layers.Dense(num_classes)
     ])
-    model.compile(optimizer='adam', loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
+    model.compile(optimizer='adam',
+                  loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=['accuracy'])
-    model.fit(
-        train_ds,
-        validation_data=validation_ds,
-        epochs=10
-    )
+    return model
