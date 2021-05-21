@@ -278,27 +278,25 @@ def save_images_to_folders(zooniverse_classifications: pd.DataFrame, dest_folder
         .query("handwritten == True and (status == 'Complete' or status == 'Expert Reviewed')").copy()
     if not os.path.exists(dest_folder):
         os.makedirs(dest_folder)
-    image_class_mappings = {'0': '0', '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8',
-                            '9': '9', 'A': '10', 'B': '11', 'C': '12', 'D': '13', 'E': '14', 'F': '15', 'G': '16',
-                            'H': '17', 'I': '18', 'J': '19', 'K': '20', 'L': '21', 'M': '22', 'N': '23', 'O': '24',
-                            'P': '25', 'Q': '26', 'R': '27', 'S': '28', 'T': '29', 'U': '30', 'V': '31', 'W': '32',
-                            'X': '33', 'Y': '34', 'Z': '35', 'a': '36', 'b': '37', 'c': '12', 'd': '38', 'e': '39',
-                            'f': '40', 'g': '41', 'h': '42', 'i': '18', 'j': '19', 'k': '20', 'l': '21', 'm': '22',
-                            'n': '43', 'o': '24', 'p': '25', 'q': '44', 'r': '45', 's': '28', 't': '46', 'u': '31',
-                            'v': '31', 'w': '32', 'x': '33', 'y': '34', 'z': '35'}
+    image_class_mappings = {'0': '30', '1': '31', '2': '32', '3': '33', '4': '34', '5': '35', '6': '36', '7': '37',
+                            '8': '38', '9': '39', 'A': '41', 'B': '42', 'C': '43_63', 'D': '44', 'E': '45', 'F': '46',
+                            'G': '47', 'H': '48', 'I': '49_69', 'J': '4a_6a', 'K': '4b_6b', 'L': '4c_6c', 'M': '4d_6d',
+                            'N': '4e', 'O': '4f_6f', 'P': '50_70', 'Q': '51', 'R': '52', 'S': '53_73', 'T': '54',
+                            'U': '55_75', 'V': '56_76', 'W': '57_77', 'X': '58_78', 'Y': '59_79', 'Z': '5a_7a',
+                            'a': '61', 'b': '62', 'c': '43_63', 'd': '64', 'e': '65', 'f': '66', 'g': '67', 'h': '68',
+                            'i': '49_69', 'j': '4a_6a', 'k': '4b_6b', 'l': '4c_6c', 'm': '4d_6d', 'n': '6e',
+                            'o': '4f_6f', 'p': '50_70', 'q': '71', 'r': '72', 's': '53_73', 't': '74', 'u': '55_75',
+                            'v': '56_76', 'w': '57_77', 'x': '58_78', 'y': '59_79', 'z': '5a_7a'}
     for v in image_class_mappings.values():
         path = os.path.join(dest_folder, v)
         if not os.path.exists(path):
             os.makedirs(path)
-    os.makedirs(os.path.join(dest_folder, 'punctuation'))
     for idx, row in filtered_zooniverse.iterrows():
         image_location = row['image_location']
         if row['human_transcription'] in image_class_mappings.keys():
             image_class = image_class_mappings[row['human_transcription']]
-        else:
-            image_class = 'punctuation'
-        dest = os.path.join(dest_folder, image_class)
-        shutil.copy(image_location, dest)
+            dest = os.path.join(dest_folder, image_class)
+            shutil.copy(image_location, dest)
 
 
 if __name__ == '__main__':
@@ -308,6 +306,7 @@ if __name__ == '__main__':
     assert os.path.isfile(zooniverse), 'Invalid 1st argument: must be a file on the local computer.'
     image_folder = sys.argv[2]  # 'file_resources\\gcv_letter_images'  # sys.argv[2]
     assert os.path.isdir(image_folder), 'Invalid 2nd argument: must be a folder on the local computer.'
+    flag = False
     if len(sys.argv) == 4:
         flag = True if sys.argv[3] == 'True' else False
     main(zooniverse, image_folder, flag)
