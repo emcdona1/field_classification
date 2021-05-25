@@ -5,6 +5,7 @@ import tensorflow as tf
 from tensorflow import keras
 import tensorflow_datasets as tfds
 import matplotlib.pyplot as plt
+import os
 
 
 def print_weights(this_layer):
@@ -199,7 +200,7 @@ def cat_dog_from_tutorial():
     model.save('cat_dog.model')
 
 
-def binary_classification_from_file_system():
+def binary_classification_tl_from_file_system():
     # from this tutorial: https://www.tensorflow.org/tutorials/load_data/images#load_using_keraspreprocessing
     data_dir = 'frullania_tmp'
     # Required if running in Colab:
@@ -248,7 +249,7 @@ def binary_classification_from_file_system():
     ])
     num_classes = 2
 
-    # model = old_model_from_tfhub_tutorial(data_augmentation, num_classes)
+    # model = binary_classification_model_wo_transfer_learning(data_augmentation, num_classes)
     # build model
     base_model = keras.applications.Xception(
         weights="imagenet",  # Load weights pre-trained on ImageNet.
@@ -301,7 +302,7 @@ def binary_classification_from_file_system():
     model.fit(train_ds, epochs=epochs, validation_data=validation_ds)
 
 
-def old_model_from_tfhub_tutorial(data_augmentation, num_classes):
+def binary_classification_model_wo_transfer_learning(data_augmentation, num_classes):
     normalization_layer = tf.keras.layers.experimental.preprocessing.Rescaling(1. / 255)  # [0, 1]
     model = tf.keras.Sequential([
         data_augmentation,
