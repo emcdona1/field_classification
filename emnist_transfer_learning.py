@@ -10,7 +10,7 @@ if __name__ == '__main__':
     # tf.random.set_seed(SEED)
     # (train_ds, validation_ds, test_ds), info = tfds.load(
     train_ds, validation_ds, test_ds = tfds.load(
-            'emnist/balanced',
+        'emnist/balanced',
         split=['train[:40%]', 'train[40%:50%]', 'train[50%:60%]'],
         as_supervised=True  # , with_info=True
     )
@@ -19,11 +19,10 @@ if __name__ == '__main__':
     print('No of training samples: %d' % tf.data.experimental.cardinality(test_ds))
 
     label_names = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9',
-                   10: 'A', 11: 'B', 12: 'Cc', 13: 'D', 14: 'E', 15: 'F', 16: 'G', 17: 'H', 18: 'Ii',
-                   19: 'Jj', 20: 'Kk', 21: 'L', 22: 'M', 23: 'Nn', 24: 'O', 25: 'P', 26: 'Qq', 27: 'Rr', 28: 'S',
-                   29: 'Tt', 30: 'U', 31: 'V', 32: 'W', 33: 'X', 34: 'Y', 35: 'Z',
-                   36: 'a', 37: 'b', 38: 'd', 39: 'e', 40: 'f', 41: 'g', 42: 'h', 43: 'n',
-                   44: 'q', 45: 'r', 46: 't'}
+                   10: 'A', 11: 'B', 12: 'C', 13: 'D', 14: 'E', 15: 'F', 16: 'G', 17: 'H', 18: 'I', 19: 'J', 20: 'K',
+                   21: 'L', 22: 'M', 23: 'N', 24: 'O', 25: 'P', 26: 'Q', 27: 'R', 28: 'S', 29: 'T', 30: 'U', 31: 'V',
+                   32: 'W', 33: 'X', 34: 'Y', 35: 'Z',
+                   36: 'a', 37: 'b', 38: 'd', 39: 'e', 40: 'f', 41: 'g', 42: 'h', 43: 'n', 44: 'q', 45: 'r', 46: 't'}
     # reused: c, i, j, k, l, m, o, p, s, u, v, w, x, y, z
     # label_values = info.features['label'].names
     # plt.figure(figsize=(7, 7))
@@ -47,9 +46,9 @@ if __name__ == '__main__':
 
     # add data augmentation & visualize it on one image
     data_augmentation = keras.Sequential([
-            keras.layers.experimental.preprocessing.RandomFlip("horizontal"),
-            keras.layers.experimental.preprocessing.RandomRotation(0.1),
-        ])
+        keras.layers.experimental.preprocessing.RandomFlip("horizontal"),
+        keras.layers.experimental.preprocessing.RandomRotation(0.1),
+    ])
     # for images, labels in train_ds.take(1):
     #     plt.figure(figsize=(10, 10))
     #     first_image = images[0]
@@ -82,7 +81,7 @@ if __name__ == '__main__':
     # normalize the inputs from [0,255] to [-1, 1]
     # Normalization calculates as outputs = (inputs - mean) / sqrt(var)
     norm_layer = keras.layers.experimental.preprocessing.Normalization()
-    mean = np.array([255/2] * 3)
+    mean = np.array([255 / 2] * 3)
     var = mean ** 2
     x = norm_layer(x)
     norm_layer.set_weights([mean, var])
