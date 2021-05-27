@@ -4,10 +4,63 @@ import cv2
 import random
 import numpy as np
 from tensorflow.keras import datasets
+import tensorflow as tf
+from typing import Tuple
+
+
+class NewLabeledImages:
+    def __init__(self, random_seed: int):
+        self.seed: int = random_seed
+        # combo of self.features and self.labels
+        self.training_image_set: tf.data.Dataset = tf.data.Dataset.from_tensor_slices([0])
+        self.validation_image_set: tf.data.Dataset = tf.data.Dataset.from_tensor_slices([0])
+        self.test_image_set: tf.data.Dataset = tf.data.Dataset.from_tensor_slices([0])
+        self.img_names: list = []  # todo: didn't implement this
+        self.img_count: int = 0
+        self.color_mode: ColorMode = ColorMode.RGB
+        self.img_dimension: tuple = (0, 0)
+        self.class_labels: list = []
+
+    def load_images_from_folders(self, training_images_location: str, color_mode: ColorMode,
+                                 image_size: Tuple[int, int], testing_images_location=None, shuffle=True) -> None:
+        self.color_mode = color_mode
+        self.img_dimension = image_size
+        image_color = 'grayscale' if self.color_mode == ColorMode.BW else 'rgb'
+        self.training_image_set = tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
+                                                                                      color_mode=image_color,
+                                                                                      image_size=image_size,
+                                                                                      validation_split=0.2,
+                                                                                      seed=self.seed, subset='training')
+        self.validation_image_set = tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
+                                                                                        color_mode=image_color,
+                                                                                        image_size=image_size,
+                                                                                        validation_split=0.2,
+                                                                                        seed=self.seed,
+                                                                                        subset='validation')
+        self.class_labels = self.training_image_set.class_names
+        for t, _ in self.training_image_set.take(1):
+            self.img_count = t.shape[0]
+        for t, _ in self.validation_image_set.take(1):
+            self.img_count += t.shape[0]
+        self.training_image_set = self.training_image_set.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+        self.validation_image_set = self.validation_image_set.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+        if shuffle:
+            self.shuffle_images()
+
+        if testing_images_location:
+            self.test_image_set = tf.keras.preprocessing.image_dataset_from_directory(testing_images_location,
+                                                                                      color_mode=image_color,
+                                                                                      image_size=image_size)
+            self.test_image_set = self.test_image_set.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+
+    def shuffle_images(self):
+        # todo: shuffle images in train/validation sets
+        pass
 
 
 class LabeledImages:
     """ Class to hold image sets for training and testing in a neural network. Images must be square."""
+
     def __init__(self):
         self.features = np.array((0, 0))
         self.labels = np.array((0, 0))
