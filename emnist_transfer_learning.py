@@ -7,7 +7,51 @@ import matplotlib.pyplot as plt
 SEED = 1
 
 if __name__ == '__main__':
-    # tf.random.set_seed(SEED)
+    # attempt
+    import numpy as np
+    import os
+    import tensorflow as tf
+    from tensorflow import keras
+    import tensorflow_datasets as tfds
+    import codecs
+
+    batch_size = 32
+    # train_ds, validation_ds, test_ds = tfds.load(
+    #     'emnist/balanced',
+    #     split=['train[:40%]', 'train[40%:50%]', 'train[50%:60%]'],
+    #     as_supervised=True  # , with_info=True
+    # )
+    nist_merge_dir = os.path.join('file_resources', 'NISTv2-by_merge')
+    train_ds = keras.preprocessing.image_dataset_from_directory(nist_merge_dir,
+                                                                validation_split=0.2,
+                                                                subset='training',
+                                                                seed=SEED)
+    validation_ds = keras.preprocessing.image_dataset_from_directory(nist_merge_dir,
+                                                                     validation_split=0.2,
+                                                                     subset='validation',
+                                                                     seed=SEED)
+    steyermark_dir = os.path.join('file_resources', 'zooniverse_letter_images')
+    steyermark_dataset = tf.keras.preprocessing.image_dataset_from_directory(steyermark_dir, image_size=(71, 71))
+
+    class_names = dict()
+    for no in train_ds.class_names:
+        keys = no.split('_')
+        value = str(codecs.decode(keys[0], 'hex'), 'ascii').lower()
+        for key in keys:
+            class_names[key] = value
+
+    plt.figure(figsize=(10, 10))
+    for images, labels in train_ds.take(1):
+        for i in range(9):
+            l = labels[i]
+            ax = plt.subplot(3, 3, i + 1)
+            plt.imshow(images[i].numpy().astype("uint8"))
+            plt.title(int(labels[
+                              i]))  # todo: the values here are [0,46] in base 10, but the class_names are hex starting at 30...
+            plt.axis("off")
+
+    # /attempt
+    tf.random.set_seed(SEED)
     # (train_ds, validation_ds, test_ds), info = tfds.load(
     train_ds, validation_ds, test_ds = tfds.load(
         'emnist/balanced',
@@ -37,6 +81,10 @@ if __name__ == '__main__':
     train_ds = train_ds.map(lambda x, y: (tf.image.resize(x, size), y))
     validation_ds = validation_ds.map(lambda x, y: (tf.image.resize(x, size), y))
     test_ds = test_ds.map(lambda x, y: (tf.image.resize(x, size), y))
+    if test_ds.element_spec[0].shape[2] == 1:  # if grayscale, change to RGB
+        train_ds = train_ds.map(lambda x, y: (tf.image.grayscale_to_rgb(x), y))
+        validation_ds = validation_ds.map(lambda x, y: (tf.image.grayscale_to_rgb(x), y))
+        test_ds = test_ds.map(lambda x, y: (tf.image.grayscale_to_rgb(x), y))
 
     # batch load - use caching & prefetching to optimize loading speed
     batch_size = 32
@@ -92,9 +140,10 @@ if __name__ == '__main__':
     x = keras.layers.GlobalAveragePooling2D()(x)  # input (batch_size, row, col, ch) --> output (batch_size, ch)
     x = keras.layers.Dropout(0.2)(x)  # Regularize with dropout, 20% of inputs are set to 0 during training
                                       # (and remaining 80% are scaled up).  Only happens when training=True
-    outputs = keras.layers.Dense(47)(x) # todo: test if this change works
-    model = keras.Model(inputs, outputs, name="enist_balanced_model")  # inputs=a keras.Input object or a list of those objects
-                                          # outputs=this uses the Functional API, so outputs is the chain of layers
+    x = keras.layers.Dense(47)(x)  # todo: test/fix
+    outputs = keras.activations.softmax(x)
+    model = keras.Model(inputs, outputs)  # inputs=a keras.Input object or a list of those objects
+    # outputs=this uses the Functional API, so outputs is the chain of layers
     # Functional API output e.g. from docs:
     # x = keras.layers.Dense(4, activation=tf.nn.relu)(inputs)
     # outputs = keras.layers.Dense(5, activation=tf.nn.softmax)(x)

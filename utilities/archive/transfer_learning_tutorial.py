@@ -118,9 +118,9 @@ def cat_dog_from_tutorial():
 
     # resize the images
     size = (150, 150)
-    train_ds = train_ds.map(lambda x, y: (tf.image.resize(x, size), y))
-    validation_ds = validation_ds.map(lambda x, y: (tf.image.resize(x, size), y))
-    test_ds = test_ds.map(lambda x, y: (tf.image.resize(x, size), y))
+    train_ds = train_ds.map(lambda img, label: (tf.image.resize(img, size), label))
+    validation_ds = validation_ds.map(lambda img, label: (tf.image.resize(img, size), label))
+    test_ds = test_ds.map(lambda img, label: (tf.image.resize(img, size), label))
 
     # batch load - use caching & prefetching to optimize loading speed
     batch_size = 32
@@ -321,3 +321,110 @@ def binary_classification_model_wo_transfer_learning(data_augmentation, num_clas
                   loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=['accuracy'])
     return model
+
+
+def multiclass_classification_tl_from_file_system():
+    # tutorial used: https://www.tensorflow.org/tutorials/images/transfer_learning
+    data_dir = os.path.join('file_resources', 'gcv_letter_images')
+    # Required if running in Colab & manually uploading files to the connection:
+    # import os
+    # for f in os.walk(data_dir):
+    #     curr_dir = f[0]
+    #     sub_folders = f[1]
+    #     contained_files = f[2]
+    #     for folder in sub_folders:
+    #         if '.ipynb_checkpoints' in folder:
+    #             os.removedirs(os.path.join(data_dir, folder))
+
+    image_size = (71, 71)
+    # NOTE: doesn't load in TIFs
+    train_ds = tf.keras.preprocessing.image_dataset_from_directory(data_dir,
+                                                                   image_size=image_size,
+                                                                   labels='inferred', seed=1,
+                                                                   validation_split=0.2, subset='training')
+    validation_ds = tf.keras.preprocessing.image_dataset_from_directory(data_dir,
+                                                                        image_size=image_size,
+                                                                        labels='inferred', seed=1,
+                                                                        validation_split=0.2, subset='validation')
+    label_name = train_ds.class_names
+
+    # plt.figure(figsize=(10, 10))
+    # for images, labels in train_ds.take(1):
+    #     for i in range(9):
+    #         ax = plt.subplot(3, 3, i + 1)
+    #         plt.imshow(images[i].numpy().astype("uint8"))
+    #         plt.title(label_name[labels[i]])
+    #         plt.axis("off")
+
+    # todo: test if this successfully creates at 70-20-10 split!
+    val_batches = tf.data.experimental.cardinality(validation_ds)
+    test_ds = validation_ds.take(val_batches // 5)
+    validation_ds = validation_ds.skip(val_batches // 5)
+
+    for image_batch, labels_batch in train_ds:
+        print(image_batch.shape)  # (# of images, image dimensions, channels)
+        print(labels_batch.shape)  # (# of images, )
+        break
+
+    # below is an alternative way to do buffered prefetching
+    AUTOTUNE = tf.data.AUTOTUNE
+    train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
+    validation_ds = validation_ds.cache().prefetch(buffer_size=AUTOTUNE)
+
+    # add data augmentation & visualize it on one image
+    data_augmentation = keras.Sequential([
+        keras.layers.experimental.preprocessing.RandomFlip("horizontal"),
+        keras.layers.experimental.preprocessing.RandomRotation(0.2),
+    ])
+    num_classes = 2
+
+    # build model
+    base_model = keras.applications.Xception(
+        weights="imagenet",  # Load weights pre-trained on ImageNet.
+        # Note that these weights are tuned to [-1,1], so scale the input.
+        input_shape=(image_size[0], image_size[1], 3),
+        include_top=False,  # Do not include the ImageNet classifier at the top.
+    )
+    base_model.trainable = False
+    # Create new model on top
+    inputs = keras.Input(shape=(image_size[0], image_size[1], 3))
+    x = data_augmentation(inputs)  # Apply random data augmentation
+
+    # normalize the inputs from [0,255] to [-1, 1]
+    # Normalization calculates as outputs = (inputs - mean) / sqrt(var)
+    norm_layer = keras.layers.experimental.preprocessing.Normalization()
+    mean = np.array([255 / 2] * 3)
+    var = mean ** 2
+    x = norm_layer(x)
+    norm_layer.set_weights([mean, var])
+
+    # The base model contains batch norm layers, so we want to keep those in inference mode even once we unfreeze the
+    # base model for fine-tuning.  The steps below make sure that base_model is running in inference mode.
+    x = base_model(x, training=False)
+    x = keras.layers.GlobalAveragePooling2D()(x)
+    x = keras.layers.Dropout(0.2)(x)  # Regularize with dropout
+    outputs = keras.layers.Dense(num_classes)(x)
+    model = keras.Model(inputs, outputs)
+
+    model.summary()
+
+    # Train the top layer
+    model.compile(
+        optimizer=keras.optimizers.Adam(),
+        loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
+        metrics=['accuracy'])
+    epochs = 10
+    model.fit(train_ds, epochs=epochs, validation_data=validation_ds)
+
+    # Then, fine tuning
+    base_model.trainable = True
+    model.summary()
+
+    model.compile(
+        optimizer=keras.optimizers.Adam(1e-5),  # Low learning rate
+        loss=keras.losses.BinaryCrossentropy(from_logits=True),
+        metrics=[keras.metrics.BinaryAccuracy()],
+    )
+
+    epochs = 5
+    model.fit(train_ds, epochs=epochs, validation_data=validation_ds)
