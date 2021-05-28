@@ -6,17 +6,32 @@ from typing import Tuple
 
 class CNNArguments:
     def __init__(self):
-        parser = argparse.ArgumentParser(
+        # todo: TEMP
+        self.training_image_folder = 'mini_test_set'
+        self.testing_image_folder = 'mini_test_set'
+        self.image_size = 256
+        self.n_folds = 1
+        self.batch_size = 32
+        self.n_epochs = 5
+        self.color_mode = ColorMode.RGB
+        self.lr = 0.001
+        # todo: /TEMP
+        """parser = argparse.ArgumentParser(
             'Create and train CNNs for binary classification of images, using cross-fold validation.')
-        self.args: argparse.Namespace = self.set_up_parser_arguments(parser)
+        args: argparse.Namespace = set_up_parser_arguments(parser)
 
-        self.image_folders = self.validate_image_folders()
+        # todo: remove image_folders
+        self.image_folders, self.training_image_folder, self.testing_image_folder, self.image_size = \
+            validate_required_arguments(args)
+
+        # todo: remove class_labels and get from NewLabeledImages
         self.class_labels = parse_class_names_from_image_folders(self.image_folders)
-        self.color_mode = self.set_color_mode()
-        self.lr = self.validate_learning_rate()
-        self.n_folds = self.validate_n_folds()
-        self.n_epochs = self.validate_n_epochs()
-        self.batch_size = self.validate_batch_size()
+        self.color_mode = set_color_mode(args)
+        self.lr = validate_learning_rate(args)
+        self.n_folds = validate_n_folds(args)
+        self.n_epochs = validate_n_epochs(args)
+        self.batch_size = validate_batch_size(args)"""
+
 
 def set_up_parser_arguments(parser):
     # new arguments:
