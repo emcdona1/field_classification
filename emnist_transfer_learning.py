@@ -1,3 +1,7 @@
+# This should probably be trashed
+
+
+
 import tensorflow as tf
 from tensorflow import keras
 import tensorflow_datasets as tfds
