@@ -202,52 +202,48 @@ def cat_dog_from_tutorial():
 
 def binary_classification_tl_from_file_system():
     # from this tutorial: https://www.tensorflow.org/tutorials/load_data/images#load_using_keraspreprocessing
-    data_dir = 'frullania_tmp'
-    # Required if running in Colab:
-    # import os
-    # for f in os.walk('frullania'):
-    #     curr_dir = f[0]
-    #     sub_folders = f[1]
-    #     contained_files = f[2]
-    #     for folder in sub_folders:
-    #         if '.ipynb_checkpoints' in folder:
-    #             os.removedirs(os.path.join('frullania', folder))
 
+    data_dir = 'frullania_tmp'
+    # If running in Colab, put frullania_tmp in Google Drive and then point data_dir to:
+    # data_dor = 'drive/MyDrive/frullania_tmp'
     image_size = (71, 71)
     # NOTE: doesn't load in TIFs
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(data_dir,
                                                                    image_size=image_size,
-                                                                   labels='inferred', seed=1,
+                                                                   seed=1,  # by default, labels='inferred'
                                                                    validation_split=0.3, subset='training')
     validation_ds = tf.keras.preprocessing.image_dataset_from_directory(data_dir,
                                                                         image_size=image_size,
-                                                                        labels='inferred', seed=1,
+                                                                        seed=1,  # by default, labels='inferred'
                                                                         validation_split=0.3, subset='validation')
-    label_name = train_ds.class_names
+    label_names = train_ds.class_names
+    num_classes = len(label_names)
+    print(label_names)
+    print(num_classes)
+    train_ds.shuffle(128, seed=1)
 
-    # plt.figure(figsize=(10, 10))
+    # To visualize some samples:
+    # plt.figure(figsize=(7, 7))
     # for images, labels in train_ds.take(1):
     #     for i in range(9):
     #         ax = plt.subplot(3, 3, i + 1)
     #         plt.imshow(images[i].numpy().astype("uint8"))
-    #         plt.title(label_name[labels[i]])
+    #         plt.title('%s (%i)' % (label_names[labels[i]], int(labels[i])))
     #         plt.axis("off")
     for image_batch, labels_batch in train_ds:
-        print(image_batch.shape)  # (# of images, image dimensions, channels)
-        print(labels_batch.shape)  # (# of images, )
-        break
+        print('Number of images in this batch: %d, image dimensions=(%d, %d), %d-channel color.'
+              % tuple(image_batch.shape))
+        print('Number of labels in this batch: %d' % labels_batch.shape[0])
 
     # below is an alternative way to do buffered prefetching
-    AUTOTUNE = tf.data.AUTOTUNE
-    train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
-    validation_ds = validation_ds.cache().prefetch(buffer_size=AUTOTUNE)
+    train_ds = train_ds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+    validation_ds = validation_ds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
 
     # add data augmentation & visualize it on one image
     data_augmentation = keras.Sequential([
-        keras.layers.experimental.preprocessing.RandomFlip("horizontal"),
+        keras.layers.experimental.preprocessing.RandomFlip('horizontal'),
         keras.layers.experimental.preprocessing.RandomRotation(0.2),
     ])
-    num_classes = 2
 
     # model = binary_classification_model_wo_transfer_learning(data_augmentation, num_classes)
     # build model
@@ -262,13 +258,16 @@ def binary_classification_tl_from_file_system():
     inputs = keras.Input(shape=(image_size[0], image_size[1], 3))
     x = data_augmentation(inputs)  # Apply random data augmentation
 
-    # normalize the inputs from [0,255] to [-1, 1]
+    # How to normalize the input images from [0,255] to [-1, 1] for ImageNet
     # Normalization calculates as outputs = (inputs - mean) / sqrt(var)
     norm_layer = keras.layers.experimental.preprocessing.Normalization()
     mean = np.array([255 / 2] * 3)
     var = mean ** 2
     x = norm_layer(x)
     norm_layer.set_weights([mean, var])
+
+    # How to normalize the input images from [0, 255] to [0, 1]
+    # norm_layer = tf.keras.layers.experimental.preprocessing.Rescaling(1. / 255)  # [0, 1]
 
     # The base model contains batch norm layers, so we want to keep those in inference mode even once we unfreeze the
     # base model for fine-tuning.  The steps below make sure that base_model is running in inference mode.
