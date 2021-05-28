@@ -2,7 +2,7 @@ import random
 import numpy as np
 import tensorflow as tf
 import matplotlib
-from labeled_images.labeledimages import LabeledImages
+from labeled_images.labeledimages import LabeledImages, NewLabeledImages
 from models.smithsonian import SmithsonianModel
 from model_training import ModelTrainer
 from utilities.timer import Timer
@@ -13,41 +13,27 @@ matplotlib.use('Agg')  # required when running on server
 
 def main() -> None:
     timer = Timer('Model training')
-    images, cnn_model_trainer = program_setup()
 
-    cnn_model_trainer.train_and_save_all_models(images)
-    cnn_model_trainer.charts.finalize()
-
-    print('class 1: ' + images.class_labels[0] + ', class 2: ' + images.class_labels[1])
-    timer.stop()
-    timer.print_results()
-
-
-def program_setup() -> (LabeledImages, ModelTrainer):
     cnn_arguments = CNNArguments()
-
-    images = load_image_sets(cnn_arguments)
-    trainer = initialize_model_trainer(cnn_arguments, images)
-    return images, trainer
-
-
-def load_image_sets(user_arguments: CNNArguments) -> LabeledImages:
-    images = LabeledImages()
+    new_images = NewLabeledImages(SEED)
+    new_images.load_images_from_folders(cnn_arguments.training_image_folder, cnn_arguments.image_size,
+                                        cnn_arguments.color_mode, True)
+    # todo: get rid of images below
+    # images = LabeledImages()
     # Option 1: load from filesystem
-    images.load_images_from_folders(user_arguments.image_folders, user_arguments.color_mode,
-                                    user_arguments.class_labels)
-
+    # images.load_images_from_folders(cnn_arguments.image_folders, cnn_arguments.color_mode, cnn_arguments.class_labels)
     # Option 2: load 2 classes of the CIFAR-10 data set
     # images.load_cifar_images()
 
-    return images
+    architecture = SmithsonianModel(SEED, cnn_arguments.lr, cnn_arguments.image_size, cnn_arguments.color_mode)
+    trainer = ModelTrainer(cnn_arguments.n_epochs, cnn_arguments.batch_size, cnn_arguments.n_folds, architecture, SEED)
+    trainer.new_train_and_save_all_models(new_images)
+    # trainer.train_and_save_all_models(images)
+    trainer.charts.finalize()
 
-
-def initialize_model_trainer(user_arguments: CNNArguments, images: LabeledImages) -> (ModelTrainer):
-    n_folds = user_arguments.n_folds
-    architecture = SmithsonianModel(SEED, user_arguments.lr, images.img_dimension, images.color_mode)
-    trainer = ModelTrainer(user_arguments.n_epochs, user_arguments.batch_size, n_folds, architecture, SEED)
-    return trainer
+    print('class 1: ' + new_images.class_labels[0] + ', class 2: ' + new_images.class_labels[1])
+    timer.stop()
+    timer.print_results()
 
 
 if __name__ == '__main__':
