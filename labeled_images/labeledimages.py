@@ -5,7 +5,6 @@ import random
 import numpy as np
 from tensorflow.keras import datasets
 import tensorflow as tf
-from typing import Tuple
 
 
 class NewLabeledImages:
@@ -24,18 +23,20 @@ class NewLabeledImages:
     def load_images_from_folders(self, training_images_location: str, image_size: int,
                                  color_mode: ColorMode = ColorMode.rgb, shuffle=True) -> None:
         self.color_mode = color_mode
-        self.img_dimension = image_size
-        image_color = 'grayscale' if self.color_mode == ColorMode.BW else 'rgb'
+        self.img_dimension = (image_size, image_size)
         self.training_image_set = tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
                                                                                       color_mode=self.color_mode.name,
                                                                                       image_size=image_size,
-                                                                                      validation_split=0.2,
-                                                                                      seed=self.seed, subset='training')
+                                                                                      seed=self.seed,
+                                                                                      validation_split=0.1,
+                                                                                      # todo: change to 0.1 after testing
+                                                                                      subset='training')
         self.validation_image_set = tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
                                                                                         color_mode=self.color_mode.name,
                                                                                         image_size=image_size,
-                                                                                        validation_split=0.2,
                                                                                         seed=self.seed,
+                                                                                        validation_split=0.2,
+                                                                                        # todo: change to 0.1 after testing
                                                                                         subset='validation')
         self.class_labels = self.training_image_set.class_names
         for t, _ in self.training_image_set.take(1):
@@ -47,11 +48,12 @@ class NewLabeledImages:
         if shuffle:
             self.shuffle_images()
 
-        if testing_images_location:
-            self.test_image_set = tf.keras.preprocessing.image_dataset_from_directory(testing_images_location,
-                                                                                      color_mode=image_color,
-                                                                                      image_size=image_size)
-            self.test_image_set = self.test_image_set.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+    def load_testing_images(self, testing_image_folder: str):
+        # todo: implement using this in testing script
+        self.test_image_set = tf.keras.preprocessing.image_dataset_from_directory(testing_image_folder,
+                                                                                  color_mode=self.color_mode.name,
+                                                                                  image_size=self.img_dimension)
+        self.test_image_set = self.test_image_set.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
 
     def shuffle_images(self):
         # todo: shuffle images in train/validation sets
