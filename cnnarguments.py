@@ -13,7 +13,7 @@ class CNNArguments:
         self.n_folds = 1
         self.batch_size = 32
         self.n_epochs = 5
-        self.color_mode = ColorMode.RGB
+        self.color_mode = ColorMode.rgb
         self.lr = 0.001
         # todo: /TEMP
         """parser = argparse.ArgumentParser(
@@ -83,7 +83,7 @@ def validate_required_arguments(args) -> (Tuple[str, str], str, str, int):
 
 
 def set_color_mode(args):
-    color_mode = ColorMode.BW if args.bw else ColorMode.RGB
+    color_mode = ColorMode.grayscale if args.bw else ColorMode.rgb
     return color_mode
 
 

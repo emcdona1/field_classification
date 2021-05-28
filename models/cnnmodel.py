@@ -4,7 +4,7 @@ from labeled_images.colormode import ColorMode
 
 
 class CNNModel(ABC):
-    def __init__(self, seed: int, lr: float, img_dim: int, color_mode: ColorMode = ColorMode.RGB):
+    def __init__(self, seed: int, lr: float, img_dim: int, color_mode: ColorMode = ColorMode.rgb):
         """ Creates layers for model and compiles model"""
         self.seed: int = seed
         self.lr: float = lr

@@ -19,7 +19,7 @@ def main():
 
     # Import images
     images = LabeledImages()
-    images.load_images_from_folders(image_folders, ColorMode.RGB, class_labels)
+    images.load_images_from_folders(image_folders, ColorMode.rgb, class_labels)
     print('Images imported.')
 
     combined_results = pd.DataFrame()

@@ -17,22 +17,22 @@ class NewLabeledImages:
         self.test_image_set: tf.data.Dataset = tf.data.Dataset.from_tensor_slices([0])
         self.img_names: list = []  # todo: didn't implement this
         self.img_count: int = 0
-        self.color_mode: ColorMode = ColorMode.RGB
+        self.color_mode: ColorMode = ColorMode.rgb
         self.img_dimension: tuple = (0, 0)
         self.class_labels: list = []
 
-    def load_images_from_folders(self, training_images_location: str, color_mode: ColorMode,
-                                 image_size: Tuple[int, int], testing_images_location=None, shuffle=True) -> None:
+    def load_images_from_folders(self, training_images_location: str, image_size: int,
+                                 color_mode: ColorMode = ColorMode.rgb, shuffle=True) -> None:
         self.color_mode = color_mode
         self.img_dimension = image_size
         image_color = 'grayscale' if self.color_mode == ColorMode.BW else 'rgb'
         self.training_image_set = tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
-                                                                                      color_mode=image_color,
+                                                                                      color_mode=self.color_mode.name,
                                                                                       image_size=image_size,
                                                                                       validation_split=0.2,
                                                                                       seed=self.seed, subset='training')
         self.validation_image_set = tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
-                                                                                        color_mode=image_color,
+                                                                                        color_mode=self.color_mode.name,
                                                                                         image_size=image_size,
                                                                                         validation_split=0.2,
                                                                                         seed=self.seed,
@@ -71,7 +71,7 @@ class LabeledImages:
         self.class_labels = None
 
     def load_images_from_folders(self, folders: (str, str), color_mode: ColorMode, class_labels: (str, str)) -> None:
-        """ Given a pair of folders - one for each class, using a specified color mode (RGB or BW), and a pair
+        """ Given a pair of folders - one for each class, using a specified color mode (rgb or grayscale), and a pair
         of class labels, load the images and labels from the filesystem into memory."""
         self.features = []
         self.labels = []
@@ -82,11 +82,11 @@ class LabeledImages:
         for (class_num, image_folder_path) in enumerate(folders):
             for img in os.listdir(image_folder_path):
                 img_array = cv2.imread(os.path.join(image_folder_path, img),
-                                       cv2.IMREAD_COLOR if self.color_mode == ColorMode.RGB
+                                       cv2.IMREAD_COLOR if self.color_mode == ColorMode.rgb
                                        else cv2.IMREAD_GRAYSCALE)
                 img_array = img_array / 255
                 img_array = img_array.reshape([img_array.shape[0], img_array.shape[1],
-                                               3 if self.color_mode == ColorMode.RGB else 1])
+                                               3 if self.color_mode == ColorMode.rgb else 1])
                 self.features.append(img_array)
                 self.labels.append(class_num)
                 self.img_names.append(img)
@@ -124,7 +124,7 @@ class LabeledImages:
         self.labels = np.vstack((train_labels, val_labels))
 
         self.img_count = self.features.shape[0]
-        self.color_mode = ColorMode.RGB
+        self.color_mode = ColorMode.rgb
         self.img_dimension = self.features[0].shape[1]
 
     def randomize_order(self) -> None:

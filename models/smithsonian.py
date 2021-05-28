@@ -8,7 +8,7 @@ class SmithsonianModel(CNNModel):
 
     def add_convolutional_layers(self):
         # Two sets of convolutional layers
-        if self.color == ColorMode.RGB:
+        if self.color == ColorMode.rgb:
             print('Color image input layer')
             self.model.add(layers.Conv2D(10, (5, 5), input_shape=(
                 self.img_dim, self.img_dim, 3)))
