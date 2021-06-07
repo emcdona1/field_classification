@@ -102,5 +102,9 @@ class ModelTrainer:
     def validate_model(self, class_labels: Union[Tuple[str], List[str]]) -> None:
         # validation_predicted_probability = self.architecture.model.predict_proba(self.validation_set[0])[:, 1]
         validation_predicted_probability = self.architecture.model.predict(self.validation_set)[:, 1]
-        self.charts.update(self.history, self.curr_fold, self.validation_set[1],  # todo: how to extract the labels from the validation set?
+        validation_labels = np.array([])
+        for batch in self.validation_set.as_numpy_iterator():
+            validation_labels = np.concatenate((validation_labels, batch[1]))
+        validation_labels = validation_labels.astype(np.int32)
+        self.charts.update(self.history, self.curr_fold, validation_labels,  # self.validation_set[1],  # todo: how to extract the labels from the validation set?
                            validation_predicted_probability, class_labels)
