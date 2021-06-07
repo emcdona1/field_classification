@@ -17,8 +17,8 @@ def main() -> None:
     cnn_arguments = CNNArguments()
     new_images = NewLabeledImages(SEED)
     new_images.load_images_from_folders(cnn_arguments.training_image_folder, cnn_arguments.image_size,
-                                        cnn_arguments.color_mode, True)
-    # todo: get rid of images below
+                                        cnn_arguments.color_mode, shuffle=True, n_folds=cnn_arguments.n_folds)
+    # todo: get rid of comments below
     # images = LabeledImages()
     # Option 1: load from filesystem
     # images.load_images_from_folders(cnn_arguments.image_folders, cnn_arguments.color_mode, cnn_arguments.class_labels)
