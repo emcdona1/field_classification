@@ -7,8 +7,8 @@ from typing import Tuple
 class CNNArguments:
     def __init__(self):
         # todo: TEMP
-        self.training_image_folder = 'mini_test_set'
-        self.testing_image_folder = 'mini_test_set'
+        self.training_image_folder = 'mini_test_set_bigger'
+        self.testing_image_folder = 'mini_test_set_bigger'
         self.image_size = 256
         self.n_folds = 1
         self.batch_size = 32
