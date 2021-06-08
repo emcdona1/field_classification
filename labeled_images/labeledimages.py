@@ -1,6 +1,5 @@
 from labeled_images.colormode import ColorMode
 import tensorflow as tf
-import os
 
 
 class LabeledImages:
@@ -14,6 +13,7 @@ class LabeledImages:
         self.img_dimensions: tuple = (0, 0)
         self.class_labels: list = []
         self.n_folds: int = 1
+        self.test_image_set: tf.data.Dataset = tf.data.Dataset.from_tensor_slices([0])
         self.test_img_names: list = list()
         self.test_features: list = list()
         self.test_labels: list = list()
@@ -52,14 +52,15 @@ class LabeledImages:
     def load_testing_images(self, testing_image_folder: str, image_size: int, color_mode: ColorMode = ColorMode.rgb):
         self.color_mode = color_mode
         self.img_dimensions = (image_size, image_size)
-        test_image_set = tf.keras.preprocessing.image_dataset_from_directory(testing_image_folder,
-                                                                             color_mode=self.color_mode.name,
-                                                                             image_size=self.img_dimensions,
-                                                                             shuffle=False)
-        self.test_img_names = test_image_set.file_paths
-        self.class_labels = test_image_set.class_names
+        self.test_image_set = tf.keras.preprocessing.image_dataset_from_directory(testing_image_folder,
+                                                                                  color_mode=self.color_mode.name,
+                                                                                  image_size=self.img_dimensions,
+                                                                                  shuffle=False)
+        self.test_img_names = self.test_image_set.file_paths
+        self.class_labels = self.test_image_set.class_names
         self.test_labels = list()
+        # todo: remove test_features if nothing blows up
         self.test_features = list()
-        for feature_class_pair in test_image_set.as_numpy_iterator():
+        for feature_class_pair in self.test_image_set.as_numpy_iterator():
             self.test_features = self.test_features + list(feature_class_pair[0])
             self.test_labels = self.test_labels + list(feature_class_pair[1])
