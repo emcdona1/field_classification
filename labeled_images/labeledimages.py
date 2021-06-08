@@ -28,6 +28,7 @@ class LabeledImages:
                                                                                       color_mode=self.color_mode.name,
                                                                                       image_size=self.img_dimensions,
                                                                                       seed=self.seed,
+                                                                                      shuffle=shuffle,
                                                                                       batch_size=self.batch_size,
                                                                                       validation_split=0.1,
                                                                                       subset='training')
@@ -35,6 +36,7 @@ class LabeledImages:
                                                                                         color_mode=self.color_mode.name,
                                                                                         image_size=self.img_dimensions,
                                                                                         seed=self.seed,
+                                                                                        shuffle=shuffle,
                                                                                         batch_size=self.batch_size,
                                                                                         validation_split=0.1,
                                                                                         subset='validation')
@@ -45,8 +47,7 @@ class LabeledImages:
             self.img_count += batch[0]
         self.training_image_set = self.training_image_set.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
         self.validation_image_set = self.validation_image_set.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
-        if shuffle:
-            self.shuffle_images()
+        # todo : confirm that the images are being normalized downstream
 
     def load_testing_images(self, testing_image_folder: str, image_size: int, color_mode: ColorMode = ColorMode.rgb):
         self.color_mode = color_mode
