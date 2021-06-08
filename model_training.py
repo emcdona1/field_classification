@@ -1,6 +1,6 @@
 import os
 from models.smithsonian import SmithsonianModel
-from labeled_images.labeledimages import LabeledImages, NewLabeledImages
+from labeled_images.labeledimages import LabeledImages
 import numpy as np
 from data_visualization.visualizationgenerator import VisualizationGenerator
 from sklearn.model_selection import StratifiedKFold
@@ -24,28 +24,18 @@ class ModelTrainer:
         self.seed: int = seed
         self.charts = VisualizationGenerator(self.n_folds)
 
-    def new_train_and_save_all_models(self, images: NewLabeledImages):
-        training_and_validation_groups = self.new_generate_image_splits(images)
+    def train_and_save_all_models(self, images: LabeledImages):
+        training_and_validation_groups = self.generate_image_splits(images)
         for index, (training_set, validation_set) in enumerate(training_and_validation_groups):
             self.curr_fold = index + 1
             self.training_set = training_set
             self.validation_set = validation_set
-            self.new_train_model()
+            self.train_model()
             keras.models.save_model(self.architecture.model,
                                     os.path.join(self.folder_name, 'CNN_%i.model' % self.curr_fold))
             self.validate_model(images.class_labels)
 
-    def train_and_save_all_models(self, images: LabeledImages):  # todo: remove
-        training_and_validation_groups = self.generate_image_splits(images)
-
-        for index, (training_idx_list, validation_idx_list) in enumerate(training_and_validation_groups):
-            self.curr_fold = index + 1
-            self.train_model(images, training_idx_list, validation_idx_list)
-            keras.models.save_model(self.architecture.model, os.path.join(self.folder_name,
-                                                                          'CNN_' + str(self.curr_fold) + '.model'))
-            self.validate_model(images.class_labels)
-
-    def new_generate_image_splits(self, images: NewLabeledImages):
+    def generate_image_splits(self, images: LabeledImages):
         if self.n_folds <= 1:
             print('Training without cross-fold validation.')
             # training_idx_list = np.array(range(int(images.img_count * 0.9)))
@@ -61,40 +51,11 @@ class ModelTrainer:
             training_and_validation_groups = skf.split('features', 'labels')
         return training_and_validation_groups
 
-    def generate_image_splits(self, images: LabeledImages):  # todo: remove
-        if self.n_folds <= 1:
-            print('Training without cross-fold validation.')
-            # 90% training, 10% validation
-            training_idx_list = np.array(range(int(images.img_count * 0.9)))
-            validation_idx_list = np.array(range(len(training_idx_list), images.img_count))
-            training_and_validation_groups = enumerate([(training_idx_list, validation_idx_list)])
-        else:
-            print('Training with %i-fold validation.' % self.n_folds)
-            skf = StratifiedKFold(n_splits=self.n_folds, shuffle=True, random_state=self.seed)
-            training_and_validation_groups = skf.split(images.features, images.labels)
-
-        return training_and_validation_groups
-
-    def new_train_model(self):
+    def train_model(self):
         self.architecture.reset_model()
         self.history = None
         print('Training model for fold %i of %i.' % (self.curr_fold, self.n_folds))
         self.history = self.architecture.model.fit(self.training_set,
-                                                   batch_size=self.batch_size, epochs=self.epochs,
-                                                   #        callbacks = [es_callback],
-                                                   validation_data=self.validation_set, verbose=2)
-
-    def train_model(self, images: LabeledImages, training_idx_list: np.ndarray,
-                    validation_idx_list: np.ndarray):
-        self.architecture.reset_model()
-        self.history = None
-        self.training_set = images.subset(training_idx_list)
-        self.validation_set = images.subset(validation_idx_list)
-
-        print('Training model for fold %i of %i.' % (self.curr_fold, self.n_folds))
-        # es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss',
-        #        mode='min', min_delta = 0.05, patience = 20, restore_best_weights = True)
-        self.history = self.architecture.model.fit(self.training_set[0], self.training_set[1],
                                                    batch_size=self.batch_size, epochs=self.epochs,
                                                    #        callbacks = [es_callback],
                                                    validation_data=self.validation_set, verbose=2)
