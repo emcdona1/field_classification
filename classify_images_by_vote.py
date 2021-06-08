@@ -24,12 +24,12 @@ def main():
     print('Images imported.')
 
     combined_results = pd.DataFrame()
-    combined_results['filename'] = images.img_names  # todo: img_names isn't implemented yet
-    combined_results['actual_class'] = images.labels
+    combined_results['filename'] = images.test_img_names
+    combined_results['actual_class'] = images.test_labels
     all_predictions = pd.DataFrame()
 
     for model_path in list_of_models:
-        classify_images_with_a_model(images.class_labels, all_predictions, images, os.path.basename(model_path), model_path)
+        classify_images_with_a_model(images.class_labels, all_predictions, images, model_path)
 
     all_predictions['voted_label'] = all_predictions.mean(axis=1)
     # calculate_confusion_matrix(combined_results)
@@ -79,52 +79,29 @@ def calculate_confusion_matrix(combined_results):
 
 
 def classify_images_with_a_model(class_labels: list, combined_results: pd.DataFrame,
-                                 images: LabeledImages, model_name: str, model_path: str) -> None:
+                                 images: LabeledImages, model_path: str) -> None:
+    model_name = os.path.basename(model_path)
     if ".model" in model_path:
         # Load model
         model = tf.keras.models.load_model(model_path)
         print('Model ' + model_name + ' loaded.')
 
-        # Generate predictions and organize results
-        predictions = make_predictions(images, model)
+        # Generate predictions and label results
+        predictions: np.array = model.predict(images.test_image_set)
+        test_dataset = tf.data.Dataset.from_tensor_slices([images.test_features])
+        predictions_using_from_tensor_slices_method = model.predict(test_dataset)
+
+        # todo: remove this assert and the test_dataset lines if it doesn't blow up during real data testing
+        assert (predictions == predictions_using_from_tensor_slices_method).all(), 'results mismatch in test prediction'
+
+        headers = [images.class_labels[0] + '_prediction', images.class_labels[1] + '_prediction']
+        predictions = pd.DataFrame(predictions, columns=headers)
         print('Predictions generated.')
 
         # add newest predictions to results
-        combined_results[model_name] = predictions[class_labels[1] + '_pred']  # probability of class = 1
+        combined_results[model_name] = predictions[class_labels[1] + '_prediction']  # probability of class = 1
     else:
         print('Model file path error: "%s" is not a *.model file.' % model_path)
-
-
-def make_predictions(images: LabeledImages, model: tf.keras.Model) -> pd.DataFrame:
-    ''' Model predicts classifications for all images, and organizes into a DataFrame
-
-    Parameters:
-    -----
-    @pixel_values : numpy array of RBG pixel values for each image
-    @actual_class : numpy array of 0/1's of actual classification of the images
-    @img_filenames : numpy array of the image filenames
-    @class_labels : list containing the names of the two classes (e.g. ['coastal', 'rostrata'])
-    @model : keras model, already loaded
-
-    Output:
-    -----
-    DataFrame with the following columns:
-    1. image filename (string)
-    2. prediction of class = 0 (float)
-    3. prediction of class = 1 (float)
-    4. class predition - argmax (int, 0 or 1)
-    5. actual class (int, 0 or 1)
-    6. predicted class label (string)
-    7. actual class label (string)
-    8. True Positive (1 if the image was correctly predicted to be class=1, 0 otherwise)
-    9. False Negative (1 if the image was incorrectly predicted to be class=1, 0 otherwise)
-    10. False Positive (1 if the image was incorrectly predicted to be class=0, 0 otherwise)
-    11. True Negative (1 if the image was correctly predicted to be class=0, 0 otherwise)
-    '''
-    # Predict classes of imported images
-    predictions: np.array = model.predict(images.test_image_set)
-    headers = [images.class_labels[0] + '_prediction', images.class_labels[1] + '_prediction']
-    return pd.DataFrame(predictions, columns=headers)
 
 
 def write_dataframe_to_csv(folder, filename, data_to_write):
@@ -150,7 +127,7 @@ def write_dataframe_to_csv(folder, filename, data_to_write):
 def process_input_arguments():
     parser = argparse.ArgumentParser('Import a model and classify images.')
     parser.add_argument('images', help='Path containing folders of test images')
-    parser.add_argument('size', help='Image dimension (one side in pixels -- square image assumed).')
+    parser.add_argument('size', type=int, help='Image dimension (one side in pixels -- square image assumed).')
     parser.add_argument('models', help='One model, or one folder of models to use.')
     color_mode_group = parser.add_mutually_exclusive_group()
     color_mode_group.add_argument('-color', action='store_true', help='Images are in RGB color mode. (Default)')
