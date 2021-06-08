@@ -10,6 +10,7 @@ from cnnarguments import parse_class_names_from_image_folders
 from labeled_images.colormode import ColorMode
 
 THRESHOLD = 0.5
+SEED = 1
 
 
 def main():
@@ -18,17 +19,17 @@ def main():
     image_folders, list_of_models, color_mode, image_size = process_input_arguments()
 
     # Import images
-    images = LabeledImages()
-    images.load_images_from_folders(image_folders, ColorMode.rgb, class_labels)
+    images = LabeledImages(SEED)
+    images.load_testing_images(image_folders, image_size, color_mode)
     print('Images imported.')
 
     combined_results = pd.DataFrame()
-    combined_results['filename'] = images.img_names
+    combined_results['filename'] = images.img_names  # todo: img_names isn't implemented yet
     combined_results['actual_class'] = images.labels
     all_predictions = pd.DataFrame()
 
     for model_path in list_of_models:
-        classify_images_with_a_model(class_labels, all_predictions, images, os.path.basename(model_path), model_path)
+        classify_images_with_a_model(images.class_labels, all_predictions, images, os.path.basename(model_path), model_path)
 
     all_predictions['voted_label'] = all_predictions.mean(axis=1)
     # calculate_confusion_matrix(combined_results)
@@ -77,7 +78,7 @@ def calculate_confusion_matrix(combined_results):
             print('Invalid image class value')
 
 
-def classify_images_with_a_model(class_labels: tuple, combined_results: pd.DataFrame,
+def classify_images_with_a_model(class_labels: list, combined_results: pd.DataFrame,
                                  images: LabeledImages, model_name: str, model_path: str) -> None:
     if ".model" in model_path:
         # Load model
@@ -121,19 +122,9 @@ def make_predictions(images: LabeledImages, model: tf.keras.Model) -> pd.DataFra
     11. True Negative (1 if the image was correctly predicted to be class=0, 0 otherwise)
     '''
     # Predict classes of imported images
-    predictions: np.array = model.predict(images.features)
-    prediction_integer_func = np.vectorize(lambda t: (1 if t > THRESHOLD else 0))
-    prediction_class = prediction_integer_func(predictions[:, [1]])  # 0/1 labels of predictions
-
-    prediction_label_func = np.vectorize(lambda t: images.class_labels[t])
-    pred_actual_class_labels = np.c_[prediction_label_func(prediction_class), prediction_label_func(images.labels)]
-
-    # Join all information into one nparray -> pd.DataFrame
-    headers = [images.class_labels[0] + '_pred', images.class_labels[1] + '_pred']
-
-    predictions_to_write = pd.DataFrame(predictions, columns=headers)
-
-    return predictions_to_write
+    predictions: np.array = model.predict(images.test_image_set)
+    headers = [images.class_labels[0] + '_prediction', images.class_labels[1] + '_prediction']
+    return pd.DataFrame(predictions, columns=headers)
 
 
 def write_dataframe_to_csv(folder, filename, data_to_write):
