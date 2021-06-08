@@ -15,7 +15,7 @@ THRESHOLD = 0.5
 def main():
     # Start execution and parse arguments
     timer = Timer('Classifying a test set')
-    image_folders, class_labels, list_of_models = process_input_arguments()
+    image_folders, list_of_models, color_mode, image_size = process_input_arguments()
 
     # Import images
     images = LabeledImages()
@@ -158,24 +158,24 @@ def write_dataframe_to_csv(folder, filename, data_to_write):
 
 def process_input_arguments():
     parser = argparse.ArgumentParser('Import a model and classify images.')
-    parser.add_argument('c1', help='Path of class 1 images')
-    parser.add_argument('c2', help='Path of class 2 images')
-    parser.add_argument('models', help='Folder of models to use')
+    parser.add_argument('images', help='Path containing folders of test images')
+    parser.add_argument('size', help='Image dimension (one side in pixels -- square image assumed).')
+    parser.add_argument('models', help='One model, or one folder of models to use.')
     color_mode_group = parser.add_mutually_exclusive_group()
     color_mode_group.add_argument('-color', action='store_true', help='Images are in RGB color mode. (Default)')
     color_mode_group.add_argument('-bw', action='store_true', help='Images are in grayscale color mode.')
     args = parser.parse_args()
 
-    image_folders = (args.c1, args.c2)
-    class_labels: tuple = parse_class_names_from_image_folders(image_folders)
-    list_of_models = None
+    image_folders = args.images
     if ".model" in args.models:
         list_of_models = [args.models]
     else:
         list_of_models = os.listdir(args.models)
         list_of_models = [(args.models + os.path.sep + filename) for filename in list_of_models]
+    color_mode = ColorMode.grayscale if args.bw else ColorMode.rgb
+    image_size = args.size
 
-    return image_folders, class_labels, list_of_models
+    return image_folders, list_of_models, color_mode, image_size
 
 
 if __name__ == '__main__':
