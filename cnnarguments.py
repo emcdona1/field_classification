@@ -6,31 +6,18 @@ from typing import Tuple
 
 class CNNArguments:
     def __init__(self):
-        # todo: TEMP
-        self.training_image_folder = 'mini_test_set_bigger'
-        self.testing_image_folder = 'mini_test_set_bigger'
-        self.image_size = 256
-        self.n_folds = 1
-        self.batch_size = 32
-        self.n_epochs = 5
-        self.color_mode = ColorMode.rgb
-        self.lr = 0.001
-        # todo: /TEMP
-        """parser = argparse.ArgumentParser(
+        parser = argparse.ArgumentParser(
             'Create and train CNNs for binary classification of images, using cross-fold validation.')
         args: argparse.Namespace = set_up_parser_arguments(parser)
 
-        # todo: remove image_folders
-        self.image_folders, self.training_image_folder, self.testing_image_folder, self.image_size = \
+        self.training_image_folder, self.testing_image_folder, self.image_size = \
             validate_required_arguments(args)
 
-        # todo: remove class_labels and get from NewLabeledImages
-        self.class_labels = parse_class_names_from_image_folders(self.image_folders)
         self.color_mode = set_color_mode(args)
         self.lr = validate_learning_rate(args)
         self.n_folds = validate_n_folds(args)
         self.n_epochs = validate_n_epochs(args)
-        self.batch_size = validate_batch_size(args)"""
+        self.batch_size = validate_batch_size(args)
 
 
 def set_up_parser_arguments(parser):
@@ -41,8 +28,6 @@ def set_up_parser_arguments(parser):
     # rest of arguments are unchanged
 
     # image arguments
-    parser.add_argument('c1', help='Directory name containing images in class 1.')  # todo: remove
-    parser.add_argument('c2', help='Directory name containing images in class 2.')  # todo: remove
     color_mode_group = parser.add_mutually_exclusive_group()
     color_mode_group.add_argument('-color', action='store_true', help='Images are in RGB color mode. (Default)')
     color_mode_group.add_argument('-bw', action='store_true', help='Images are in grayscale color mode.')
@@ -74,12 +59,7 @@ def validate_required_arguments(args) -> (Tuple[str, str], str, str, int):
         raise NotADirectoryError('Training set "%s" is not a valid directory path.' % args.training_set)
     if args.img_size <= 0:
         raise ValueError('Image size must be > 0. %i is not valid.' % args.img_size)
-    # todo: remove c1, c2
-    if not os.path.isdir(args.c1):
-        raise NotADirectoryError('C1 value "%s" is not a valid directory path.' % args.c1)
-    if not os.path.isdir(args.c2):
-        raise NotADirectoryError('C2 value "%s" is not a valid directory path.' % args.c2)
-    return (args.c1, args.c2), args.training_set, args.testing_set, args.img_size
+    return args.training_set, args.testing_set, args.img_size
 
 
 def set_color_mode(args):
