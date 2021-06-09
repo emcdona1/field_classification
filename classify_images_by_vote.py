@@ -6,7 +6,6 @@ from utilities.timer import Timer
 import numpy as np
 from datetime import datetime
 from labeled_images.labeledimages import LabeledImages
-from cnnarguments import parse_class_names_from_image_folders
 from labeled_images.colormode import ColorMode
 
 THRESHOLD = 0.5
