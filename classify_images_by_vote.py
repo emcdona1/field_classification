@@ -1,5 +1,7 @@
 import os
 import argparse
+
+import numpy
 import pandas as pd
 import tensorflow as tf
 from utilities.timer import Timer
@@ -91,7 +93,8 @@ def classify_images_with_a_model(class_labels: list, combined_results: pd.DataFr
         predictions_using_from_tensor_slices_method = model.predict(test_dataset)
 
         # todo: remove this assert and the test_dataset lines if it doesn't blow up during real data testing
-        assert (predictions == predictions_using_from_tensor_slices_method).all(), 'results mismatch in test prediction'
+        assert numpy.allclose(predictions, predictions_using_from_tensor_slices_method), \
+            'results mismatch in test prediction:\n' + (predictions == predictions_using_from_tensor_slices_method)
 
         headers = [images.class_labels[0] + '_prediction', images.class_labels[1] + '_prediction']
         predictions = pd.DataFrame(predictions, columns=headers)
