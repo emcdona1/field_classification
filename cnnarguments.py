@@ -54,7 +54,7 @@ def validate_required_arguments(args) -> (str, int):
         raise NotADirectoryError('Training set "%s" is not a valid directory path.' % args.training_set)
     if args.img_size <= 0:
         raise ValueError('Image size must be > 0. %i is not valid.' % args.img_size)
-    return args.training_set, args.testing_set, args.img_size
+    return args.training_set, args.img_size
 
 
 def set_color_mode(args):
@@ -78,8 +78,8 @@ def validate_n_folds( args):
 
 def validate_n_epochs( args) -> int:
     n_epochs = args.n_epochs
-    if not n_epochs >= 10 or type(n_epochs) is not int:
-        raise ValueError('# of epochs %i is not valid. Must be >= 10.)' % n_epochs)
+    if not n_epochs >= 5 or type(n_epochs) is not int:
+        raise ValueError('# of epochs %i is not valid. Must be >= 5.)' % n_epochs)
     return n_epochs
 
 
