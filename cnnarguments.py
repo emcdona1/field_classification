@@ -10,9 +10,7 @@ class CNNArguments:
             'Create and train CNNs for binary classification of images, using cross-fold validation.')
         args: argparse.Namespace = set_up_parser_arguments(parser)
 
-        self.training_image_folder, self.testing_image_folder, self.image_size = \
-            validate_required_arguments(args)
-
+        self.training_image_folder, self.image_size = validate_required_arguments(args)
         self.color_mode = set_color_mode(args)
         self.lr = validate_learning_rate(args)
         self.n_folds = validate_n_folds(args)
@@ -23,7 +21,6 @@ class CNNArguments:
 def set_up_parser_arguments(parser):
     # new arguments:
     parser.add_argument('training_set', help='Directory containing training/validation images.')
-    parser.add_argument('testing_set', help='Directory containing testing images.')  # todo: make this optional
     parser.add_argument('img_size', type=int, help='Desired image width/height (square images).')
     # rest of arguments are unchanged
 
@@ -52,9 +49,7 @@ def parse_class_names_from_image_folders(image_folders) -> (str, str):
     return class1, class2
 
 
-def validate_required_arguments(args) -> (Tuple[str, str], str, str, int):
-    if not os.path.isdir(args.training_set):
-        raise NotADirectoryError('Training set "%s" is not a valid directory path.' % args.training_set)
+def validate_required_arguments(args) -> (str, int):
     if not os.path.isdir(args.training_set):
         raise NotADirectoryError('Training set "%s" is not a valid directory path.' % args.training_set)
     if args.img_size <= 0:
