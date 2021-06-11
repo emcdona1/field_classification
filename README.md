@@ -2,7 +2,11 @@
 #### _field_classification_ repository
 
 
-The code in this repository uses Convolutional Neural Networks (CNN) in Tensorflow/Keras to classify images of two sets of plant species (e.g. the morphologically similar plant families *Lycopodieaceae* and *Selaginellaceae*, or two species of the *Frullania* genus) based on the available corpus of images.  Scripts are available to download and preprocess images. The CNN and classification programs are designed to accept any standard image file type (per OpenCV standards), and is generic enough to accept images of any species of plants (or other objects!).
+The code in this repository uses Convolutional Neural Networks (CNN) in Tensorflow/Keras to classify images of two sets 
+of plant species (e.g. the morphologically similar plant families *Lycopodieaceae* and *Selaginellaceae*, or two species 
+of the *Frullania* genus) based on the available corpus of images.  Scripts are available to download and preprocess 
+images. The CNN and classification programs are generic enough to accept images of any species of plants 
+(or other objects!).
 
 
 ---
@@ -10,53 +14,66 @@ The code in this repository uses Convolutional Neural Networks (CNN) in Tensorfl
 ## Setup
 1. Clone the repository to your local machine.
 1. Confirm you have the necessary Python version and packages installed (see Environment section below).
-1. Prepare two sets of images, with each set in a separate directory.  (The directory names will be used as the class label, e.g. *cat* and *dog*.)  Images must be square (1:1 aspect ratio) and all of the same dimensions.
-    - To resize and reshape images, you can use `utilities\image_processing\image_resize.py`.  Note that rectangular images will not be cropped, but their aspect ratio will be skewed to 1:1.
-    - Instead of providing your own image sets, a modification of the CIFAR-10 built-in data set is available. To use this image set, manually adjust the `load_image_sets()` method in `train_models_image_classification.py`.
-1. If desired, you should prepare a separate group of test images, either manually, or using the available utility script: `utilities\image_processing\create_test_group.py`.
-    - This script defaults to creates a split of 90% for training/validation and 10% for testing. It creates copies of the images in four new directories  -- *folder1test, folder1train, folder2test*, and *folder2train*.
+1. Prepare two sets of images, each within a directory that indicates the class name.  These folders should be put 
+   together in a directory, with no other image files. e.g.,
+```
+training_image_folder
+└───cats
+└───dogs
+```
+   
+
+4. If you have TIF images, use the script in `utilities\image_process\tif_to_jpg.py` to quickly convert files.  
+   The TIF files will be moved to a new subdirectory called `tif`.
+1. You should prepare a separate group of test images, either manually, or you can use the available utility script: 
+   `utilities\image_processing\create_test_group.py`.
+    - This script defaults to creates a split of 90% for training/validation and 10% for testing. It creates copies of 
+      the images in four new directories  -- *folder1test, folder1train, folder2test*, and *folder2train*.
 
 
 ### Environment
-This code has been tested in Python 3.7.x in Windows and Ubuntu, using Anaconda 
+This code has been tested in Python 3.9.4 in Windows and Ubuntu, using Anaconda 
 for virtual environments.  Please consult `requirements.txt` or the list below 
 for necessary Python packages.
 
 #### Tested Package Versions:
-- tensorflow 2.0.0, 2.4.1 (*Release v1.0 and earlier are compatible with TensorFlow 1.15.0*)
-- matplotlib 3.1.3, 3.2.2
-- numpy 1.18.1, 1.19.2
-- opencv-python 3.4.2.17
-- pandas 1.0.3, 1.2.3
-- scikit-learn 0.22.1, 0.24.1
+- tensorflow 2.5.0-rc3 (*Release v1.0 and earlier are compatible with TensorFlow 1.15.0*)
+- matplotlib 3.4.2
+- numpy 1.19.5
+- opencv-python 4.5.2
+- pandas 1.2.4
+- scikit-learn 0.24.2
 
 ---
 
 ## Workflow
 - Run `train_models_image_classification.py`, using arguments to specify image sets and hyper-parameters.
     - Arguments: (`-h` flag for full details)
-        - `c1` (positional, required) - file path of the first image folder (class 1 training images)
-        - `c2` (positional, required) - file path of the second image folder (class 2 trianing images)
+        - `training_set` (positional, required) - file path of the directory that contains the training images 
+          (e.g. `training_image_folder` as described in the Setup section.)
+        - `img_size` (positional, required) - desired image size (images will be loaded as `img_size x img_size` square)
         - (`-color`, `-bw`) - boolean flag for number of color channels (RGB or K) (*default = color*)
-        - `-lr` - learning rate value (*decimal number*)
-        - `-f` - number of folds (1 for no cross-fold validation, 2+ for cross-fold validation) (*integer <= 1*)
-        - `-e` - number of epochs per fold (*integer >= 10*)
-        - `-b` - batch size for updates (*integer >= 2*)
+        - `-lr` - learning rate value (*decimal number*, default = 0.001)
+        - `-f` - number of folds (1 for single-model, 2+ for cross-fold validation) (*integer <= 1*, default=1)
+            - *Note*: Currently, cross-fold validation is not implemented.
+        - `-e` - number of epochs per fold (*integer >= 5*, default=25)
+        - `-b` - batch size for updates (*integer >= 2*, default=64)
     - Output:
         - Directory `saved_models` is created in current working directory, which will contain one model file per fold (file name format: `CNN_#.model`).
         - Directory `graphs` is created in current working directory, which will contain all generated graphs/plots for each run, plus a CSV summary for each fold.
-    - Example execution: `python train_models_image_classification.py images\species_a images\species_b -color -lr 0.001 -f 10 -e 100 -b 64 > species_a_b_training_output.txt &`
+    - Example execution: `python train_models_image_classification.py training_images 128 -color -lr 0.005 -f 10 -e 50 -b 64 > species_a_b_training_output.txt &`
 
 
 - After the training is finished, use the model file(s) to classify test set images.  The number of predictions generated = *# of test images * # of model files*
 - Run `classify_images_by_vote.py`.
     - Arguments: (`-h` flag for full details)
-        - `c1` (positional, required) - file path of the first test image folder (class 1)
-        - `c2` (positional, required) - file path of the second image folder (class 2)
-        - `m` (positional, required) - folder of generated models (i.e. `saved_models` in working directory)
+        - `images` (positional, required) - file path of a directory containing the test image folders
+        - `img_size` (positional, required) - image size to be used (must match how the model was trained)
+        - `models` (positional, required) - a single model file, or a folder of models (i.e. `saved_models` in working directory)
+        - (`-color`, `-bw`) - boolean flag for number of color channels (RGB or K) (*default = color*)
     - Output:
         - Directory `predictions` is created if needed, and the preductions are saved as a CSV file (`yyyy-mm-dd-hh-mm-ssmodel_vote_predict.csv`).
-    - Example execution: `python classify_images_by_vote.py images\species_a_test images\species_b_test saved_models\`
+    - Example execution: `python classify_images_by_vote.py test_images 128 saved_models -color`
 
 ---
 

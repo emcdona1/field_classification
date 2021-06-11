@@ -31,10 +31,10 @@ def set_up_parser_arguments(parser):
     parser.add_argument('-lr', '--learning_rate', type=float,
                         default=0.001, help='Learning rate for training. (Default = 0.001)')
     # training run arguments
-    parser.add_argument('-f', '--n_folds', type=int, default=10,
-                        help='Number of folds (minimum 1) for cross validation. (Default = 10)')
+    parser.add_argument('-f', '--n_folds', type=int, default=1,
+                        help='Number of folds (minimum 1) for cross validation. (Default = 1)')
     parser.add_argument('-e', '--n_epochs', type=int, default=25,
-                        help='Number of epochs (minimum 10) per fold. (Default = 25)')
+                        help='Number of epochs (minimum 5) per fold. (Default = 25)')
     parser.add_argument('-b', '--batch_size', type=int,
                         default=64, help='Batch size (minimum 2) for training. (Default = 64)')
     return parser.parse_args()
