@@ -1,5 +1,6 @@
 from models.cnnmodel import CNNModel
 from tensorflow.keras import layers
+import tensorflow as tf
 from labeled_images.colormode import ColorMode
 
 
@@ -33,5 +34,6 @@ class SmithsonianModel(CNNModel):
 
     def add_output_layers(self):
         self.model.add(layers.Dense(2, activation='linear'))
-        self.model.add(layers.Dense(2, activation='softmax'))
+        self.model.add(layers.Dense(2, activation=tf.keras.activations.softmax))
+        # self.model.add(layers.Dense(1, activation='softmax'))
         print(self.model.summary())

@@ -53,8 +53,7 @@ class ModelTrainer:
                                                    validation_data=validation_set, verbose=2)
 
     def validate_model(self, class_labels: Union[Tuple[str], List[str]], validation_set: tf.data.Dataset) -> None:
-        # validation_predicted_probability = self.architecture.model.predict_proba(self.validation_set[0])[:, 1]
-        validation_predicted_probability = self.architecture.model.predict(validation_set)[:, 1]
+        validation_predicted_probability = self.architecture.model.predict(validation_set)[:, 1]  # ,0]
         validation_labels = np.array([])
         for batch in validation_set.as_numpy_iterator():
             validation_labels = np.concatenate((validation_labels, batch[1]))
