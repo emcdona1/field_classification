@@ -32,16 +32,22 @@ def main():
     for model_path in list_of_models:
         classify_images_with_a_model(images.class_labels, all_predictions, images, model_path)
 
-    all_predictions['voted_label'] = all_predictions.mean(axis=1)
+    all_predictions['voted_probability'] = all_predictions.mean(axis=1)
     # calculate_confusion_matrix(combined_results)
     combined_results = combined_results.join(all_predictions)
+    combined_results['tp'] = combined_results.eval('actual_class == 1 and voted_probability >= 0.5')
+    combined_results['fn'] = combined_results.eval('actual_class == 1 and voted_probability < 0.5')
+    combined_results['fp'] = combined_results.eval('actual_class == 0 and voted_probability >= 0.5')
+    combined_results['tn'] = combined_results.eval('actual_class == 0 and voted_probability < 0.5')
+    combined_results['voted_label'] = combined_results.eval('voted_probability >= 0.5')
+    combined_results['voted_label'] = combined_results['voted_label'].map(lambda v: 1 if v else 0)
+
+    combined_results.columns = ['filename', 'actual_class'] + list_of_models + \
+                               ['voted_probability', 'tp', 'fn', 'fp', 'tn', 'voted_label']
 
     if not os.path.exists('predictions'):
         os.makedirs('predictions')
     write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
-
-    # TODO: for each row, vote (simple majority) and give each *image* a final classification
-    # TODO: output: image name, final classification, true classification, tp/fn/fp/tn, then each classification
 
     # Finish execution
     timer.stop()
