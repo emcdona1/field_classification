@@ -1,7 +1,6 @@
 import argparse
 import os
 from labeled_images.colormode import ColorMode
-from typing import Tuple
 
 
 class CNNArguments:
@@ -30,7 +29,7 @@ def set_up_parser_arguments(parser):
     color_mode_group.add_argument('-bw', action='store_true', help='Images are in grayscale color mode.')
     # model creation argument
     parser.add_argument('-lr', '--learning_rate', type=float,
-                        default=0.0001, help='Learning rate for training. (Default = 0.0001)')
+                        default=0.001, help='Learning rate for training. (Default = 0.001)')
     # training run arguments
     parser.add_argument('-f', '--n_folds', type=int, default=10,
                         help='Number of folds (minimum 1) for cross validation. (Default = 10)')
