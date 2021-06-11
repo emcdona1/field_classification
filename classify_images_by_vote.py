@@ -1,45 +1,58 @@
 import os
 import argparse
+
+import numpy
 import pandas as pd
 import tensorflow as tf
 from utilities.timer import Timer
 import numpy as np
 from datetime import datetime
 from labeled_images.labeledimages import LabeledImages
-from cnnarguments import parse_class_names_from_image_folders
 from labeled_images.colormode import ColorMode
 
 THRESHOLD = 0.5
+SEED = 1
 
 
 def main():
     # Start execution and parse arguments
     timer = Timer('Classifying a test set')
-    image_folders, class_labels, list_of_models = process_input_arguments()
+    image_folders, list_of_models, color_mode, image_size = process_input_arguments()
 
     # Import images
-    images = LabeledImages()
-    images.load_images_from_folders(image_folders, ColorMode.RGB, class_labels)
+    images = LabeledImages(SEED)
+    images.load_testing_images(image_folders, image_size, color_mode)
     print('Images imported.')
 
     combined_results = pd.DataFrame()
-    combined_results['filename'] = images.img_names
-    combined_results['actual_class'] = images.labels
+    combined_results['filename'] = images.test_img_names
+    combined_results['actual_class'] = images.test_labels
     all_predictions = pd.DataFrame()
 
     for model_path in list_of_models:
-        classify_images_with_a_model(class_labels, all_predictions, images, os.path.basename(model_path), model_path)
+        classify_images_with_a_model(images.class_labels, all_predictions, images, model_path)
 
-    all_predictions['voted_label'] = all_predictions.mean(axis=1)
+    all_predictions['voted_probability'] = all_predictions.mean(axis=1)
     # calculate_confusion_matrix(combined_results)
     combined_results = combined_results.join(all_predictions)
+    combined_results['tp'] = combined_results.eval('actual_class == 1 and voted_probability >= 0.5')
+    combined_results['fn'] = combined_results.eval('actual_class == 1 and voted_probability < 0.5')
+    combined_results['fp'] = combined_results.eval('actual_class == 0 and voted_probability >= 0.5')
+    combined_results['tn'] = combined_results.eval('actual_class == 0 and voted_probability < 0.5')
+    combined_results['voted_label'] = combined_results.eval('voted_probability >= 0.5')
+
+    combined_results['tp'] = combined_results['tp'].map(lambda v: 1 if v else 0)
+    combined_results['fn'] = combined_results['fn'].map(lambda v: 1 if v else 0)
+    combined_results['fp'] = combined_results['fp'].map(lambda v: 1 if v else 0)
+    combined_results['tn'] = combined_results['tn'].map(lambda v: 1 if v else 0)
+    combined_results['voted_label'] = combined_results['voted_label'].map(lambda v: 1 if v else 0)
+
+    combined_results.columns = ['filename', 'actual_class'] + list_of_models + \
+                               ['voted_probability', 'tp', 'fn', 'fp', 'tn', 'voted_label']
 
     if not os.path.exists('predictions'):
         os.makedirs('predictions')
     write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
-
-    # TODO: for each row in chart, vote (simple majority) and give each *image* a final classification
-    # TODO: output: image name, final classification, true classification, tp/fn/fp/tn, then each classification
 
     # Finish execution
     timer.stop()
@@ -77,63 +90,27 @@ def calculate_confusion_matrix(combined_results):
             print('Invalid image class value')
 
 
-def classify_images_with_a_model(class_labels: tuple, combined_results: pd.DataFrame,
-                                 images: LabeledImages, model_name: str, model_path: str) -> None:
+def classify_images_with_a_model(class_labels: list, combined_results: pd.DataFrame,
+                                 images: LabeledImages, model_path: str) -> None:
+    model_name = os.path.basename(model_path)
     if ".model" in model_path:
         # Load model
         model = tf.keras.models.load_model(model_path)
         print('Model ' + model_name + ' loaded.')
 
-        # Generate predictions and organize results
-        predictions = make_predictions(images, model)
+        # Generate predictions and label results
+        predictions: np.array = model.predict(images.test_image_set)
+        test_dataset = tf.data.Dataset.from_tensor_slices([images.test_features])
+        predictions_using_from_tensor_slices_method = model.predict(test_dataset)
+
+        headers = [images.class_labels[0] + '_prediction', images.class_labels[1] + '_prediction']
+        predictions = pd.DataFrame(predictions, columns=headers)
         print('Predictions generated.')
 
         # add newest predictions to results
-        combined_results[model_name] = predictions[class_labels[1] + '_pred']  # probability of class = 1
+        combined_results[model_name] = predictions[class_labels[1] + '_prediction']  # probability of class = 1
     else:
         print('Model file path error: "%s" is not a *.model file.' % model_path)
-
-
-def make_predictions(images: LabeledImages, model: tf.keras.Model) -> pd.DataFrame:
-    ''' Model predicts classifications for all images, and organizes into a DataFrame
-
-    Parameters:
-    -----
-    @pixel_values : numpy array of RBG pixel values for each image
-    @actual_class : numpy array of 0/1's of actual classification of the images
-    @img_filenames : numpy array of the image filenames
-    @class_labels : list containing the names of the two classes (e.g. ['coastal', 'rostrata'])
-    @model : keras model, already loaded
-
-    Output:
-    -----
-    DataFrame with the following columns:
-    1. image filename (string)
-    2. prediction of class = 0 (float)
-    3. prediction of class = 1 (float)
-    4. class predition - argmax (int, 0 or 1)
-    5. actual class (int, 0 or 1)
-    6. predicted class label (string)
-    7. actual class label (string)
-    8. True Positive (1 if the image was correctly predicted to be class=1, 0 otherwise)
-    9. False Negative (1 if the image was incorrectly predicted to be class=1, 0 otherwise)
-    10. False Positive (1 if the image was incorrectly predicted to be class=0, 0 otherwise)
-    11. True Negative (1 if the image was correctly predicted to be class=0, 0 otherwise)
-    '''
-    # Predict classes of imported images
-    predictions: np.array = model.predict(images.features)
-    prediction_integer_func = np.vectorize(lambda t: (1 if t > THRESHOLD else 0))
-    prediction_class = prediction_integer_func(predictions[:, [1]])  # 0/1 labels of predictions
-
-    prediction_label_func = np.vectorize(lambda t: images.class_labels[t])
-    pred_actual_class_labels = np.c_[prediction_label_func(prediction_class), prediction_label_func(images.labels)]
-
-    # Join all information into one nparray -> pd.DataFrame
-    headers = [images.class_labels[0] + '_pred', images.class_labels[1] + '_pred']
-
-    predictions_to_write = pd.DataFrame(predictions, columns=headers)
-
-    return predictions_to_write
 
 
 def write_dataframe_to_csv(folder, filename, data_to_write):
@@ -158,24 +135,24 @@ def write_dataframe_to_csv(folder, filename, data_to_write):
 
 def process_input_arguments():
     parser = argparse.ArgumentParser('Import a model and classify images.')
-    parser.add_argument('c1', help='Path of class 1 images')
-    parser.add_argument('c2', help='Path of class 2 images')
-    parser.add_argument('models', help='Folder of models to use')
+    parser.add_argument('images', help='Path containing folders of test images')
+    parser.add_argument('img_size', type=int, help='Image dimension (one side in pixels -- square image assumed).')
+    parser.add_argument('models', help='One model, or one folder of models to use.')
     color_mode_group = parser.add_mutually_exclusive_group()
     color_mode_group.add_argument('-color', action='store_true', help='Images are in RGB color mode. (Default)')
     color_mode_group.add_argument('-bw', action='store_true', help='Images are in grayscale color mode.')
     args = parser.parse_args()
 
-    image_folders = (args.c1, args.c2)
-    class_labels: tuple = parse_class_names_from_image_folders(image_folders)
-    list_of_models = None
+    image_folders = args.images
     if ".model" in args.models:
         list_of_models = [args.models]
     else:
         list_of_models = os.listdir(args.models)
         list_of_models = [(args.models + os.path.sep + filename) for filename in list_of_models]
+    color_mode = ColorMode.grayscale if args.bw else ColorMode.rgb
+    image_size = args.img_size
 
-    return image_folders, class_labels, list_of_models
+    return image_folders, list_of_models, color_mode, image_size
 
 
 if __name__ == '__main__':

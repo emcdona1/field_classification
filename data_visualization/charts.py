@@ -143,11 +143,17 @@ class ConfusionMatrix(Chart):
     def create_chart(self, index, cm, labels) -> None:
         fig = plt.figure(4)
         ax = fig.add_subplot(1, 1, 1)
-        cax = ax.matshow(cm)  # todo: figure out what this is about
-        plt.title('Confusion Matrix - Fold %i' % index)
+        ax.matshow(cm, cmap=plt.cm.get_cmap('Blues'), alpha=0.3)
+        for i in range(cm.shape[0]):
+            for j in range(cm.shape[1]):
+                ax.text(x=j, y=i, s=cm[i, j], va='center', ha='center', size='xx-large')
+        cax = ax.matshow(cm)
         fig.colorbar(cax)
-        ax.set_xticklabels([''] + labels)
-        ax.set_yticklabels([''] + labels)
+        ax.set_xticks([0, 1])
+        ax.set_xticklabels(labels)
+        ax.set_yticks([0, 1])
+        ax.set_yticklabels(labels)
+        plt.title('Confusion Matrix - Fold %i' % index)
         plt.xlabel('Predicted')
         plt.ylabel('Actual')
 
