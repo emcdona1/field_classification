@@ -18,6 +18,11 @@ class CNNModel(ABC):
 
     def layer_setup(self):
         self.model = tf.keras.models.Sequential()
+        norm_layer = tf.keras.layers.experimental.preprocessing.Rescaling(1/255,
+                                                                          input_shape=(self.img_dim, self.img_dim,
+                                                                                       3 if self.color == ColorMode.rgb
+                                                                                       else 1))
+        self.model.add(norm_layer)
         self.add_convolutional_layers()
         self.add_hidden_layers()
         self.add_output_layers()

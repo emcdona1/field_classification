@@ -54,7 +54,6 @@ class LabeledImages:
                 self.img_count += batch[0]
             self.training_image_set[0] = self.training_image_set[0].cache().prefetch(buffer_size=tf.data.AUTOTUNE)
             self.validation_image_set[0] = self.validation_image_set[0].cache().prefetch(buffer_size=tf.data.AUTOTUNE)
-        # todo : confirm that the images are being normalized downstream
 
     def load_testing_images(self, testing_image_folder: str, image_size: int, color_mode: ColorMode = ColorMode.rgb):
         self.color_mode = color_mode
@@ -66,7 +65,6 @@ class LabeledImages:
         self.test_img_names = self.test_image_set.file_paths
         self.class_labels = self.test_image_set.class_names
         self.test_labels = list()
-        # todo: remove test_features if nothing blows up
         self.test_features = list()
         for feature_class_pair in self.test_image_set.as_numpy_iterator():
             self.test_features = self.test_features + list(feature_class_pair[0])
