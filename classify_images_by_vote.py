@@ -40,6 +40,11 @@ def main():
     combined_results['fp'] = combined_results.eval('actual_class == 0 and voted_probability >= 0.5')
     combined_results['tn'] = combined_results.eval('actual_class == 0 and voted_probability < 0.5')
     combined_results['voted_label'] = combined_results.eval('voted_probability >= 0.5')
+
+    combined_results['tp'] = combined_results['tp'].map(lambda v: 1 if v else 0)
+    combined_results['fn'] = combined_results['fn'].map(lambda v: 1 if v else 0)
+    combined_results['fp'] = combined_results['fp'].map(lambda v: 1 if v else 0)
+    combined_results['tn'] = combined_results['tn'].map(lambda v: 1 if v else 0)
     combined_results['voted_label'] = combined_results['voted_label'].map(lambda v: 1 if v else 0)
 
     combined_results.columns = ['filename', 'actual_class'] + list_of_models + \
