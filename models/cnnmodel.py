@@ -51,5 +51,4 @@ class CNNModel(ABC):
             # optimizer='adam',
             optimizer=adam_optimizer,
             loss='sparse_categorical_crossentropy',
-            # loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
             metrics=['accuracy'])
