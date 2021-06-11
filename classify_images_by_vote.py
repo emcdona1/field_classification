@@ -40,7 +40,7 @@ def main():
         os.makedirs('predictions')
     write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
 
-    # TODO: for each row in chart, vote (simple majority) and give each *image* a final classification
+    # TODO: for each row, vote (simple majority) and give each *image* a final classification
     # TODO: output: image name, final classification, true classification, tp/fn/fp/tn, then each classification
 
     # Finish execution
