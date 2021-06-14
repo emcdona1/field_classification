@@ -25,6 +25,7 @@ def main():
     print('Images imported.')
 
     combined_results = pd.DataFrame()
+
     combined_results['filename'] = images.test_img_names
     combined_results['actual_class'] = images.test_labels
     all_predictions = pd.DataFrame()
