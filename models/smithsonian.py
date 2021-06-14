@@ -1,4 +1,4 @@
-from models.cnnmodel import CNNModel
+from models import CNNModel
 from tensorflow.keras import layers
 import tensorflow as tf
 from labeled_images.colormode import ColorMode
