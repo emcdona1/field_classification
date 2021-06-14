@@ -18,13 +18,13 @@ images. The CNN and classification programs are generic enough to accept images 
    together in a directory, with no other image files. e.g.,
 ```
 training_image_folder
-└───cats
-└───dogs
+└───species_a
+└───species_b
 ```
    
 
 4. If you have TIF images, use the script in `utilities\image_process\tif_to_jpg.py` to quickly convert files.  
-   The TIF files will be moved to a new subdirectory called `tif`.
+   (The TIF files will be moved to a new subdirectory called `tif`.)
 1. You should prepare a separate group of test images, either manually, or you can use the available utility script: 
    `utilities\image_processing\create_test_group.py`.
     - This script defaults to creates a split of 90% for training/validation and 10% for testing. It creates copies of 
