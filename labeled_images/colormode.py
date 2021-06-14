@@ -2,5 +2,5 @@ import enum
 
 
 class ColorMode(enum.Enum):
-    RGB = 1
-    BW = 2
+    rgb = 3
+    grayscale = 1

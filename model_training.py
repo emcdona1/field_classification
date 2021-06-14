@@ -4,8 +4,9 @@ from labeled_images.labeledimages import LabeledImages
 import numpy as np
 from data_visualization.visualizationgenerator import VisualizationGenerator
 from sklearn.model_selection import StratifiedKFold
-from tensorflow.keras.models import save_model
+from tensorflow import keras
 from typing import Union, Tuple, List
+import tensorflow as tf
 
 
 class ModelTrainer:
@@ -18,55 +19,44 @@ class ModelTrainer:
         self.architecture = architecture
         self.n_folds = n_folds
         self.curr_fold = 1
-        self.training_set = None
-        self.validation_set = None
         self.history = None
         self.seed: int = seed
         self.charts = VisualizationGenerator(self.n_folds)
 
     def train_and_save_all_models(self, images: LabeledImages):
-        training_and_validation_groups = self.generate_image_splits(images)
-
-        for index, (training_idx_list, validation_idx_list) in training_and_validation_groups:
+        training_groups, validation_groups = self.generate_image_splits(images)
+        for index, (training_set, validation_set) in enumerate(zip(training_groups, validation_groups)):
             self.curr_fold = index + 1
-            self.train_model(images, training_idx_list, validation_idx_list)
-            self.save_model()
-            self.validate_model(images.class_labels)
+            self.train_model(training_set, validation_set)
+            keras.models.save_model(self.architecture.model,
+                                    os.path.join(self.folder_name, 'CNN_%i.model' % self.curr_fold))
+            self.validate_model(images.class_labels, validation_set)
 
-    def generate_image_splits(self, images: LabeledImages) -> enumerate:
-        if self.n_folds <= 1:
+    def generate_image_splits(self, images: LabeledImages) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
+        if self.n_folds == 1:
             print('Training without cross-fold validation.')
-            # 90% training, 10% validation
-            training_idx_list = np.array(range(int(images.no_of_images * 0.9)))
-            validation_idx_list = np.array(range(len(training_idx_list), images.no_of_images))
-            training_and_validation_groups = enumerate([(training_idx_list, validation_idx_list)])
         else:
-            print('Training with %i-fold validation.' % self.n_folds)
-            skf = StratifiedKFold(n_splits=self.n_folds, shuffle=True, random_state=self.seed)
-            training_and_validation_groups = enumerate(skf.split(images.features, images.labels))
+            print('Training with %i cross-fold validation.' % images.n_folds)
+            # TODO: Remove the warning below once no longer relevant
+            print('WARNING: Cross-fold validation has not been implemented!')
+        training_set = images.training_image_set
+        validation_set = images.validation_image_set
+        return training_set, validation_set
 
-        return training_and_validation_groups
-
-    def train_model(self, images: LabeledImages, training_idx_list: np.ndarray,
-                    validation_idx_list: np.ndarray):
+    def train_model(self, training_set: tf.data.Dataset, validation_set: tf.data.Dataset) -> None:
         self.architecture.reset_model()
         self.history = None
-        self.training_set = images.subset(training_idx_list)
-        self.validation_set = images.subset(validation_idx_list)
-
         print('Training model for fold %i of %i.' % (self.curr_fold, self.n_folds))
-        # es_callback = tf.keras.callbacks.EarlyStopping(monitor = 'val_loss',
-        #        mode='min', min_delta = 0.05, patience = 20, restore_best_weights = True)
-        self.history = self.architecture.model.fit(self.training_set[0], self.training_set[1],
+        self.history = self.architecture.model.fit(training_set,
                                                    batch_size=self.batch_size, epochs=self.epochs,
                                                    #        callbacks = [es_callback],
-                                                   validation_data=self.validation_set, verbose=2)
+                                                   validation_data=validation_set, verbose=2)
 
-    def save_model(self):
-        save_model(self.architecture.model, os.path.join(self.folder_name, 'CNN_' + str(self.curr_fold) + '.model'))
-
-    def validate_model(self, class_labels: Union[Tuple[str, ...], List[str, ...]]) -> None:
-        # validation_predicted_probability = self.architecture.model.predict_proba(self.validation_set[0])[:, 1]
-        validation_predicted_probability = self.architecture.model.predict(self.validation_set[0])[:, 1]
-        self.charts.update(self.history, self.curr_fold, self.validation_set[1],
+    def validate_model(self, class_labels: Union[Tuple[str], List[str]], validation_set: tf.data.Dataset) -> None:
+        validation_predicted_probability = self.architecture.model.predict(validation_set)[:, 1]  # ,0]
+        validation_labels = np.array([])
+        for batch in validation_set.as_numpy_iterator():
+            validation_labels = np.concatenate((validation_labels, batch[1]))
+        validation_labels = validation_labels.astype(np.int32)
+        self.charts.update(self.history, self.curr_fold, validation_labels,
                            validation_predicted_probability, class_labels)

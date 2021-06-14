@@ -1,5 +1,5 @@
-# TODO: Turn all print statements into logs
-# TODO: Discuss with Iacobelli about where to log, and levels of logging
+# Turn all print statements into logs
+# Discuss with Iacobelli about where to log, and levels of logging
 
 import os
 import argparse

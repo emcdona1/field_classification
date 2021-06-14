@@ -13,41 +13,20 @@ matplotlib.use('Agg')  # required when running on server
 
 def main() -> None:
     timer = Timer('Model training')
-    images, cnn_model_trainer = program_setup()
 
-    cnn_model_trainer.train_and_save_all_models(images)
-    cnn_model_trainer.charts.finalize()
+    cnn_arguments = CNNArguments()
+    new_images = LabeledImages(SEED)
+    new_images.load_images_from_folders(cnn_arguments.training_image_folder, cnn_arguments.image_size,
+                                        cnn_arguments.color_mode, shuffle=True, n_folds=cnn_arguments.n_folds)
 
-    print('class 1: ' + images.class_labels[0] + ', class 2: ' + images.class_labels[1])
+    architecture = SmithsonianModel(SEED, cnn_arguments.lr, cnn_arguments.image_size, cnn_arguments.color_mode)
+    trainer = ModelTrainer(cnn_arguments.n_epochs, cnn_arguments.batch_size, cnn_arguments.n_folds, architecture, SEED)
+    trainer.train_and_save_all_models(new_images)
+    trainer.charts.finalize()
+
+    print('class 1: ' + new_images.class_labels[0] + ', class 2: ' + new_images.class_labels[1])
     timer.stop()
     timer.print_results()
-
-
-def program_setup() -> (LabeledImages, ModelTrainer):
-    cnn_arguments = CNNArguments()
-
-    images = load_image_sets(cnn_arguments)
-    trainer = initialize_model_trainer(cnn_arguments, images)
-    return images, trainer
-
-
-def load_image_sets(user_arguments: CNNArguments) -> LabeledImages:
-    images = LabeledImages(SEED)
-    # Option 1: load from filesystem
-    images.load_images_from_folders(user_arguments.image_folders, user_arguments.color_mode,
-                                    user_arguments.class_labels)
-
-    # Option 2: load 2 classes of the CIFAR-10 data set
-    # images.load_cifar_images()
-
-    return images
-
-
-def initialize_model_trainer(user_arguments: CNNArguments, images: LabeledImages) -> (ModelTrainer):
-    n_folds = user_arguments.n_folds
-    architecture = SmithsonianModel(SEED, user_arguments.lr, images.image_dimension, images.color_mode)
-    trainer = ModelTrainer(user_arguments.n_epochs, user_arguments.batch_size, n_folds, architecture, SEED)
-    return trainer
 
 
 if __name__ == '__main__':
