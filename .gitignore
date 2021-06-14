@@ -1,12 +1,11 @@
 config.py
-objectdb
-__pycache__/
-*test.py
 /saved_models/
 /graphs/
 /predictions/
 /images/
-/utilities/
-/*test*/
-/.idea/
 /file_resources/
+/*test*/
+*test.py
+/.idea/
+objectdb
+__pycache__/
