@@ -1,3 +1,2 @@
-from colormode import ColorMode
-from labeledimages import LabeledImages
-from labeledimages import MulticlassLabeledImages
+from labeled_images.colormode import ColorMode
+from labeled_images.labeledimages import LabeledImages
