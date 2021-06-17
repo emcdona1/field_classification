@@ -1,16 +1,15 @@
 import os
-from models.smithsonian import SmithsonianModel
+from models import CNNModel
 from labeled_images.labeledimages import LabeledImages
 import numpy as np
 from data_visualization.visualizationgenerator import VisualizationGenerator
-from sklearn.model_selection import StratifiedKFold
 from tensorflow import keras
 from typing import Union, Tuple, List
 import tensorflow as tf
 
 
 class ModelTrainer:
-    def __init__(self, epochs: int, batch_size: int, n_folds: int, architecture: SmithsonianModel, seed: int):
+    def __init__(self, epochs: int, batch_size: int, n_folds: int, architecture: CNNModel, seed: int):
         self.epochs = epochs
         self.batch_size = batch_size
         self.folder_name = 'saved_models'
