@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # set up random seeds
     SEED = 1
     np.random.seed(SEED)
-    tf.compat.v1.random.set_random_seed(SEED)
+    tf.random.set_seed(SEED)
     random.seed(SEED)
 
     main()
