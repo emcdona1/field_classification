@@ -7,66 +7,70 @@ def main():
     resize()
 
 
+# Function to find the largest dimensions stored in the CSV file
 def find_new_dimensions():
-    height = 0
-    width = 0
+    # Instance variables to store max values
     max_height = 0
     max_width = 0
-    with open('CroppedImages.csv', 'r') as file:
+
+    # Open CSV file and read stored value to find the largest values
+    with open('cropped_image_data.csv', 'r') as file:
         reader = csv.reader(file)
         for row in reader:
-            if row != []:
-                # print(row)
+            # Ensure row is not null
+            if row:
                 height = int(row[0])
                 width = int(row[1])
                 if height > max_height:
                     max_height = height
                 if width > max_width:
                     max_width = width
-    print(max_height, max_width)
     return max_height, max_width
 
 
+# Function to resize all the images in the CSV file
+#  to the desired canvas size
 def resize():
+    # Call find_new_dimensions and store the new
+    # canvas width and height
     height, width = find_new_dimensions()
+
+    # Counter to save images
     count = 0
 
-    with open('CroppedImages.csv', 'r') as file:
+    # Open and read CSV file
+    with open('cropped_image_data.csv', 'r') as file:
         reader = csv.reader(file)
         for row in reader:
-            if row != []:
+            # Ensure row is not null
+            if row:
                 path = str(row[2])
-                # path = os.path.normpath(path)
+
                 # read image
                 img = cv2.imread(path)
-                print(path)
 
+                # Store img height, width, and color
                 ht, wd, cc = img.shape
 
-                # create new image of desired size and color (blue) for padding
+                # create new image of desired size and color for padding
                 ww = width
                 hh = height
                 color = (252, 248, 245)
                 result = np.full((hh, ww, cc), color, dtype=np.uint8)
 
-                # compute center offset
+                # Find center of canvas to place the original image
                 xx = (ww - wd) // 2
                 yy = (hh - ht) // 2
 
-                # copy img image into center of result image
+                # copy image into center of canvas
                 result[yy:yy + ht, xx:xx + wd] = img
 
-                # # view result
-                # cv2.imshow("result", img)
-                # cv2.waitKey(0)
-                # cv2.destroyAllWindows()
-
+                # Increment count
                 count += 1
 
                 # Split our filename to get the desired sections
                 # and exclude the .jpg or .png extension
                 path_split = path.split("/")
-                species = path_split[-2]
                 file = path_split[-1].replace('.jpg', '')
                 file = file.replace('.png', '')
 
@@ -79,8 +83,9 @@ def resize():
 
                 # save result
                 cv2.imwrite(path + '/' + "padded_" + file + ".jpg", result)
-                print('saved')
+                print('saved ' + str(count))
 
 
+# Call main function
 if __name__ == "__main__":
     main()
