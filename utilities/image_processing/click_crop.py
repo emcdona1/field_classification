@@ -1,6 +1,5 @@
 import cv2
 from PIL import Image
-import tkinter as tk
 from tkinter import filedialog
 import numpy
 import csv
@@ -85,6 +84,7 @@ def click_event(event, x, y, flags, params):
             saved_file = species + '_' + file + '_' + str(count) + '.jpg'
             img_crop_res.save(path + "/" + species + '_' + file + '_' + str(count) + '.jpg')
 
+            # Print the file name and where it was saved
             print('Saved File: ' + saved_file + ' to ' + path)
 
             # convert image object into array
@@ -93,26 +93,23 @@ def click_event(event, x, y, flags, params):
             # Store the image height and width and new file location
             height = imageinfo.shape[0]
             width = imageinfo.shape[1]
+
+            # Save new file location
             file_location = path + "/" + saved_file
 
-            # open existing CSV file and append new image information
-            with open('CroppedImages.csv', 'a') as f:
+            # open existing CSV file and store img height, width, and file path
+            with open('cropped_image_data.csv', 'a') as f:
                 writer = csv.writer(f)
                 writer.writerow(([height, width, file_location]))
                 f.close()
 
             # Print to terminal to confirm file is saved
-            print(saved_file + " has been written to CroppedImages.csv")
+            print(saved_file + " has been written to cropped_image_data.csv")
 
 
-# Prompt use to select the file they wish to crop
+# Prompt use to select the file they wish to crop and return the file path
 def upload_action(event=None):
     filename = filedialog.askopenfilename()
-
-    # root = tk.Tk()
-    # button = tk.Button(root, text='Open', command=upload_action())
-    # button.pack()
-
     return filename
 
 
