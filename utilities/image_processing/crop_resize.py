@@ -25,6 +25,7 @@ def find_new_dimensions():
                     max_height = height
                 if width > max_width:
                     max_width = width
+
     return max_height, max_width
 
 
@@ -43,7 +44,7 @@ def resize():
         reader = csv.reader(file)
         for row in reader:
             # Ensure row is not null
-            if row:
+            if row != []:
                 path = str(row[2])
 
                 # read image
@@ -55,7 +56,7 @@ def resize():
                 # create new image of desired size and color for padding
                 ww = width
                 hh = height
-                color = (252, 248, 245)
+                color = (255, 254, 252)
                 result = np.full((hh, ww, cc), color, dtype=np.uint8)
 
                 # Find center of canvas to place the original image
