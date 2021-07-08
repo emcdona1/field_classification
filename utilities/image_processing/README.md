@@ -6,6 +6,9 @@ The code here creates and tests a CNN model using Tensorflow and Keras that take
 # Downloading and processing images, and training the model
 
 ## Using image_download.py
+**Note**: The file `Download_Image_Files_from_Pteridoportal.ipynb` is a standalone version 
+of this program which is designed to be run in the browser by non-developers.  :)
+
 The goal of this file is to download images from the Pteridophyte Portal. Before running the file, please follow the steps below:
 1. Go to [The Pteridophyte Collections Consortium](http://www.pteridoportal.org/portal/)
 2. Click Search > Collections > Deselect All > Choose your source (we chose 'Field Museum of Natural History Pteridophyte Collection')
