@@ -40,7 +40,7 @@ def resize():
     count = 0
 
     # Open and read CSV file
-    with open('cropped_image_data.csv', 'r') as file:
+    with open('auto_crop_image_data.csv', 'r') as file:
         reader = csv.reader(file)
         for row in reader:
             # Ensure row is not null
@@ -83,7 +83,7 @@ def resize():
                 print(path)
 
                 # save result
-                cv2.imwrite(path + '/' + "padded_" + file + ".jpg", result)
+                cv2.imwrite(path + '/' + "Autopadded_" + file + ".jpg", result)
                 print('saved ' + str(count))
 
 
