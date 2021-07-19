@@ -114,6 +114,7 @@ def upload_action(event=None):
 
 
 if __name__ == "__main__":
+
     # Declare variables we will use in click event,
     # open image file, and set variables
     filename = upload_action()
