@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorflow.keras import layers
-from tensorflow.keras.layers import TimeDistributed
 from models.cnnmodel import CNNModel
 from labeled_images.colormode import ColorMode
 
@@ -9,7 +8,7 @@ class CnnLstm(CNNModel):
     def layer_setup(self):
         self.model = tf.keras.models.Sequential()
         norm_layer = tf.keras.layers.experimental.preprocessing.Rescaling(1 / 255,
-                                                                          input_shape=(800, 64, 1))
+                                                                          input_shape=(800, 64, 1))  # todo: no hardcode
         # self.img_dim, self.img_dim,
         # 3 if self.color == ColorMode.rgb
         # else 1))
