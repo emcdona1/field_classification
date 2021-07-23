@@ -53,24 +53,27 @@ class CnnLstm(CNNModel):
         """Create RNN layers."""
         rnn_in3d = tf.squeeze(self.cnn_out_4d, axis=[2])
 
-        # Two sets of convolutional layers
-        self.model.add(TimeDistributed(layers.Conv2D(10, (5, 5), input_shape=(self.img_dim, self.img_dim, channels))))
-        self.model.add(TimeDistributed(layers.BatchNormalization()))
-        self.model.add(TimeDistributed(layers.Activation('relu')))
-        self.model.add(TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2))))
+        # basic cells which is used to build RNN
+        num_hidden = 256
+        cells = [tf.compat.v1.nn.rnn_cell.LSTMCell(num_units=num_hidden, state_is_tuple=True) for _ in
+                 range(2)]  # 2 layers
+        # cells = [tf.keras.layers.LSTM(units=num_hidden), tf.keras.layers.LSTM(units=num_hidden)]
 
-        self.model.add(TimeDistributed(layers.Conv2D(40, (5, 5))))
-        self.model.add(TimeDistributed(layers.BatchNormalization()))
-        self.model.add(TimeDistributed(layers.Activation('relu')))
-        self.model.add(TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2))))
+        # stack basic cells
+        stacked = tf.compat.v1.nn.rnn_cell.MultiRNNCell(cells, state_is_tuple=True)
 
-        # Output shape: 40 x 61 x 61
-        self.model.add(TimeDistributed(layers.Flatten()))
-        self.model.add(TimeDistributed(layers.Dropout(0.5, seed=self.seed)))
-        # drop out 50% and then * 2 (same # of layers)
+        # bidirectional RNN
+        # BxTxF -> BxTx2H
+        (fw, bw), _ = tf.compat.v1.nn.bidirectional_dynamic_rnn(cell_fw=stacked, cell_bw=stacked, inputs=rnn_in3d,
+                                                                dtype=rnn_in3d.dtype)
 
-    def add_lstm_layers(self):
-        self.model.add(layers.LSTM(5, input_shape=()))  # todo: huh?
+        # BxTxH + BxTxH -> BxTx2H -> BxTx1X2H
+        concat = tf.expand_dims(tf.concat([fw, bw], 2), 2)
+
+        # project output to chars (including blank): BxTx1x2H -> BxTx1xC -> BxTxC
+        kernel = tf.Variable(tf.random.truncated_normal([1, 1, num_hidden * 2, len(self.char_list) + 1], stddev=0.1))
+        self.rnn_out_3d = tf.squeeze(tf.nn.atrous_conv2d(value=concat, filters=kernel, rate=1, padding='SAME'),
+                                     axis=[2])
 
     def add_hidden_layers(self):
         pass
