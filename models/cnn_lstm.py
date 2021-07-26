@@ -1,3 +1,6 @@
+# Resources:
+# https://github.com/githubharald/SimpleHTR
+# https://stackoverflow.com/questions/63258412/adding-ctc-loss-and-ctc-decode-to-a-keras-model#63306211
 import tensorflow as tf
 from tensorflow.keras import layers
 from models.cnnmodel import CNNModel
@@ -6,21 +9,14 @@ from labeled_images.colormode import ColorMode
 
 class CnnLstm(CNNModel):
     def layer_setup(self):
-        # self.model = tf.keras.models()
-        model_input = tf.keras.Input(shape=(800, 64, 1))
+        model_input = tf.keras.Input(shape=(800, 64, 1))  # todo: not hard-coding the shape? or preprocess?
         self.model = tf.keras.layers.experimental.preprocessing.Rescaling(1 / 255)(model_input)
-        # norm_layer = tf.keras.layers.experimental.preprocessing.Rescaling(1 / 255,
-        #                                                                   input_shape=(800, 64, 1))  # todo: no hardcode
-        # self.img_dim, self.img_dim,
-        # 3 if self.color == ColorMode.rgb
-        # else 1))
-        # self.model.add(norm_layer)
         self.add_convolutional_layers()
         self.add_rnn_layers()
+        # self.add_hidden_layers()  # actually CTC
         output = tf.keras.layers.Dense(10)(self.model)
         model_tmp = tf.keras.Model(inputs=model_input, outputs=output, name='tmp')
         model_tmp.summary()
-        # self.add_hidden_layers() todo - probably get rid of abc requirement?
         # self.add_output_layers() todo - and rename to better match the functionality
         # self.compile_model()
 
