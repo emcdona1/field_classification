@@ -50,7 +50,7 @@ class CnnLstm(CNNModel):
 
     def add_rnn_layers(self):
         """Create RNN layers."""
-        self.model = tf.keras.layers.Reshape((100, 512), input_shape=(100, 1, 512))(self.model)
+        self.model = tf.keras.layers.Lambda(lambda t: t[:, :, 0, :])(self.model)
         # rnn_in3d = tf.squeeze(self.cnn_out_4d, axis=[2])  # todo
 
         # basic cells which is used to build RNN
