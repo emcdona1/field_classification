@@ -81,3 +81,13 @@ The program takes no parameters and can be run by simply using 'python auto_crop
 This files uses the image data stored in a CSV file and resizes the images to be as large as the largest on in the file by padding it with white space 
 
 Before runnning the program you need to have a CSV file filled with all the image data for the images you wish to resize. The image data should be stored on separate lines representing length, width, and file path to the image (in that order). When the program is run it will scan through the desired CSV file and find the largest values for both height and width of the image and begin to resize all images stored in the file to that size using white padding. The images are padded using their file path saved in the CSV file
+
+
+## Using augmentor.py
+
+This file loads in two folders of images, one training set and one testing set, and augments them using the chosen augmentation functions. The user will specify the file path for both training and testing folders as well as the batch size for both. Different augmentation's are written in the code that can be turned on and off to try new combinations of augmentation. This script can be run in the terminal as follows:
+
+python augmentor.py training_image_path, batch_size1, testing_image_path, batch_size2
+
+Example: 
+`python augmentor.py training_images 100 testing_images 20`
