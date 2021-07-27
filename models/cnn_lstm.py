@@ -63,9 +63,29 @@ class CnnLstm(CNNModel):
         self.model = layers.Bidirectional(rnn)(self.model)
 
     def add_hidden_layers(self):
-        pass
+        # BxTxC -> TxBxC
+        self.ctc_in_3d_tbc = tf.transpose(a=self.rnn_out_3d, perm=[1, 0, 2])
+        # ground truth text as sparse tensor
+        self.gt_texts = tf.SparseTensor(tf.compat.v1.placeholder(tf.int64, shape=[None, 2]),
+                                        tf.compat.v1.placeholder(tf.int32, [None]),
+                                        tf.compat.v1.placeholder(tf.int64, [2]))
 
-    def add_output_layers(self):  # CTC layers
-        self.model.add(layers.Dense(2, activation='linear'))
-        self.model.add(layers.Dense(2, activation=tf.keras.activations.softmax))
-        print(self.model.summary())
+        # calc loss for batch
+        self.seq_len = tf.compat.v1.placeholder(tf.int32, [None])
+        self.loss = tf.reduce_mean(
+            input_tensor=tf.compat.v1.nn.ctc_loss(labels=self.gt_texts, inputs=self.ctc_in_3d_tbc,
+                                                  sequence_length=self.seq_len,
+                                                  ctc_merge_repeated=True))
+
+        # calc loss for each element to compute label probability
+        self.saved_ctc_input = tf.compat.v1.placeholder(tf.float32,
+                                                        shape=[None, None, len(self.char_list) + 1])
+        self.loss_per_element = tf.compat.v1.nn.ctc_loss(labels=self.gt_texts, inputs=self.saved_ctc_input,
+                                                         sequence_length=self.seq_len, ctc_merge_repeated=True)
+
+        # best path decoding or beam search decoding
+        self.decoder = tf.nn.ctc_greedy_decoder(inputs=self.ctc_in_3d_tbc, sequence_length=self.seq_len)
+
+    def add_output_layers(self):
+        sequence_length = len(self.char_list) + 1
+        self.model = layers.Dense(sequence_length, activation='softmax')(self.model)
