@@ -1,6 +1,6 @@
 from labeled_images.colormode import ColorMode
 import tensorflow as tf
-from typing import List
+from typing import List, Union, Tuple
 
 
 class LabeledImages:
@@ -19,10 +19,13 @@ class LabeledImages:
         self.test_features: list = list()
         self.test_labels: list = list()
 
-    def load_images_from_folders(self, training_images_location: str, image_size: int,
+    def load_images_from_folders(self, training_images_location: str, image_size: Union[int, Tuple[int, int]],
                                  color_mode: ColorMode = ColorMode.rgb, shuffle=True, n_folds=1, batch_size=32) -> None:
         self.color_mode = color_mode
-        self.img_dimensions = (image_size, image_size)
+        if image_size is int:
+            self.img_dimensions = (image_size, image_size)
+        else:
+            self.img_dimensions = image_size
         self.n_folds = n_folds
         self.batch_size = batch_size
         if self.n_folds > 1:
@@ -30,23 +33,25 @@ class LabeledImages:
             pass
         else:
             self.training_image_set = list()
-            self.training_image_set.append(tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
-                                                                                          color_mode=self.color_mode.name,
-                                                                                          image_size=self.img_dimensions,
-                                                                                          seed=self.seed,
-                                                                                          shuffle=shuffle,
-                                                                                          batch_size=self.batch_size,
-                                                                                          validation_split=0.1,
-                                                                                          subset='training'))
+            self.training_image_set.append(
+                tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
+                                                                    color_mode=self.color_mode.name,
+                                                                    image_size=self.img_dimensions,
+                                                                    seed=self.seed,
+                                                                    shuffle=shuffle,
+                                                                    batch_size=self.batch_size,
+                                                                    validation_split=0.1,
+                                                                    subset='training'))
             self.validation_image_set = list()
-            self.validation_image_set.append(tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
-                                                                                            color_mode=self.color_mode.name,
-                                                                                            image_size=self.img_dimensions,
-                                                                                            seed=self.seed,
-                                                                                            shuffle=shuffle,
-                                                                                            batch_size=self.batch_size,
-                                                                                            validation_split=0.1,
-                                                                                            subset='validation'))
+            self.validation_image_set.append(
+                tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
+                                                                    color_mode=self.color_mode.name,
+                                                                    image_size=self.img_dimensions,
+                                                                    seed=self.seed,
+                                                                    shuffle=shuffle,
+                                                                    batch_size=self.batch_size,
+                                                                    validation_split=0.1,
+                                                                    subset='validation'))
             self.class_labels = self.training_image_set[0].class_names
             for batch, _ in self.training_image_set[0]:
                 self.img_count += batch[0]
