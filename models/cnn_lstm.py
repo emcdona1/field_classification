@@ -8,6 +8,7 @@ from tensorflow.keras import layers
 from tensorflow.keras import backend as K
 from models.cnnmodel import CNNModel
 from labeled_images.colormode import ColorMode
+from typing import Tuple
 
 
 class CTCLayer(layers.Layer):
@@ -28,7 +29,7 @@ class CTCLayer(layers.Layer):
 
 
 class CnnLstm(CNNModel):
-    def __init__(self, seed: int, learning_rate: float, img_dim: int, color_mode: ColorMode = ColorMode.rgb):
+    def __init__(self, seed: int, learning_rate: float, img_dim: Tuple[int, int], color_mode: ColorMode = ColorMode.rgb):
         super().__init__(seed, learning_rate, img_dim, color_mode)
         self.char_list: str = '\' !"#&()*+,-./0123456789:;?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
         self.num_labels = len(self.char_list) + 1
