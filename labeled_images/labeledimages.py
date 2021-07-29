@@ -69,7 +69,7 @@ class LabeledImages:
                                                                     seed=self.seed,
                                                                     shuffle=shuffle,
                                                                     batch_size=self.batch_size,
-                                                                    validation_split=0.1,
+                                                                    validation_split=VALIDATION_SPLIT,
                                                                     subset='training'))
             self.validation_image_set = list()
             self.validation_image_set.append(
@@ -79,7 +79,7 @@ class LabeledImages:
                                                                     seed=self.seed,
                                                                     shuffle=shuffle,
                                                                     batch_size=self.batch_size,
-                                                                    validation_split=0.1,
+                                                                    validation_split=VALIDATION_SPLIT,
                                                                     subset='validation'))
             self.class_labels = self.training_image_set[0].class_names
         else:
