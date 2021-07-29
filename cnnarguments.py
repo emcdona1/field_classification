@@ -1,20 +1,23 @@
 import argparse
 import os
 from labeled_images.colormode import ColorMode
+from pathlib import Path
+from typing import Tuple
 
 
 class CNNArguments:
     def __init__(self):
-        parser = argparse.ArgumentParser(
+        self._parser = argparse.ArgumentParser(
             'Create and train CNNs for binary classification of images, using cross-fold validation.')
-        args: argparse.Namespace = set_up_parser_arguments(parser)
+        self._args: argparse.Namespace = self.set_up_parser_arguments()
 
-        self.training_image_folder, self.image_size = validate_required_arguments(args)
-        self.color_mode = set_color_mode(args)
-        self.lr = validate_learning_rate(args)
-        self.n_folds = validate_n_folds(args)
-        self.n_epochs = validate_n_epochs(args)
-        self.batch_size = validate_batch_size(args)
+        self.training_image_folder: Path = self._validate_training_folder()
+        self.image_size: Tuple[int, int] = self._validate_image_size()
+        self.color_mode: ColorMode = self._set_color_mode()
+        self.lr: float = self._validate_learning_rate()
+        self.n_folds: int = self._validate_n_folds()
+        self.n_epochs: int = self._validate_n_epochs()
+        self.batch_size: int = self._validate_batch_size()
 
 
 def set_up_parser_arguments(parser):
@@ -56,34 +59,29 @@ def validate_required_arguments(args) -> (str, int):
     return args.training_set, args.img_size
 
 
-def set_color_mode(args):
-    color_mode = ColorMode.grayscale if args.bw else ColorMode.rgb
-    return color_mode
+    def _set_color_mode(self) -> ColorMode:
+        return ColorMode.grayscale if self._args.bw else ColorMode.rgb
 
+    def _validate_learning_rate(self) -> float:
+        lr = self._args.learning_rate
+        if not 0 < lr <= 1:
+            raise ValueError('Learning rate %f.6 is not valid. Must be in range 0 (exclusive) to 1 (inclusive).' % lr)
+        return lr
 
-def validate_learning_rate( args) -> float:
-    lr = args.learning_rate
-    if not 0 < lr <= 1:
-        raise ValueError('Learning rate %f.6 is not valid. Must be in range 0 (exclusive) to 1 (inclusive).' % lr)
-    return lr
+    def _validate_n_folds(self) -> int:
+        n_folds = self._args.n_folds
+        if not n_folds >= 1:
+            raise ValueError('%i is not a valid number of folds. Must be >= 1.' % n_folds)
+        return n_folds
 
+    def _validate_n_epochs(self) -> int:
+        n_epochs = self._args.n_epochs
+        if not n_epochs >= 5 or type(n_epochs) is not int:
+            raise ValueError('# of epochs %i is not valid. Must be >= 5.)' % n_epochs)
+        return n_epochs
 
-def validate_n_folds( args):
-    n_folds = args.n_folds
-    if not n_folds >= 1:
-        raise ValueError('%i is not a valid number of folds. Must be >= 1.' % n_folds)
-    return n_folds
-
-
-def validate_n_epochs( args) -> int:
-    n_epochs = args.n_epochs
-    if not n_epochs >= 5 or type(n_epochs) is not int:
-        raise ValueError('# of epochs %i is not valid. Must be >= 5.)' % n_epochs)
-    return n_epochs
-
-
-def validate_batch_size( args) -> int:
-    batch_size = args.batch_size
-    if not batch_size >= 2:
-        raise ValueError('Batch size %i is not valid. Must be >= 2.' % batch_size)
-    return batch_size
+    def _validate_batch_size(self) -> int:
+        batch_size = self._args.batch_size
+        if not batch_size >= 2:
+            raise ValueError('Batch size %i is not valid. Must be >= 2.' % batch_size)
+        return batch_size
