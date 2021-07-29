@@ -36,8 +36,12 @@ class LabeledImages:
         self.test_features: list = list()
         self.test_labels: list = list()
 
-    def load_images_from_folders(self, training_images_location: str, image_size: Union[int, Tuple[int, int]],
-                                 color_mode: ColorMode = ColorMode.rgb, shuffle=True, n_folds=1, batch_size=32,
+    def load_images_from_folders(self, training_images_location: Union[str, Path],
+                                 image_size: Union[int, Tuple[int, int]],
+                                 color_mode: ColorMode = ColorMode.rgb,
+                                 shuffle=True,
+                                 n_folds=1,
+                                 batch_size=32,
                                  metadata: str = None) -> None:
         """ image_size = (height, width) or """
         if self.n_folds > 1:
