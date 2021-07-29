@@ -1,4 +1,4 @@
-# Convolutional Neural Networks and Microplants
+# Field Museum Botany / Grainger Center CNN Classification
 #### _models_ directory
 
 Contains the files used to define neural network layer architectures.
@@ -22,7 +22,12 @@ CNNModel contains three abstract methods which must be implemented in a child cl
 ##### Files:
 
 - **cnnmodel.py**
-    - Contains the abstract template class -- see Class Hierarchy above.
-- **smthsonian.py**
-    - Contains an implementation of the template class based on the layer architecture as published in the paper ["Applications of deep convolutional neural networks
-to digitized natural history collections," Schuettpelz, Frandsen, et al. 2017](https://doi.org/10.3897/BDJ.5.e21139).
+  - Contains the abstract template class -- see Class Hierarchy above.
+- **smithsonian.py**
+  - Contains an implementation of the template class based on the layer architecture as published in the paper 
+      ["Applications of deep convolutional neural networks to digitized natural history collections," Schuettpelz, 
+      Frandsen, et al. 2017](https://doi.org/10.3897/BDJ.5.e21139).
+- **cnn_lstm.py** - *in active development*
+  - Model that implements a CNN-RNN-CTC architecture as proposed in ["Handwritten text recognition in historical 
+    documents" Harald Scheidl, 2018](https://repositum.tuwien.at/handle/20.500.12708/5409).
+- **transfer_learning_model.py** - *in paused development, not functional*
