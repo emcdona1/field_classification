@@ -4,9 +4,9 @@ import tensorflow as tf
 import matplotlib
 from labeled_images.labeledimages import LabeledImages
 from models.smithsonian import SmithsonianModel
-from model_training import ModelTrainer
+from models.model_training import ModelTrainer
 from utilities.timer import Timer
-from modeltrainingarguments import ModelTrainingArguments
+from models.modeltrainingarguments import ModelTrainingArguments
 
 matplotlib.use('Agg')  # required when running on server
 

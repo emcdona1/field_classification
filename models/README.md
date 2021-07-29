@@ -21,6 +21,12 @@ CNNModel contains three abstract methods which must be implemented in a child cl
 
 ##### Files:
 
+
+- **modeltrainingarguments.py**
+    - Sets up, parses, and validate command-line arguments for model training.
+- **model_training.py**
+    - A helper class for training Keras models, coordinating between the executing training script,
+      images on the local filesystem, and a NN model architecture implemented as a subclass of CNNModel.
 - **cnnmodel.py**
   - Contains the abstract template class -- see Class Hierarchy above.
 - **smithsonian.py**

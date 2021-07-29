@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 import os
 from labeled_images import LabeledImages
 from models import TransferLearningModel
-from model_training import ModelTrainer
+from models.model_training import ModelTrainer
 from utilities.timer import Timer
-from modeltrainingarguments import ModelTrainingArguments
+from models.modeltrainingarguments import ModelTrainingArguments
 import matplotlib
 import random
 
