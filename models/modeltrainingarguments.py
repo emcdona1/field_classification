@@ -17,6 +17,7 @@ class ModelTrainingArguments:
         self.n_folds: int = self._validate_n_folds()
         self.n_epochs: int = self._validate_n_epochs()
         self.batch_size: int = self._validate_batch_size()
+        self.metadata = self._validate_metadata_folder()
 
     def set_up_parser_arguments(self):
         # folder argument
@@ -38,6 +39,7 @@ class ModelTrainingArguments:
                                   help='Number of epochs (minimum 5) per fold. (Default = 25)')
         self._parser.add_argument('-b', '--batch_size', type=int,
                                   default=64, help='Batch size (minimum 2) for training. (Default = 64)')
+        self._parser.add_argument('-m', '--metadata', default=None, help='Path to metadata file for image labels.')
         return self._parser.parse_args()
 
     def _validate_training_folder(self) -> Path:
@@ -82,3 +84,11 @@ class ModelTrainingArguments:
         if not batch_size >= 2:
             raise ValueError('Batch size %i is not valid. Must be >= 2.' % batch_size)
         return batch_size
+
+    def _validate_metadata_folder(self) -> Path:
+        metadata = None
+        if self._args.metadata:
+            metadata = Path(self._args.metadata)
+            assert os.path.isfile(metadata), f'{metadata} is not a valid file path.'
+            assert metadata.suffix == '.csv', f'{metadata} is not a CSV file.'
+        return metadata
