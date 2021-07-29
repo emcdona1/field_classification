@@ -19,37 +19,27 @@ class CNNArguments:
         self.n_epochs: int = self._validate_n_epochs()
         self.batch_size: int = self._validate_batch_size()
 
+    def set_up_parser_arguments(self):
+        # folder argument
+        self._parser.add_argument('training_set', help='Directory containing training images.')
 
-def set_up_parser_arguments(parser):
-    # new arguments:
-    parser.add_argument('training_set', help='Directory containing training/validation images.')
-    parser.add_argument('img_size', type=int, help='Desired image width/height (square images).')
-    # rest of arguments are unchanged
+        # image arguments
+        self._parser.add_argument('height', type=int, default=256, help='Desired image height.')
+        self._parser.add_argument('-w', '--width', type=int, help='Desired image width. (Omit for square images)')
+        color_mode_group = self._parser.add_mutually_exclusive_group()
+        color_mode_group.add_argument('-color', action='store_true', help='Images are in RGB color mode. (Default)')
+        color_mode_group.add_argument('-bw', action='store_true', help='Images are in grayscale color mode.')
 
-    # image arguments
-    color_mode_group = parser.add_mutually_exclusive_group()
-    color_mode_group.add_argument('-color', action='store_true', help='Images are in RGB color mode. (Default)')
-    color_mode_group.add_argument('-bw', action='store_true', help='Images are in grayscale color mode.')
-    # model creation argument
-    parser.add_argument('-lr', '--learning_rate', type=float,
-                        default=0.001, help='Learning rate for training. (Default = 0.001)')
-    # training run arguments
-    parser.add_argument('-f', '--n_folds', type=int, default=1,
-                        help='Number of folds (minimum 1) for cross validation. (Default = 1)')
-    parser.add_argument('-e', '--n_epochs', type=int, default=25,
-                        help='Number of epochs (minimum 5) per fold. (Default = 25)')
-    parser.add_argument('-b', '--batch_size', type=int,
-                        default=64, help='Batch size (minimum 2) for training. (Default = 64)')
-    return parser.parse_args()
-
-
-def parse_class_names_from_image_folders(image_folders) -> (str, str):
-    class1 = image_folders[0].strip(os.path.sep)
-    class2 = image_folders[1].strip(os.path.sep)
-    class1 = class1.split(os.path.sep)[class1.count(os.path.sep)]
-    class2 = class2.split(os.path.sep)[class2.count(os.path.sep)]
-    return class1, class2
-
+        # model training arguments
+        self._parser.add_argument('-lr', '--learning_rate', type=float,
+                                  default=0.001, help='Learning rate for training. (Default = 0.001)')
+        self._parser.add_argument('-f', '--n_folds', type=int, default=1,
+                                  help='Number of folds (minimum 1) for cross validation. (Default = 1)')
+        self._parser.add_argument('-e', '--n_epochs', type=int, default=25,
+                                  help='Number of epochs (minimum 5) per fold. (Default = 25)')
+        self._parser.add_argument('-b', '--batch_size', type=int,
+                                  default=64, help='Batch size (minimum 2) for training. (Default = 64)')
+        return self._parser.parse_args()
 
 def validate_required_arguments(args) -> (str, int):
     if not os.path.isdir(args.training_set):
