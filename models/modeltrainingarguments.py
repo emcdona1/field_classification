@@ -47,14 +47,14 @@ class ModelTrainingArguments:
         return training_path
 
     def _validate_image_size(self) -> (int, int):
-        if self._args.width <= 0:
-            raise ValueError(f'Image width must be > 0. {self._args.width} is not valid.')
-        width = height = self._args.width
-        if self._args.height:
-            if self._args.height <= 0:
-                raise ValueError(f'Image height must be > 0. {self._args.height} is not valid.')
-            height = self._args.height
-        return width, height
+        if self._args.height <= 0:
+            raise ValueError(f'Image height must be > 0. {self._args.height} is not valid.')
+        width = height = self._args.height
+        if self._args.width:
+            if self._args.width <= 0:
+                raise ValueError(f'Image width must be > 0. {self._args.width} is not valid.')
+            width = self._args.width
+        return height, width
 
     def _set_color_mode(self) -> ColorMode:
         return ColorMode.grayscale if self._args.bw else ColorMode.rgb
