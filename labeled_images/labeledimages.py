@@ -120,6 +120,7 @@ class LabeledImages:
             (image_list[split:], label_list[split:]))]
 
     def load_testing_images(self, testing_image_folder: str, image_size: int, color_mode: ColorMode = ColorMode.rgb):
+        # todo: implement loading images with metadata
         self.color_mode = color_mode
         self.img_dimensions = (image_size, image_size)
         self.test_image_set = tf.keras.preprocessing.image_dataset_from_directory(testing_image_folder,
