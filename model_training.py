@@ -18,7 +18,7 @@ class ModelTrainer:
         self.architecture = architecture
         self.n_folds = n_folds
         self.curr_fold = 1
-        self.history = None
+        self.history = None  # todo: should the history object(s) be saved somewhere for later?
         self.seed: int = seed
         self.charts = VisualizationGenerator(self.n_folds)
 
@@ -51,7 +51,8 @@ class ModelTrainer:
                                                    #        callbacks = [es_callback],
                                                    validation_data=validation_set, verbose=2)
 
-    def validate_model(self, class_labels: Union[Tuple[str], List[str]], validation_set: tf.data.Dataset) -> None:
+    def validate_model_at_epoch_end(self, class_labels: Union[Tuple[str], List[str]], validation_set: tf.data.Dataset) -> None:
+        # todo: possibly change this into model.evaluate?
         validation_predicted_probability = self.architecture.model.predict(validation_set)[:, 1]  # ,0]
         validation_labels = np.array([])
         for batch in validation_set.as_numpy_iterator():
