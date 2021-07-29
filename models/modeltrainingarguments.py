@@ -7,8 +7,7 @@ from typing import Tuple
 
 class ModelTrainingArguments:
     def __init__(self):
-        self._parser = argparse.ArgumentParser(
-            'Create and train CNNs for binary classification of images, using cross-fold validation.')
+        self._parser = argparse.ArgumentParser('Create and train NNs for image classification.')
         self._args: argparse.Namespace = self.set_up_parser_arguments()
 
         self.training_image_folder: Path = self._validate_training_folder()
