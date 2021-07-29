@@ -51,66 +51,73 @@ class LabeledImages:
 
         if not metadata:
             print('Fetching labels based on folder names.')
-            images = os.walk(training_images_location)
-            self.img_count = 0
-            for d in images:
-                files = [Path(f) for f in d[2]]
-                image_files = [i for i in files if i.suffix in ['.jpeg', '.jpg', '.gif', '.png', '.bmp']]
-                self.img_count += len(image_files)
-            self.training_image_set = list()
-            self.training_image_set.append(
-                tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
-                                                                    color_mode=self.color_mode.name,
-                                                                    image_size=self.img_dimensions,
-                                                                    seed=self.seed,
-                                                                    shuffle=shuffle,
-                                                                    batch_size=self.batch_size,
-                                                                    validation_split=VALIDATION_SPLIT,
-                                                                    subset='training'))
-            self.validation_image_set = list()
-            self.validation_image_set.append(
-                tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
-                                                                    color_mode=self.color_mode.name,
-                                                                    image_size=self.img_dimensions,
-                                                                    seed=self.seed,
-                                                                    shuffle=shuffle,
-                                                                    batch_size=self.batch_size,
-                                                                    validation_split=VALIDATION_SPLIT,
-                                                                    subset='validation'))
-            self.class_labels = self.training_image_set[0].class_names
+            self._load_images_based_on_directory_structure(training_images_location, shuffle)
         else:
             print('Fetching labels based on metadata CSV file.')
-            training_images_location = load_file_list_from_filesystem(training_images_location)
-            training_images_location = [i for i in training_images_location if '.csv' not in i]
-            resize_image = tf.keras.layers.experimental.preprocessing.Resizing(image_size[0], image_size[1])
-
-            image_list = list()
-            for image_location in training_images_location:
-                if self.color_mode == ColorMode.rgb:
-                    image = open_cv2_image(image_location)
-                else:
-                    image = open_cv2_image(image_location, False)
-                    image.reshape((image[0], image[1], 1))
-                image = resize_image(image)
-                image_list.append(image)
-            self.img_count = len(image_list)
-
-            metadata = pd.read_csv(metadata)
-            label_list = list()
-            for image in training_images_location:
-                query = os.path.basename(image)
-                label = metadata[metadata['word_image_location'] == query]['human_transcription'].item()
-                label_list.append(label)
-            self.class_labels = list(set(label_list))
-            image_list, label_list = concurrently_shuffle_lists(image_list, label_list)
-            val_split = int(len(image_list) * VALIDATION_SPLIT)
-            self.validation_image_set = [tf.data.Dataset.from_tensor_slices(
-                (image_list[0:val_split], label_list[0:val_split]))]
-            self.training_image_set = [tf.data.Dataset.from_tensor_slices(
-                (image_list[val_split:], label_list[val_split:]))]
+            self._load_images_based_on_metadata(training_images_location, shuffle, metadata)
 
         self.training_image_set[0] = self.training_image_set[0].cache().prefetch(buffer_size=tf.data.AUTOTUNE)
         self.validation_image_set[0] = self.validation_image_set[0].cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+
+    def _load_images_based_on_directory_structure(self, training_images_location, shuffle):
+        self.training_image_set = [
+            tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
+                                                                color_mode=self.color_mode.name,
+                                                                image_size=self.img_dimensions,
+                                                                seed=self.seed,
+                                                                shuffle=shuffle,
+                                                                batch_size=self.batch_size,
+                                                                validation_split=VALIDATION_SPLIT,
+                                                                subset='training')]
+        self.validation_image_set = [
+            tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
+                                                                color_mode=self.color_mode.name,
+                                                                image_size=self.img_dimensions,
+                                                                seed=self.seed,
+                                                                shuffle=shuffle,
+                                                                batch_size=self.batch_size,
+                                                                validation_split=VALIDATION_SPLIT,
+                                                                subset='validation')]
+        self.class_labels = self.training_image_set[0].class_names
+        images = os.walk(training_images_location)
+
+        self.img_count = 0
+        for d in images:
+            files = [Path(f) for f in d[2]]
+            image_files = [i for i in files if i.suffix in ['.jpeg', '.jpg', '.gif', '.png', '.bmp']]
+            self.img_count += len(image_files)
+
+    def _load_images_based_on_metadata(self, training_images_location, shuffle, metadata):
+        training_images_location = load_file_list_from_filesystem(training_images_location)
+        training_images_location = [i for i in training_images_location if '.csv' not in i]
+        resize_image = tf.keras.layers.experimental.preprocessing.Resizing(self.img_dimensions[0],
+                                                                           self.img_dimensions[1])
+        image_list = list()
+        for image_location in training_images_location:
+            if self.color_mode == ColorMode.rgb:
+                image = open_cv2_image(image_location)
+            else:
+                image = open_cv2_image(image_location, False)
+                image.reshape((image[0], image[1], 1))
+            image = resize_image(image)
+            image_list.append(image)
+        self.img_count = len(image_list)
+
+        metadata = pd.read_csv(metadata)
+        label_list = list()
+        for image in training_images_location:
+            query = os.path.basename(image)
+            label = metadata[metadata['word_image_location'] == query]['human_transcription'].item()
+            label_list.append(label)
+        self.class_labels = list(set(label_list))
+
+        if shuffle:
+            image_list, label_list = concurrently_shuffle_lists(image_list, label_list)
+        split = int(len(image_list) * VALIDATION_SPLIT)
+        self.validation_image_set = [tf.data.Dataset.from_tensor_slices(
+            (image_list[0:split], label_list[0:split]))]
+        self.training_image_set = [tf.data.Dataset.from_tensor_slices(
+            (image_list[split:], label_list[split:]))]
 
     def load_testing_images(self, testing_image_folder: str, image_size: int, color_mode: ColorMode = ColorMode.rgb):
         self.color_mode = color_mode
