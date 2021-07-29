@@ -47,9 +47,10 @@ class ModelTrainer:
         self.history = None
         print('Training model for fold %i of %i.' % (self.curr_fold, self.n_folds))
         self.history = self.architecture.model.fit(training_set,
-                                                   batch_size=self.batch_size, epochs=self.epochs,
-                                                   #        callbacks = [es_callback],
-                                                   validation_data=validation_set, verbose=2)
+                                                   validation_data=validation_set,
+                                                   batch_size=self.batch_size,
+                                                   epochs=self.epochs,
+                                                   verbose=2)
 
     def validate_model_at_epoch_end(self, class_labels: Union[Tuple[str], List[str]], validation_set: tf.data.Dataset) -> None:
         # todo: possibly change this into model.evaluate?
