@@ -35,7 +35,6 @@ class CnnLstm(CNNModel):
         self.inputs = None
         self.inputs_labels = None
         self.model: keras.models.Model = None  # training model
-        self.inference_model: keras.models.Model = None
 
     def layer_setup(self):
         self.inputs = keras.Input(shape=(800, 64, 1), name='image_in', dtype='float32')
@@ -48,10 +47,6 @@ class CnnLstm(CNNModel):
                                  outputs=self.model,
                                  name='ctc_training_model')
         self.compile_model()
-
-        self.inference_model = keras.Model(inputs=self.inputs,
-                                           outputs=self.model.get_layer(name='dense_labels').output,
-                                           name='inference_model')
 
     def add_convolutional_layers(self):
         """Create CNN layers."""
@@ -111,3 +106,8 @@ class CnnLstm(CNNModel):
             optimizer=rms_optimizer,
             loss='sparse_categorical_crossentropy',
             metrics=['accuracy'])
+
+    def get_inference_model(self) -> tf.keras.Model:
+        return keras.Model(inputs=self.inputs,
+                           outputs=self.model.get_layer(name='dense_labels').output,
+                           name='inference_model')
