@@ -82,12 +82,39 @@ class LabeledImages:
                                                                     validation_split=0.1,
                                                                     subset='validation'))
             self.class_labels = self.training_image_set[0].class_names
-            for batch, _ in self.training_image_set[0]:
-                self.img_count += batch[0]
-            for batch, _ in self.validation_image_set[0]:
-                self.img_count += batch[0]
-            self.training_image_set[0] = self.training_image_set[0].cache().prefetch(buffer_size=tf.data.AUTOTUNE)
-            self.validation_image_set[0] = self.validation_image_set[0].cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+        else:
+            print('Fetching labels based on metadata CSV file.')
+            training_images_location = load_file_list_from_filesystem(training_images_location)
+            training_images_location = [i for i in training_images_location if '.csv' not in i]
+            resize_image = tf.keras.layers.experimental.preprocessing.Resizing(image_size[0], image_size[1])
+
+            image_list = list()
+            for image_location in training_images_location:
+                if self.color_mode == ColorMode.rgb:
+                    image = open_cv2_image(image_location)
+                else:
+                    image = open_cv2_image(image_location, False)
+                    image.reshape((image[0], image[1], 1))
+                image = resize_image(image)
+                image_list.append(image)
+            self.img_count = len(image_list)
+
+            metadata = pd.read_csv(metadata)
+            label_list = list()
+            for image in training_images_location:
+                query = os.path.basename(image)
+                label = metadata[metadata['word_image_location'] == query]['human_transcription'].item()
+                label_list.append(label)
+            self.class_labels = list(set(label_list))
+            image_list, label_list = concurrently_shuffle_lists(image_list, label_list)
+            val_split = int(len(image_list) * VALIDATION_SPLIT)
+            self.validation_image_set = [tf.data.Dataset.from_tensor_slices(
+                (image_list[0:val_split], label_list[0:val_split]))]
+            self.training_image_set = [tf.data.Dataset.from_tensor_slices(
+                (image_list[val_split:], label_list[val_split:]))]
+
+        self.training_image_set[0] = self.training_image_set[0].cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+        self.validation_image_set[0] = self.validation_image_set[0].cache().prefetch(buffer_size=tf.data.AUTOTUNE)
 
     def load_testing_images(self, testing_image_folder: str, image_size: int, color_mode: ColorMode = ColorMode.rgb):
         self.color_mode = color_mode
