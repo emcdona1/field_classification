@@ -2,6 +2,22 @@ import random
 from labeled_images.colormode import ColorMode
 import tensorflow as tf
 from typing import List, Union, Tuple
+import pandas as pd
+import os
+from utilities.dataloader import open_cv2_image, load_file_list_from_filesystem
+from pathlib import Path
+
+
+VALIDATION_SPLIT = 0.1  # todo: change this to 0.2?
+
+
+def concurrently_shuffle_lists(list1, list2):
+    conjoined_lists = list(zip(list1, list2))
+    random.shuffle(conjoined_lists)
+    list1, list2 = zip(*conjoined_lists)
+    list1 = list(list1)
+    list2 = list(list2)
+    return list1, list2
 
 
 class LabeledImages:
