@@ -7,7 +7,6 @@ import os
 from utilities.dataloader import open_cv2_image, load_file_list_from_filesystem
 from pathlib import Path
 
-
 VALIDATION_SPLIT = 0.1  # todo: change this to 0.2?
 
 
