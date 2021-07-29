@@ -44,17 +44,14 @@ class ModelTrainingArguments:
 
     def _validate_training_folder(self) -> Path:
         training_path = Path(self._args.training_set)
-        if not os.path.isdir(training_path):
-            raise NotADirectoryError(f'"{self._args.training_set}" is not a valid directory path.')
+        assert os.path.isdir(training_path), f'{self._args.training_set} is not a valid directory path.'
         return training_path
 
     def _validate_image_size(self) -> (int, int):
-        if self._args.height <= 0:
-            raise ValueError(f'Image height must be > 0. {self._args.height} is not valid.')
+        assert self._args.height > 0, f'Image height must be > 0. {self._args.height} is not valid.'
         width = height = self._args.height
         if self._args.width:
-            if self._args.width <= 0:
-                raise ValueError(f'Image width must be > 0. {self._args.width} is not valid.')
+            assert self._args.width > 0, f'Image width must be > 0. {self._args.width} is not valid.'
             width = self._args.width
         return height, width
 
@@ -63,26 +60,22 @@ class ModelTrainingArguments:
 
     def _validate_learning_rate(self) -> float:
         lr = self._args.learning_rate
-        if not 0 < lr <= 1:
-            raise ValueError('Learning rate %f.6 is not valid. Must be in range 0 (exclusive) to 1 (inclusive).' % lr)
+        assert 0 < lr < 1, f'Learning rate {lr:.6f} is not valid. Must be in range (0, 1).'
         return lr
 
     def _validate_n_folds(self) -> int:
         n_folds = self._args.n_folds
-        if not n_folds >= 1:
-            raise ValueError('%i is not a valid number of folds. Must be >= 1.' % n_folds)
+        assert n_folds <= 1, f'Number of folds {n_folds} is not valid. Value must be >= 1.'
         return n_folds
 
     def _validate_n_epochs(self) -> int:
         n_epochs = self._args.n_epochs
-        if not n_epochs >= 5 or type(n_epochs) is not int:
-            raise ValueError('# of epochs %i is not valid. Must be >= 5.)' % n_epochs)
+        assert n_epochs >= 5, f'{n_epochs} is not a valid number of epochs. Must be >= 5.'
         return n_epochs
 
     def _validate_batch_size(self) -> int:
         batch_size = self._args.batch_size
-        if not batch_size >= 2:
-            raise ValueError('Batch size %i is not valid. Must be >= 2.' % batch_size)
+        assert batch_size >= 2, f'{batch_size} is not a valid batch size. Must be >= 2.'
         return batch_size
 
     def _validate_metadata_folder(self) -> Path:
