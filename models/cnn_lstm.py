@@ -65,7 +65,7 @@ class CnnLstm(CNNModel):
                                            kernel_size=(kernel_values[i], kernel_values[i]),
                                            padding='SAME',
                                            activation='relu')(self.model)
-            set_of_layers = keras.Sequential(name=f'conv_block_{i+1}')
+            set_of_layers = keras.Sequential(name=f'conv_block_{i + 1}')
             set_of_layers.add(
                 layers.Conv2D(filters=feature_values[i],
                               kernel_size=(kernel_values[i], kernel_values[i]),
