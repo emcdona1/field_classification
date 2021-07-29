@@ -52,10 +52,15 @@ class LabeledImages:
             self.img_dimensions = image_size
         self.n_folds = n_folds
         self.batch_size = batch_size
-        if self.n_folds > 1:
-            # TODO: implement splitting by folds for cross validation
-            pass
-        else:
+
+        if not metadata:
+            print('Fetching labels based on folder names.')
+            images = os.walk(training_images_location)
+            self.img_count = 0
+            for d in images:
+                files = [Path(f) for f in d[2]]
+                image_files = [i for i in files if i.suffix in ['.jpeg', '.jpg', '.gif', '.png', '.bmp']]
+                self.img_count += len(image_files)
             self.training_image_set = list()
             self.training_image_set.append(
                 tf.keras.preprocessing.image_dataset_from_directory(training_images_location,
