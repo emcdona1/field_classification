@@ -31,7 +31,7 @@ class ModelTrainer:
                                     os.path.join(self.folder_name, 'CNN_%i.model' % self.curr_fold))
             self.validate_model_at_epoch_end(images.class_labels, validation_set)
 
-    def generate_image_splits(self, images: LabeledImages) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
+    def generate_image_splits(self, images: LabeledImages) -> Tuple[List[tf.data.Dataset], List[tf.data.Dataset]]:
         if self.n_folds == 1:
             print('Training without cross-fold validation.')
         else:
