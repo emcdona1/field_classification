@@ -2,14 +2,12 @@
 # https://github.com/githubharald/SimpleHTR
 # https://stackoverflow.com/questions/63258412/adding-ctc-loss-and-ctc-decode-to-a-keras-model#63306211
 # https://keras.io/examples/vision/captcha_ocr/
-import os
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import backend as K
 from models.cnnmodel import CNNModel
 from labeled_images.colormode import ColorMode
-import pandas as pd
 
 
 class CTCLayer(layers.Layer):
