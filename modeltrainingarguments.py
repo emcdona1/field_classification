@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Tuple
 
 
-class CNNArguments:
+class ModelTrainingArguments:
     def __init__(self):
         self._parser = argparse.ArgumentParser(
             'Create and train CNNs for binary classification of images, using cross-fold validation.')

@@ -8,7 +8,7 @@ from labeled_images import LabeledImages
 from models import TransferLearningModel
 from model_training import ModelTrainer
 from utilities.timer import Timer
-from cnnarguments import CNNArguments
+from modeltrainingarguments import ModelTrainingArguments
 import matplotlib
 import random
 
@@ -29,7 +29,7 @@ def main() -> None:
 
 
 def set_up_components(base_model_location: str) -> (ModelTrainer, LabeledImages):
-    cnn_arguments = CNNArguments()
+    cnn_arguments = ModelTrainingArguments()
     images = LabeledImages(SEED)
     images.load_images_from_folders(cnn_arguments.training_image_folder, cnn_arguments.image_size,
                                     cnn_arguments.color_mode, True, cnn_arguments.n_folds, cnn_arguments.batch_size)

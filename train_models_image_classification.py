@@ -6,7 +6,7 @@ from labeled_images.labeledimages import LabeledImages
 from models.smithsonian import SmithsonianModel
 from model_training import ModelTrainer
 from utilities.timer import Timer
-from cnnarguments import CNNArguments
+from modeltrainingarguments import ModelTrainingArguments
 
 matplotlib.use('Agg')  # required when running on server
 
@@ -14,7 +14,7 @@ matplotlib.use('Agg')  # required when running on server
 def main() -> None:
     timer = Timer('Model training')
 
-    cnn_arguments = CNNArguments()
+    cnn_arguments = ModelTrainingArguments()
     new_images = LabeledImages(SEED)
     new_images.load_images_from_folders(cnn_arguments.training_image_folder, cnn_arguments.image_size,
                                         cnn_arguments.color_mode, shuffle=True, n_folds=cnn_arguments.n_folds)

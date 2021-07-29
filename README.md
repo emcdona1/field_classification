@@ -91,7 +91,7 @@ for necessary Python packages.
 
 - **classify_images_by_vote.py**
     - _The main testing program -- see Workflow above._
-- **cnnarguments.py**
+- **modeltrainingarguments.py**
     - _Parse and validate command-line argument values._
 - **model_training.py**
     - _A helper class for `train_models_image_classification.py` which takes in two preprocessed image sets and a defined CNN architecture, and trains/validates a model._
