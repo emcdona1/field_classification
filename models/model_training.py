@@ -32,17 +32,6 @@ class ModelTrainer:
                                     os.path.join(self.folder_name, f'CNN_{self.curr_index + 1}.model'))
             self.validate_model_at_epoch_end(images.class_labels, validation_set)
 
-    def generate_image_splits(self, images: LabeledImages) -> Tuple[List[tf.data.Dataset], List[tf.data.Dataset]]:
-        if self.n_folds == 1:
-            print('Training without cross-fold validation.')
-        else:
-            print('Training with %i cross-fold validation.' % images.n_folds)
-            # TODO: Remove the warning below once no longer relevant
-            raise NotImplementedError('WARNING: Cross-fold validation has not been implemented!')
-        training_set = images.training_image_set
-        validation_set = images.validation_image_set
-        return training_set, validation_set
-
     def train_model(self, training_set: tf.data.Dataset, validation_set: tf.data.Dataset) -> None:
         self.architecture.reset_model()
         print(f'Training model for fold {self.curr_index + 1} of {self.n_folds}.')
