@@ -47,8 +47,7 @@ class LabeledImages:
         if self.n_folds > 1:
             # TODO: implement splitting by folds for cross validation
             raise NotImplementedError('K-fold cross validation has not been implemented.')
-
-        self.img_dimensions = image_size if image_size is tuple else (image_size, image_size)
+        self.img_dimensions = image_size if type(image_size) is tuple else (image_size, image_size)
         self.color_mode = color_mode
         self.n_folds = n_folds
         self.batch_size = batch_size
