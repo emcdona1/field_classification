@@ -38,7 +38,13 @@ class LabeledImages:
         self.test_labels: list = list()
 
     def load_images_from_folders(self, training_images_location: str, image_size: Union[int, Tuple[int, int]],
-                                 color_mode: ColorMode = ColorMode.rgb, shuffle=True, n_folds=1, batch_size=32) -> None:
+                                 color_mode: ColorMode = ColorMode.rgb, shuffle=True, n_folds=1, batch_size=32,
+                                 metadata: str = None) -> None:
+        """ image_size = (height, width) or """
+        if self.n_folds > 1:
+            # TODO: implement splitting by folds for cross validation
+            raise NotImplementedError('K-fold cross validation has not been implemented.')
+
         self.color_mode = color_mode
         if image_size is int:
             self.img_dimensions = (image_size, image_size)
