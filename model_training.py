@@ -37,7 +37,7 @@ class ModelTrainer:
         else:
             print('Training with %i cross-fold validation.' % images.n_folds)
             # TODO: Remove the warning below once no longer relevant
-            print('WARNING: Cross-fold validation has not been implemented!')
+            raise NotImplementedError('WARNING: Cross-fold validation has not been implemented!')
         training_set = images.training_image_set
         validation_set = images.validation_image_set
         return training_set, validation_set
