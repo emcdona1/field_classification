@@ -41,13 +41,21 @@ class CNNArguments:
                                   default=64, help='Batch size (minimum 2) for training. (Default = 64)')
         return self._parser.parse_args()
 
-def validate_required_arguments(args) -> (str, int):
-    if not os.path.isdir(args.training_set):
-        raise NotADirectoryError('Training set "%s" is not a valid directory path.' % args.training_set)
-    if args.img_size <= 0:
-        raise ValueError('Image size must be > 0. %i is not valid.' % args.img_size)
-    return args.training_set, args.img_size
+    def _validate_training_folder(self) -> Path:
+        training_path = Path(self._args.training_set)
+        if not os.path.isdir(training_path):
+            raise NotADirectoryError(f'"{self._args.training_set}" is not a valid directory path.')
+        return training_path
 
+    def _validate_image_size(self) -> (int, int):
+        if self._args.width <= 0:
+            raise ValueError(f'Image width must be > 0. {self._args.width} is not valid.')
+        width = height = self._args.width
+        if self._args.height:
+            if self._args.height <= 0:
+                raise ValueError(f'Image height must be > 0. {self._args.height} is not valid.')
+            height = self._args.height
+        return width, height
 
     def _set_color_mode(self) -> ColorMode:
         return ColorMode.grayscale if self._args.bw else ColorMode.rgb
