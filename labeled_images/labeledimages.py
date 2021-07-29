@@ -1,3 +1,4 @@
+import random
 from labeled_images.colormode import ColorMode
 import tensorflow as tf
 from typing import List, Union, Tuple
@@ -6,6 +7,7 @@ from typing import List, Union, Tuple
 class LabeledImages:
     def __init__(self, random_seed: int):
         self.seed: int = random_seed
+        random.seed(self.seed)
         self.training_image_set: List[tf.data.Dataset] = [tf.data.Dataset.from_tensor_slices([0])]
         self.validation_image_set: List[tf.data.Dataset] = [tf.data.Dataset.from_tensor_slices([0])]
         self.img_count: int = 0
