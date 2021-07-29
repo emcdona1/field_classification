@@ -29,7 +29,7 @@ class ModelTrainer:
             self.train_model(training_set, validation_set)
             keras.models.save_model(self.architecture.model,
                                     os.path.join(self.folder_name, 'CNN_%i.model' % self.curr_fold))
-            self.validate_model(images.class_labels, validation_set)
+            self.validate_model_at_epoch_end(images.class_labels, validation_set)
 
     def generate_image_splits(self, images: LabeledImages) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
         if self.n_folds == 1:
