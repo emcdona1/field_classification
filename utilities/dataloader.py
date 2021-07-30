@@ -50,14 +50,14 @@ def pickle_an_object(save_directory: str, object_id: str, obj_to_pickle) -> str:
     return file_path
 
 
-def open_cv2_image(image_location: str, rgb: bool = True) -> np.ndarray:
+def open_cv2_image(image_location: Union[str, Path, Request], rgb: bool = True) -> np.ndarray:
     color_mode = cv2.IMREAD_COLOR if rgb else cv2.IMREAD_GRAYSCALE
-    if 'http' in image_location:
+    if (type(image_location) is str and 'http' in image_location) or type(image_location) is Request:
         resp = urlopen(image_location)
         image = np.asarray(bytearray(resp.read()), dtype='uint8')
         image_to_draw_on = cv2.imdecode(image, color_mode)
     else:
-        image_to_draw_on = cv2.imread(image_location, color_mode)
+        image_to_draw_on = cv2.imread(str(image_location), color_mode)
     return image_to_draw_on
 
 
