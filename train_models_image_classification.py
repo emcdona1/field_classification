@@ -16,8 +16,8 @@ def main() -> None:
 
     cnn_arguments = ModelTrainingArguments()
     new_images = LabeledImages(SEED)
-    new_images.load_images_from_folders(cnn_arguments.training_image_folder, cnn_arguments.image_size,
-                                        cnn_arguments.color_mode, shuffle=True, n_folds=cnn_arguments.n_folds)
+    new_images.load_training_images(cnn_arguments.training_image_folder, cnn_arguments.image_size,
+                                    cnn_arguments.color_mode, shuffle=True, n_folds=cnn_arguments.n_folds)
 
     architecture = SmithsonianModel(SEED, cnn_arguments.lr, cnn_arguments.image_size, cnn_arguments.color_mode)
     trainer = ModelTrainer(cnn_arguments.n_epochs, cnn_arguments.batch_size, cnn_arguments.n_folds, architecture, SEED)

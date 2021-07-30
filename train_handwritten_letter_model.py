@@ -31,8 +31,8 @@ def main() -> None:
 def set_up_components(base_model_location: str) -> (ModelTrainer, LabeledImages):
     cnn_arguments = ModelTrainingArguments()
     images = LabeledImages(SEED)
-    images.load_images_from_folders(cnn_arguments.training_image_folder, cnn_arguments.image_size,
-                                    cnn_arguments.color_mode, True, cnn_arguments.n_folds, cnn_arguments.batch_size)
+    images.load_training_images(cnn_arguments.training_image_folder, cnn_arguments.image_size,
+                                cnn_arguments.color_mode, True, cnn_arguments.n_folds, cnn_arguments.batch_size)
     base_model = tf.keras.models.load_model(base_model_location)
     architecture = TransferLearningModel(base_model, SEED, cnn_arguments.lr,
                                          images.img_dimensions[0], images.color_mode)
