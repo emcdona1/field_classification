@@ -104,8 +104,8 @@ class LabeledImages:
             self.img_count += len(image_files)
 
     def _load_images_based_on_metadata(self, training_images_location, shuffle, metadata):
-        training_images_location = load_file_list_from_filesystem(training_images_location)
-        training_images_location = [i for i in training_images_location if '.csv' not in i]
+        training_images_location: List[Path] = load_file_list_from_filesystem(training_images_location)
+        training_images_location: List[str] = [str(i) for i in training_images_location if not i.suffix == '.csv']
         resize_image = tf.keras.layers.experimental.preprocessing.Resizing(self.img_dimensions[0],
                                                                            self.img_dimensions[1])
         image_list = list()
