@@ -21,6 +21,17 @@ def concurrently_shuffle_lists(list1, list2):
     return list1, list2
 
 
+# Map label string's characters to integer encodings
+char_to_num = tf.keras.layers.experimental.preprocessing.StringLookup(
+    vocabulary=list(CHAR_LIST), mask_token=None
+)
+
+# Map label integer encodings back to original characters
+num_to_char = tf.keras.layers.experimental.preprocessing.StringLookup(
+    vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True
+)
+
+
 class LabeledImages:
     def __init__(self, random_seed: int):
         self.seed: int = random_seed
