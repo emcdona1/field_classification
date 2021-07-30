@@ -11,6 +11,9 @@ from labeled_images.colormode import ColorMode
 from typing import Tuple
 
 
+CHAR_LIST: str = '\' !"#&()*+,-./0123456789:;?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+
+
 class CTCLayer(layers.Layer):
     def __init__(self, name=None):
         super().__init__(name=name)
@@ -31,8 +34,7 @@ class CTCLayer(layers.Layer):
 class CnnLstm(CNNModel):
     def __init__(self, seed: int, learning_rate: float, img_dim: Tuple[int, int], color_mode: ColorMode = ColorMode.rgb):
         super().__init__(seed, learning_rate, img_dim, color_mode)
-        self.char_list: str = '\' !"#&()*+,-./0123456789:;?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-        self.num_labels = len(self.char_list) + 1
+        self.num_labels = len(CHAR_LIST) + 1
         self.inputs = None
         self.inputs_labels = None
         self.model: keras.models.Model = None  # training model
