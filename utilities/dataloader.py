@@ -1,11 +1,13 @@
 import os
 import pickle
 import numpy as np
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 import cv2
 from datetime import datetime
 import pandas as pd
 import requests
+from pathlib import Path
+from typing import Union, List
 
 
 def load_list_from_txt(file_path: str) -> list:
@@ -18,15 +20,14 @@ def load_list_from_txt(file_path: str) -> list:
     return results
 
 
-def load_file_list_from_filesystem(directory_or_file: str) -> list:
-    results = list()
+def load_file_list_from_filesystem(directory_or_file: Union[str, Path]) -> List[Path]:
     if os.path.isdir(directory_or_file):
         all_directory_contents = os.listdir(directory_or_file)
-        all_directory_contents_with_full_path = [directory_or_file + os.path.sep + filename
+        all_directory_contents_with_full_path = [Path(os.path.join(directory_or_file, filename))
                                                  for filename in all_directory_contents]
         results = [item for item in all_directory_contents_with_full_path if not os.path.isdir(item)]
     elif os.path.isfile(directory_or_file):
-        results = [directory_or_file]
+        results = [Path(directory_or_file)]
     else:
         raise FileNotFoundError('Not a valid directory or file: %s' % directory_or_file)
 
