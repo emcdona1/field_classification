@@ -6,8 +6,10 @@ import pandas as pd
 import os
 from utilities.dataloader import open_cv2_image, load_file_list_from_filesystem
 from pathlib import Path
+from models.cnn_lstm import CHAR_LIST
 
 VALIDATION_SPLIT = 0.1  # todo: change this to 0.2?
+MAX_LABEL_LENGTH = 50
 
 
 def concurrently_shuffle_lists(list1, list2):
