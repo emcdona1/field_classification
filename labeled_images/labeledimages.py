@@ -101,7 +101,7 @@ class LabeledImages:
                 image = open_cv2_image(image_location)
             else:
                 image = open_cv2_image(image_location, False)
-                image.reshape((image[0], image[1], 1))
+                image = image.reshape((image.shape[0], image.shape[1], 1))
             image = resize_image(image)
             image_list.append(image)
         self.img_count = len(image_list)
