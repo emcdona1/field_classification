@@ -7,7 +7,7 @@ import numpy as np
 def main(list_of_folders: list):
     for folder in list_of_folders:
         files = os.listdir(folder)
-        ab_graveyard_folder = os.path.join(folder, 'abaxial')
+        ab_graveyard_folder = os.path.join(folder, 'abaxial') # Can be changed for adaxial
         os.makedirs(ab_graveyard_folder)
         abaxial = [f for f in files if '_abaxial_' in os.path.join(folder, f)]
         for ab in abaxial:
