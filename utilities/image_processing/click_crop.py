@@ -3,6 +3,7 @@ from PIL import Image
 from tkinter import filedialog
 import numpy
 import csv
+import sys
 
 # Local variables to help set the x and y axies and declare the list
 x1 = 0
@@ -115,12 +116,20 @@ def upload_action(event=None):
 
 if __name__ == "__main__":
 
-    # Declare variables we will use in click event,
-    # open image file, and set variables
-    filename = upload_action()
-    img = cv2.imread(filename, 1)
-    count = 0
+    if len(sys.argv) >= 2:
+        filename = sys.argv[1]
+        img = cv2.imread(filename, 1)
+        count = 0
 
-    # Call main function to open window
-    main()
+        # Call main function to open window
+        main()
+    else:
+        # Declare variables we will use in click event,
+        # open image file, and set variables
+        filename = upload_action()
+        img = cv2.imread(filename, 1)
+        count = 0
+
+        # Call main function to open window
+        main()
 
