@@ -57,12 +57,12 @@ class LabeledImages:
         self.n_folds = n_folds
         self.batch_size = batch_size
 
-        if not metadata:
-            print('Fetching labels based on folder names.')
-            self._load_images_based_on_directory_structure(training_images_location, shuffle)
-        else:
+        if metadata:  # todo: change from file path to boolean (then search for 'csv glob in image folder)
             print('Fetching labels based on metadata CSV file.')
             self._load_images_based_on_metadata(training_images_location, shuffle, metadata)
+        else:
+            print('Fetching labels based on folder names.')
+            self._load_images_based_on_directory_structure(training_images_location, shuffle)
 
         self.training_image_set[0] = self.training_image_set[0].cache().prefetch(buffer_size=tf.data.AUTOTUNE)
         self.validation_image_set[0] = self.validation_image_set[0].cache().prefetch(buffer_size=tf.data.AUTOTUNE)
