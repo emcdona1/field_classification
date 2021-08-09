@@ -101,7 +101,7 @@ class CnnLstm(CNNModel):
 
         self.model = layers.Dense(self.num_labels, activation='relu')(self.model)
         self.model = layers.Dense(self.num_labels, name='dense_labels', activation='softmax')(self.model)
-        self.model = CTCLayer(name='ctc_loss')(self.inputs_labels, self.model)
+        return CTCLayer(name='ctc_loss')(self.inputs_labels, self.model)
 
     def compile_model(self):
         rms_optimizer = tf.keras.optimizers.RMSprop()
