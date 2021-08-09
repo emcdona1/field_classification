@@ -61,9 +61,9 @@ def open_cv2_image(image_location: Union[str, Path, Request], rgb: bool = True) 
     return image_to_draw_on
 
 
-def save_cv2_image(save_location: str, image_id: str, image_to_save: np.ndarray) -> str:
+def save_cv2_image(save_location: Union[Path, str], image_id: str, image_to_save: np.ndarray) -> str:
     filename = image_id + '-annotated' + get_timestamp_for_file_saving() + '.jpg'
-    file_path = os.path.join(save_location, filename)
+    file_path = os.path.join(str(save_location), filename)
     cv2.imwrite(file_path, image_to_save)
     return filename
 
