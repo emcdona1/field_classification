@@ -98,18 +98,9 @@ class LabeledImages:
     def _load_images_based_on_metadata(self, training_images_location, shuffle, metadata):
         training_images_location: List[Path] = load_file_list_from_filesystem(training_images_location)
         training_images_location: List[str] = [str(i) for i in training_images_location if not i.suffix == '.csv']
-        resize_image = tf.keras.layers.experimental.preprocessing.Resizing(self.img_dimensions[0],
-                                                                           self.img_dimensions[1])
-        image_list = list()
-        for image_location in training_images_location:
-            if self.color_mode == ColorMode.rgb:
-                image = open_cv2_image(image_location)
-            else:
-                image = open_cv2_image(image_location, False)
-                image = image.reshape((image.shape[0], image.shape[1], 1))
-            image = resize_image(image)
-            image_list.append(image)
+        image_list = np.array(training_images_location)
         self.img_count = len(image_list)
+        image_list = np.array(image_list)
 
         metadata = pd.read_csv(metadata)
         label_list = list()
@@ -118,14 +109,47 @@ class LabeledImages:
             label = metadata[metadata['word_image_location'] == query]['human_transcription'].item()
             label_list.append(label)
         self.class_labels = list(set(label_list))
+        label_list = [e.ljust(MAX_LABEL_LENGTH) for e in label_list]
+        label_list = np.array(label_list)
 
-        if shuffle:
-            image_list, label_list = concurrently_shuffle_lists(image_list, label_list)
-        split = int(len(image_list) * VALIDATION_SPLIT)
-        self.validation_image_set = [tf.data.Dataset.from_tensor_slices(
-            (image_list[0:split], label_list[0:split]))]
-        self.training_image_set = [tf.data.Dataset.from_tensor_slices(
-            (image_list[split:], label_list[split:]))]
+        def split_data(images, labels, train_split, shuffle_images):
+            # 1. Get the total size of the dataset
+            size = len(images)
+            # 2. Make an indices array and shuffle it, if required
+            indices = np.arange(size)
+            if shuffle_images:
+                np.random.shuffle(indices)
+            # 3. Get the size of training samples
+            split = int(size * train_split)
+            # 4. Split data into training and validation sets
+            train_features, validation_features  = images[indices[0:split]], labels[indices[0:split]]
+            train_labels, validation_labels = images[indices[split:]], labels[indices[split:]]
+            return train_features, validation_features, train_labels, validation_labels
+
+        train_features, train_labels, val_features, val_labels = split_data(image_list, label_list, 1-VALIDATION_SPLIT, shuffle)
+
+        def encode_one_image_and_labels(img_path, img_label) -> (tf.Tensor, str):
+            img = tf.io.read_file(img_path)
+            img = tf.io.decode_jpeg(img, channels=1)
+            # if Path(img_path).suffix == '.gif':
+            #     # todo: handle GIFs (4D)
+            #     pass
+            img = tf.image.convert_image_dtype(img, tf.float32)  # converts to [0, 1]
+            img = tf.image.resize(img, list(self.img_dimensions))
+            img = tf.transpose(img, perm=[1, 0, 2])
+            img_label = char_to_num(tf.strings.unicode_split(img_label, input_encoding='UTF-8'))
+            return {'image': img, 'label': img_label}
+        self.training_image_set = [tf.data.Dataset.from_tensor_slices((train_features, train_labels))]
+        self.training_image_set[0] = self.training_image_set[0] \
+            .map(encode_one_image_and_labels, num_parallel_calls=tf.data.experimental.AUTOTUNE) \
+            .batch(self.batch_size )\
+            .prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+
+        self.validation_image_set = [tf.data.Dataset.from_tensor_slices((val_features, val_labels))]
+        self.validation_image_set[0] = self.validation_image_set[0] \
+            .map(encode_one_image_and_labels, num_parallel_calls=tf.data.experimental.AUTOTUNE) \
+            .batch(self.batch_size) \
+            .prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
     def load_testing_images(self, testing_image_folder: str, image_size: int, color_mode: ColorMode = ColorMode.rgb):
         # todo: implement loading images with metadata
