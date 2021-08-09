@@ -32,7 +32,8 @@ class CTCLayer(layers.Layer):
 
 
 class CnnLstm(CNNModel):
-    def __init__(self, seed: int, learning_rate: float, img_dim: Tuple[int, int], color_mode: ColorMode = ColorMode.rgb):
+    def __init__(self, seed: int, learning_rate: float, img_dim: Tuple[int, int],
+                 color_mode: ColorMode = ColorMode.grayscale):
         super().__init__(seed, learning_rate, img_dim, color_mode)
         self.num_labels = len(CHAR_LIST) + 1
         self.inputs = None
