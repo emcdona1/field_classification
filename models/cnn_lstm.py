@@ -35,7 +35,7 @@ class CnnLstm(CNNModel):
     def __init__(self, seed: int, learning_rate: float, img_dim: Tuple[int, int],
                  color_mode: ColorMode = ColorMode.grayscale):
         super().__init__(seed, learning_rate, img_dim, color_mode)
-        self.num_labels = len(CHAR_LIST) + 1
+        self.num_labels = len(set(CHAR_LIST)) + 1
         self.inputs = None
         self.inputs_labels = None
         self.model: keras.models.Model = None  # training model
