@@ -96,7 +96,7 @@ class CnnLstm(CNNModel):
         pass
 
     def add_output_layers(self):
-        self.inputs_labels = layers.Input(name='labels', shape=[self.num_labels],
+        self.inputs_labels = layers.Input(name='label', shape=(None, ),  # shape=[self.num_labels],
                                           dtype='float32')  # all characters + CTC 'blank'
 
         self.model = layers.Dense(self.num_labels, activation='relu')(self.model)
