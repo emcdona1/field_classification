@@ -1,24 +1,16 @@
-import random
-from labeled_images.colormode import ColorMode
-import tensorflow as tf
-from typing import List, Union, Tuple
-import pandas as pd
 import os
-from utilities.dataloader import open_cv2_image, load_file_list_from_filesystem
 from pathlib import Path
-from models.cnn_lstm import CHAR_LIST
+import tensorflow as tf
+import pandas as pd
+import numpy as np
+import random
+from typing import List, Union, Tuple
+from utilities.dataloader import load_file_list_from_filesystem
+from labeled_images.colormode import ColorMode
 
 VALIDATION_SPLIT = 0.1  # todo: change this to 0.2?
 MAX_LABEL_LENGTH = 50
-
-
-def concurrently_shuffle_lists(list1, list2):
-    conjoined_lists = list(zip(list1, list2))
-    random.shuffle(conjoined_lists)
-    list1, list2 = zip(*conjoined_lists)
-    list1 = list(list1)
-    list2 = list(list2)
-    return list1, list2
+CHAR_LIST: str = '\' !"#&()*+,-./0123456789:;?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
 
 # Map label string's characters to integer encodings
