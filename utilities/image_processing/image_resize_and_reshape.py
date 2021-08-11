@@ -32,8 +32,11 @@ def save_image(filename: str, img: np.ndarray) -> None:
 
 if __name__ == '__main__':
     source_folder, destination_folder, img_size = parse_arguments()
+    assert os.path.isdir(source_folder), f'Invalid source folder - {source_folder} - must be an existing directory.'
+    assert img_size > 0, f'Invalid image size - {img_size} - must be a positive integer.'
     if not os.path.exists(destination_folder):
-        os.mkdir(destination_folder)
+        os.makedirs(destination_folder)
+    assert os.path.isdir(destination_folder), f'Invalid dest folder - {destination_folder} - must be a directory.'
 
     for (idx, img_filename) in enumerate(os.listdir(source_folder)):
         resized_image = reduce_image_dim(img_filename)

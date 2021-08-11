@@ -1,11 +1,13 @@
 import os
 import pickle
 import numpy as np
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 import cv2
 from datetime import datetime
 import pandas as pd
 import requests
+from pathlib import Path
+from typing import Union, List
 
 
 def load_list_from_txt(file_path: str) -> list:
@@ -18,15 +20,14 @@ def load_list_from_txt(file_path: str) -> list:
     return results
 
 
-def load_file_list_from_filesystem(directory_or_file: str) -> list:
-    results = list()
+def load_file_list_from_filesystem(directory_or_file: Union[str, Path]) -> List[Path]:
     if os.path.isdir(directory_or_file):
         all_directory_contents = os.listdir(directory_or_file)
-        all_directory_contents_with_full_path = [directory_or_file + os.path.sep + filename
+        all_directory_contents_with_full_path = [Path(os.path.join(directory_or_file, filename))
                                                  for filename in all_directory_contents]
         results = [item for item in all_directory_contents_with_full_path if not os.path.isdir(item)]
     elif os.path.isfile(directory_or_file):
-        results = [directory_or_file]
+        results = [Path(directory_or_file)]
     else:
         raise FileNotFoundError('Not a valid directory or file: %s' % directory_or_file)
 
@@ -49,19 +50,20 @@ def pickle_an_object(save_directory: str, object_id: str, obj_to_pickle) -> str:
     return file_path
 
 
-def open_cv2_image(image_location: str) -> np.ndarray:
-    if 'http' in image_location:
+def open_cv2_image(image_location: Union[str, Path, Request], rgb: bool = True) -> np.ndarray:
+    color_mode = cv2.IMREAD_COLOR if rgb else cv2.IMREAD_GRAYSCALE
+    if (type(image_location) is str and 'http' in image_location) or type(image_location) is Request:
         resp = urlopen(image_location)
-        image = np.asarray(bytearray(resp.read()), dtype="uint8")
-        image_to_draw_on = cv2.imdecode(image, cv2.IMREAD_COLOR)
+        image = np.asarray(bytearray(resp.read()), dtype='uint8')
+        image_to_draw_on = cv2.imdecode(image, color_mode)
     else:
-        image_to_draw_on = cv2.imread(image_location)
+        image_to_draw_on = cv2.imread(str(image_location), color_mode)
     return image_to_draw_on
 
 
-def save_cv2_image(save_location: str, image_id: str, image_to_save: np.ndarray) -> str:
+def save_cv2_image(save_location: Union[Path, str], image_id: str, image_to_save: np.ndarray) -> str:
     filename = image_id + '-annotated' + get_timestamp_for_file_saving() + '.jpg'
-    file_path = os.path.join(save_location, filename)
+    file_path = os.path.join(str(save_location), filename)
     cv2.imwrite(file_path, image_to_save)
     return filename
 

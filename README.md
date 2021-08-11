@@ -47,33 +47,40 @@ for necessary Python packages.
 ---
 
 ## Workflow
-- Run `train_models_image_classification.py`, using arguments to specify image sets and hyper-parameters.
-    - Arguments: (`-h` flag for full details)
-        - `training_set` (positional, required) - file path of the directory that contains the training images 
-          (e.g. `training_image_folder` as described in the Setup section.)
-        - `img_size` (positional, required) - desired image size (images will be loaded as `img_size x img_size` square)
-        - (`-color`, `-bw`) - boolean flag for number of color channels (RGB or K) (*default = color*)
-        - `-lr` - learning rate value (*decimal number*, default = 0.001)
-        - `-f` - number of folds (1 for single-model, 2+ for cross-fold validation) (*integer <= 1*, default=1)
-            - *Note*: Currently, cross-fold validation is not implemented.
-        - `-e` - number of epochs per fold (*integer >= 5*, default=25)
-        - `-b` - batch size for updates (*integer >= 2*, default=64)
-    - Output:
-        - Directory `saved_models` is created in current working directory, which will contain one model file per fold (file name format: `CNN_#.model`).
-        - Directory `graphs` is created in current working directory, which will contain all generated graphs/plots for each run, plus a CSV summary for each fold.
-    - Example execution: `python train_models_image_classification.py training_images 128 -color -lr 0.005 -f 10 -e 50 -b 64 > species_a_b_training_output.txt &`
+1. Run `train_models_image_classification.py` or `train_handwriting_model.py`, using arguments to specify image sets and hyper-parameters.
+
+- **Arguments**: (`-h` flag for full details)
+    - `training_set` (positional, required) - file path of the directory that contains the training images 
+      (e.g. `training_image_folder` as described in the Setup section.)
+    - `height` (positional, required) - desired image size (if the optional `-w` argument is not provided, images
+        will be loaded as `height x height` square)
+    - `-w` - image width for non-square images
+    - (`-color`, `-bw`) - boolean flag for number of color channels (RGB or K) (*default = color*)
+    - `-lr` - learning rate value (*decimal number*, default = 0.001)
+    - `-f` - number of folds (1 for single-model, 2+ for cross-fold validation) (*integer <= 1*, default=1)
+        - *Note*: Currently, cross-fold validation is not implemented.
+    - `-e` - number of epochs per fold (*integer >= 5*, default=25)
+    - `-b` - batch size for updates (*integer >= 2*, default=64)
+    - `-m` - path for a metadata file containing the labels (this extracts the column named "human_transcription," 
+        as created by the zooniverse analysis project)
+- **Output**:
+    - Directory `saved_models` is created in current working directory, which will contain one model file per fold (file name format: `CNN_#.model`).
+    - Directory `graphs` is created in current working directory, which will contain all generated graphs/plots for each run, plus a CSV summary for each fold.
+      - Note: This directory will be empty after CTC model training.
+- **Example execution (CNN)**: `python train_models_image_classification.py training_images 128 -color -lr 0.005 -f 10 -e 50 -b 64 > species_a_b_training_output.txt &`
+  
+- **Example execution (CTC)**: `python train_handwriting_model.py testing_image_sets\word_images\ 100 -w 400 -bw -f 1 -e 100 -b 32 -m testing_image_sets\word_images\words_metadata.csv`
 
 
-- After the training is finished, use the model file(s) to classify test set images.  The number of predictions generated = *# of test images * # of model files*
-- Run `classify_images_by_vote.py`.
-    - Arguments: (`-h` flag for full details)
-        - `images` (positional, required) - file path of a directory containing the test image folders
-        - `img_size` (positional, required) - image size to be used (must match how the model was trained)
-        - `models` (positional, required) - a single model file, or a folder of models (i.e. `saved_models` in working directory)
-        - (`-color`, `-bw`) - boolean flag for number of color channels (RGB or K) (*default = color*)
-    - Output:
-        - Directory `predictions` is created if needed, and the preductions are saved as a CSV file (`yyyy-mm-dd-hh-mm-ssmodel_vote_predict.csv`).
-    - Example execution: `python classify_images_by_vote.py test_images 128 saved_models -color`
+2. After the training is finished, use the model file(s) to classify test set images.  The number of predictions generated = *# of test images * # of model files*  To run `classify_images_by_vote.py`:
+- **Arguments**: (`-h` flag for full details)
+    - `images` (positional, required) - file path of a directory containing the test image folders
+    - `img_size` (positional, required) - image size to be used (must match how the model was trained)
+    - `models` (positional, required) - a single model file, or a folder of models (i.e. `saved_models` in working directory)
+    - (`-color`, `-bw`) - boolean flag for number of color channels (RGB or K) (*default = color*)
+- **Output**:
+    - Directory `predictions` is created if needed, and the predictions are saved as a CSV file (`yyyy-mm-dd-hh-mm-ssmodel_vote_predict.csv`).
+- **Example execution (CNN only)**: `python classify_images_by_vote.py test_images 128 saved_models -color`
 
 ---
 
@@ -89,20 +96,29 @@ for necessary Python packages.
 
 ##### Files:
 
-- **classify_images_by_vote.py**
-    - _The main testing program -- see Workflow above._
-- **cnnarguments.py**
-    - _Parse and validate command-line argument values._
-- **model_training.py**
-    - _A helper class for `train_models_image_classification.py` which takes in two preprocessed image sets and a defined CNN architecture, and trains/validates a model._
 - **train_models_image_classification.py**
-    - _The main training program -- see Workflow above._
-
+    - _The main training program for image classification -- see Workflow above._
+- **train_handwriting_model.py**
+    - _The main training program for RNN/CTC handwriting digitization -- see Workflow above._
+- **classify_images_by_vote.py**
+    - _The main testing program for image classification -- see Workflow above._
 
 
 ---
 
 ## Contributors and licensing
-This code has been developed by Beth McDonald ([emcdona1](https://github.com/emcdona1), *Field Museum, former NEIU*) and Allison Chen ([allisonchen23](https://github.com/allisonchen23), UCLA), under the guidance of Dr. Matt von Konrat (Field Museum), Dr. Francisco Iacobelli ([fiacobelli](https://github.com/fiacobelli), *NEIU*), Dr. Rachel Trana ([rtrana](https://github.com/rtrana), *NEIU*), and Dr. Tom Campbell (*NEIU*).
+This code has been developed by Beth McDonald ([emcdona1](https://github.com/emcdona1), *Field Museum, former NEIU*), 
+Sean Cullen ([SeanCullen11](https://github.com/SeanCullen11), NEIU)
+and Allison Chen ([allisonchen23](https://github.com/allisonchen23), UCLA).
 
-Code development and testing was made possible thanks to [the Grainger Bioinformatics Center](https://www.fieldmuseum.org/science/labs/grainger-bioinformatics-center) at the Field Museum.  This project has been constructed for the Field Museum Gantz Family Collections Center, under the direction of [Dr. Matt von Konrat](https://www.fieldmuseum.org/about/staff/profile/16), Head of Botanical Collections at the Field.  Please contact Dr. von Konrat for licensing inquiries.
+This code was developed under the guidance of Dr. Matt von Konrat (Field Museum), 
+Dr. Francisco Iacobelli ([fiacobelli](https://github.com/fiacobelli), *NEIU*), 
+Dr. Rachel Trana ([rtrana](https://github.com/rtrana), *NEIU*), 
+and Dr. Tom Campbell (*NEIU*).
+
+This project was made possible thanks to [the Grainger Bioinformatics Center](https://www.fieldmuseum.org/science/labs/grainger-bioinformatics-center) at the Field Museum.
+
+This project has been created for use in the Field Museum Gantz Family Collections Center, 
+under the direction of [Dr. Matt von Konrat](https://www.fieldmuseum.org/about/staff/profile/16), Head of Botanical Collections at the Field.
+
+Please contact Dr. von Konrat for licensing inquiries.

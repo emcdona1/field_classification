@@ -1,14 +1,17 @@
 import tensorflow as tf
 from abc import abstractmethod, ABC
 from labeled_images import ColorMode
+from typing import Union, Tuple
 
 
 class CNNModel(ABC):
-    def __init__(self, seed: int, learning_rate: float, img_dim: int, color_mode: ColorMode = ColorMode.rgb):
+    def __init__(self, seed: int, learning_rate: float,
+                 img_dim: Union[Tuple[int, int], int],
+                 color_mode: ColorMode = ColorMode.rgb):
         """ Creates layers for model and compiles model"""
         self.seed: int = seed
         self.learning_rate: float = learning_rate
-        self.img_dim: int = img_dim
+        self.img_dim: Tuple[int, int] = (img_dim, img_dim) if type(img_dim) == int else img_dim
         self.model = None
         self.color = color_mode
 
@@ -19,7 +22,7 @@ class CNNModel(ABC):
     def layer_setup(self):
         self.model = tf.keras.models.Sequential()
         norm_layer = tf.keras.layers.experimental.preprocessing.Rescaling(1/255,
-                                                                          input_shape=(self.img_dim, self.img_dim,
+                                                                          input_shape=(self.img_dim[0], self.img_dim[1],
                                                                                        3 if self.color == ColorMode.rgb
                                                                                        else 1))
         self.model.add(norm_layer)
