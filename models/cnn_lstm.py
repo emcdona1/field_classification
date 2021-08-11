@@ -18,15 +18,16 @@ class CTCLayer(layers.Layer):
     def __init__(self, name=None):
         super().__init__(name=name)
 
-    def call(self, y_true, y_pred):  # todo: figure out why this is flagged but works fine?
+    def call(self, y_true, y_pred):
         # Compute the training time loss & add it to the layer  using self.add_loss()
         batch_len = tf.cast(tf.shape(y_true)[0], dtype='int64')
-        input_len = tf.cast(tf.shape(y_pred)[0], dtype='int64')
-        label_len = tf.cast(tf.shape(y_true)[0], dtype='int64')
-        input_len = input_len * tf.ones(shape=(batch_len, 1), dtype='int64')
-        label_len = label_len * tf.ones(shape=(batch_len, 1), dtype='int64')
+        input_length = tf.cast(tf.shape(y_pred)[1], dtype='int64')
+        label_length = tf.cast(tf.shape(y_true)[1], dtype='int64')
 
-        loss = K.ctc_batch_cost(y_true, y_pred, input_len, label_len)
+        input_length = input_length * tf.ones(shape=(batch_len, 1), dtype='int64')
+        label_length = label_length * tf.ones(shape=(batch_len, 1), dtype='int64')
+
+        loss = K.ctc_batch_cost(y_true, y_pred, input_length, label_length)
         self.add_loss(loss)
         return y_pred
 
