@@ -91,3 +91,13 @@ python augmentor.py training_image_path, batch_size1, testing_image_path, batch_
 
 Example: 
 `python augmentor.py training_images 100 testing_images 20`
+
+
+## Using only_ab.py
+
+This file allows you to search through an image folder and extract images with a certian word in the title. In this case we use it to extract only the abaxial leaf images. The script takes one parameter which is just the file path of the image folder.  
+
+python only_ab.py image_folder_path
+
+Example: 
+`python only_ab.py \5_leaf_catagories\catagory1\hippophaeoides`
