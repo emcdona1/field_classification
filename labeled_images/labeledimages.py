@@ -122,9 +122,9 @@ class LabeledImages:
             # 3. Get the size of training samples
             split = int(size * train_split)
             # 4. Split data into training and validation sets
-            train_features, validation_features  = images[indices[0:split]], labels[indices[0:split]]
-            train_labels, validation_labels = images[indices[split:]], labels[indices[split:]]
-            return train_features, validation_features, train_labels, validation_labels
+            training_features, training_labels = images[indices[0:split]], labels[indices[0:split]]
+            validation_features, validation_labels = images[indices[split:]], labels[indices[split:]]
+            return training_features, training_labels, validation_features, validation_labels
 
         train_features, train_labels, val_features, val_labels = split_data(image_list, label_list, 1-VALIDATION_SPLIT, shuffle)
 
