@@ -30,7 +30,7 @@ class CTCLayer(layers.Layer):
         return y_pred
 
 
-class CnnLstm(CNNModel):
+class RnnCtc(CNNModel):
     def __init__(self, seed: int, learning_rate: float, img_dim: Tuple[int, int],
                  color_mode: ColorMode = ColorMode.grayscale):
         super().__init__(seed, learning_rate, img_dim, color_mode)

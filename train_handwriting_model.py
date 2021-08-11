@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from labeled_images import ColorMode
 from labeled_images.labeledimages import LabeledImages
-from models.cnn_lstm import CnnLstm
+from models.rnn_ctc import RnnCtc
 from models.model_training import CtcModelTrainer
 from utilities.timer import Timer
 from models.modeltrainingarguments import ModelTrainingArguments
@@ -36,7 +36,7 @@ def main() -> None:
                                 color_mode, shuffle=True, n_folds=n_folds,
                                 metadata=metadata)
 
-    architecture = CnnLstm(SEED, lr, image_size, color_mode)
+    architecture = RnnCtc(SEED, lr, image_size, color_mode)
     trainer = CtcModelTrainer(n_epochs, batch_size, n_folds, architecture, SEED)
     trainer.train_and_save_all_models(images)
 
