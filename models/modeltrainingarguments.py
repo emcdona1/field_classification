@@ -20,9 +20,11 @@ class ModelTrainingArguments:
         self.metadata = self._validate_metadata_folder()
 
     def set_up_parser_arguments(self):
+        # Change so it intakes a folder of all the images rather than 2
         # folder argument
         self._parser.add_argument('training_set', help='Directory containing training images.')
 
+        #Stay the same
         # image arguments
         self._parser.add_argument('height', type=int, default=256, help='Desired image height.')
         self._parser.add_argument('-w', '--width', type=int, help='Desired image width. (Omit for square images)')
@@ -30,6 +32,7 @@ class ModelTrainingArguments:
         color_mode_group.add_argument('-color', action='store_true', help='Images are in RGB color mode. (Default)')
         color_mode_group.add_argument('-bw', action='store_true', help='Images are in grayscale color mode.')
 
+        # Stay the same
         # model training arguments
         self._parser.add_argument('-lr', '--learning_rate', type=float,
                                   default=0.001, help='Learning rate for training. (Default = 0.001)')
@@ -42,11 +45,16 @@ class ModelTrainingArguments:
         self._parser.add_argument('-m', '--metadata', default=None, help='Path to metadata file for image labels.')
         return self._parser.parse_args()
 
+    # edit so pathc an be multiclass
     def _validate_training_folder(self) -> Path:
         training_path = Path(self._args.training_set)
         assert os.path.isdir(training_path), f'{self._args.training_set} is not a valid directory path.'
         return training_path
 
+    # Validate specified # of arguments
+    # To do
+
+    # Stay the same
     def _validate_image_size(self) -> (int, int):
         assert self._args.height > 0, f'Image height must be > 0. {self._args.height} is not valid.'
         width = height = self._args.height
@@ -55,29 +63,35 @@ class ModelTrainingArguments:
             width = self._args.width
         return height, width
 
+    # Stay the same
     def _set_color_mode(self) -> ColorMode:
         return ColorMode.grayscale if self._args.bw else ColorMode.rgb
 
+    # Stay the same
     def _validate_learning_rate(self) -> float:
         lr = self._args.learning_rate
         assert 0 < lr < 1, f'Learning rate {lr:.6f} is not valid. Must be in range (0, 1).'
         return lr
 
+    # Stay the same
     def _validate_n_folds(self) -> int:
         n_folds = self._args.n_folds
         assert n_folds <= 1, f'Number of folds {n_folds} is not valid. Value must be >= 1.'
         return n_folds
 
+    # Stay the same
     def _validate_n_epochs(self) -> int:
         n_epochs = self._args.n_epochs
         assert n_epochs >= 5, f'{n_epochs} is not a valid number of epochs. Must be >= 5.'
         return n_epochs
 
+    # Stay the same
     def _validate_batch_size(self) -> int:
         batch_size = self._args.batch_size
         assert batch_size >= 2, f'{batch_size} is not a valid batch size. Must be >= 2.'
         return batch_size
 
+    # Stay the same
     def _validate_metadata_folder(self) -> Path:
         metadata = None
         if self._args.metadata:

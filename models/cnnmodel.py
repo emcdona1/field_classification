@@ -50,6 +50,7 @@ class CNNModel(ABC):
                                                   epsilon=0.00001,
                                                   decay=0.01,
                                                   amsgrad=False)
+        # Check loss to see if it is best
         self.model.compile(
             # optimizer='adam',
             optimizer=adam_optimizer,

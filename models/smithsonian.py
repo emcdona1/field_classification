@@ -29,7 +29,8 @@ class SmithsonianModel(CNNModel):
         self.model.add(layers.Dense(500, activation='linear'))
         self.model.add(layers.Dense(500, activation='relu'))
 
+    # Changed output from 2 to 5
     def add_output_layers(self):
-        self.model.add(layers.Dense(2, activation='linear'))
-        self.model.add(layers.Dense(2, activation=tf.keras.activations.softmax))
+        self.model.add(layers.Dense(5, activation='linear'))
+        self.model.add(layers.Dense(5, activation=tf.keras.activations.softmax))
         print(self.model.summary())

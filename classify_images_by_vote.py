@@ -1,7 +1,5 @@
 import os
 import argparse
-
-import numpy
 import pandas as pd
 import tensorflow as tf
 from utilities.timer import Timer
@@ -9,10 +7,11 @@ import numpy as np
 from datetime import datetime
 from labeled_images.labeledimages import LabeledImages
 from labeled_images.colormode import ColorMode
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
 
 THRESHOLD = 0.5
 SEED = 1
-
 
 def main():
     # Start execution and parse arguments
@@ -30,69 +29,77 @@ def main():
     combined_results['actual_class'] = images.test_labels
     all_predictions = pd.DataFrame()
 
-    for model_path in list_of_models:
-        classify_images_with_a_model(images.class_labels, all_predictions, images, model_path)
+    predictions = []
+    col = 0
+    row = 0
+    predictions, col, row = classify_images_with_a_model_multiclass(images.class_labels, all_predictions, images, 'saved_models\CNN_1.model')
+    all_predictions = predictions
+    print(all_predictions)
 
-    all_predictions['voted_probability'] = all_predictions.mean(axis=1)
-    # calculate_confusion_matrix(combined_results)
-    combined_results = combined_results.join(all_predictions)
-    combined_results['tp'] = combined_results.eval('actual_class == 1 and voted_probability >= 0.5')
-    combined_results['fn'] = combined_results.eval('actual_class == 1 and voted_probability < 0.5')
-    combined_results['fp'] = combined_results.eval('actual_class == 0 and voted_probability >= 0.5')
-    combined_results['tn'] = combined_results.eval('actual_class == 0 and voted_probability < 0.5')
-    combined_results['voted_label'] = combined_results.eval('voted_probability >= 0.5')
+    for x in range(row):
+        for y in range(col):
+            if (predictions[x][y] > max):
+                max = predictions[x][y]
 
-    combined_results['tp'] = combined_results['tp'].map(lambda v: 1 if v else 0)
-    combined_results['fn'] = combined_results['fn'].map(lambda v: 1 if v else 0)
-    combined_results['fp'] = combined_results['fp'].map(lambda v: 1 if v else 0)
-    combined_results['tn'] = combined_results['tn'].map(lambda v: 1 if v else 0)
-    combined_results['voted_label'] = combined_results['voted_label'].map(lambda v: 1 if v else 0)
 
-    combined_results.columns = ['filename', 'actual_class'] + list_of_models + \
-                               ['voted_probability', 'tp', 'fn', 'fp', 'tn', 'voted_label']
 
-    if not os.path.exists('predictions'):
-        os.makedirs('predictions')
-    write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
+    # all_predictions['voted_probability'] = all_predictions.mean(axis=1)
+    # predictions['voted_probability'] = predictions.mean(axis=1)
+
+    actual_predicts = []
+    for i in range(row):
+        max = 0
+        guess = 0;
+        for j in range(col):
+            if (predictions[i][j] > max):
+                max = predictions[i][j]
+        if(max == predictions[i][0]):
+            guess = 0;
+            actual_predicts.append(guess)
+        elif(max == predictions[i][1]):
+            guess = 1;
+            actual_predicts.append(guess)
+        elif (max == predictions[i][2]):
+            guess = 2;
+            actual_predicts.append(guess)
+        elif (max == predictions[i][3]):
+            guess = 3;
+            actual_predicts.append(guess)
+        elif (max == predictions[i][4]):
+            guess = 4;
+            actual_predicts.append(guess)
+    # print(actual_predicts)
+
+    combined_results['voted_label'] = actual_predicts
+    #combined_results = combined_results.join(all_predictions)
+
+
+    print(confusion_matrix(images.test_labels, actual_predicts, labels=[0,1,2,3,4]))
+    # "1_pale_dense", "2_dark_dense","3_uniform_wide","4_punctulate","5_bicolorus"
+
+    matrix = confusion_matrix(images.test_labels, actual_predicts, labels=[0,1,2,3,4])
+    display_matrix = ConfusionMatrixDisplay(confusion_matrix=matrix, display_labels=[0,1,2,3,4])
+    display_matrix.plot()
+    plt.show()
+
+    # combined_results.columns = ['filename', 'actual_class'] + list_of_models + \
+    #                            ['voted_probability', 'tp', 'fn', 'fp', 'tn', 'voted_label']
+
+
+    combined_results.columns = ['filename', 'actual_class', 'voted_label']
+
+    # + \ ['voted_probability']
+
+    # if not os.path.exists('predictions'):
+    #     os.makedirs('predictions')
+    # write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
 
     # Finish execution
     timer.stop()
     timer.print_results()
 
-
-def calculate_confusion_matrix(combined_results):
-    combined_results['tp'] = 0
-    combined_results['fn'] = 0
-    combined_results['fp'] = 0
-    combined_results['tn'] = 0
-    for (idx, row) in combined_results.iterrows():
-        count = 0
-        for p in range(2, 7):
-            if float(row[p]) > THRESHOLD:
-                count = count + 1
-        prediction = 1 if count >= 3 else 0
-        combined_results.at[idx, 'label'] = prediction
-        actual = int(row['actual_class'])
-        if actual == 1:
-            if prediction == 1:
-                combined_results.at[idx, 'tp'] = 1
-            elif prediction == 0:
-                combined_results.at[idx, 'fn'] = 1
-            else:
-                print('Invalid prediction value')
-        elif actual == 0:
-            if prediction == 1:
-                combined_results.at[idx, 'fp'] = 1
-            elif prediction == 0:
-                combined_results.at[idx, 'tn'] = 1
-            else:
-                print('Invalid prediction value')
-        else:
-            print('Invalid image class value')
-
-
-def classify_images_with_a_model(class_labels: list, combined_results: pd.DataFrame,
-                                 images: LabeledImages, model_path: str) -> None:
+def classify_images_with_a_model_multiclass(class_labels: list, combined_results: pd.DataFrame,
+                                 images: LabeledImages, model_path: str):
     model_name = os.path.basename(model_path)
     if ".model" in model_path:
         # Load model
@@ -101,15 +108,34 @@ def classify_images_with_a_model(class_labels: list, combined_results: pd.DataFr
 
         # Generate predictions and label results
         predictions: np.array = model.predict(images.test_image_set)
-        test_dataset = tf.data.Dataset.from_tensor_slices([images.test_features])
-        predictions_using_from_tensor_slices_method = model.predict(test_dataset)
+        # test_dataset = tf.data.Dataset.from_tensor_slices([images.test_features])
+        # predictions_using_from_tensor_slices_method = model.predict(test_dataset)
 
-        headers = [images.class_labels[0] + '_prediction', images.class_labels[1] + '_prediction']
+        headers = [images.class_labels[0] + '_prediction', images.class_labels[1] + '_prediction', images.class_labels[2] + '_prediction', images.class_labels[3] + '_prediction', images.class_labels[4] + '_prediction']
         predictions = pd.DataFrame(predictions, columns=headers)
         print('Predictions generated.')
+        # print(predictions)
+
+        count_row = predictions.shape[0]
+        count_col = predictions.shape[1]
+
+        predict_list = []
+
+        for x in range(count_row):
+            for y in range(0, count_col):
+                predict_list.append(predictions.at[x, images.class_labels[y] + '_prediction'])
+
+        predict_group_list = [predict_list[i:i + count_col] for i in range(0, len(predict_list), count_col)]
+
+        return predict_group_list, count_col, count_row
+
+        # This takes in 5 groups, move calculations to the other segment sense it outputs the 5 group predictions
+        # predictions = pd.DataFrame(predict_group_list, columns=headers)
 
         # add newest predictions to results
-        combined_results[model_name] = predictions[class_labels[1] + '_prediction']  # probability of class = 1
+        # combined_results[model_name] = predictions[class_labels[1] + '_prediction'] # probability of class = 1
+        # combined_results[model_name] = predictions[class_labels[0] + '_prediction'] + predictions[class_labels[1] + '_prediction'] + predictions[class_labels[2] + '_prediction'] + predictions[class_labels[3] + '_prediction'] + predictions[class_labels[4] + '_prediction']
+
     else:
         print('Model file path error: "%s" is not a *.model file.' % model_path)
 

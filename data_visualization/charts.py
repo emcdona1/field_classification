@@ -2,6 +2,7 @@ import os
 from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix
 import matplotlib.pyplot as plt
 from abc import ABC, abstractmethod
+from sklearn.metrics._ranking import _multiclass_roc_auc_score
 
 
 class Chart(ABC):
@@ -33,8 +34,11 @@ class ROCChart(Chart):
 
     def update(self, index, validation_labels, prediction_probability, history, class_labels) -> None:
         # 1. Compute ROC curve and AUC
+        class_labels = ['Uniform Pale', 'Uniform Dark', 'Uniform Wide', 'Punctulate', 'Bicolorous']
         latest_fpr, latest_tpr, thresholds = roc_curve(validation_labels, prediction_probability)
-        latest_auc = roc_auc_score(validation_labels, prediction_probability)
+        latest_auc = _multiclass_roc_auc_score(validation_labels, prediction_probability)
+        # latest_fpr, latest_tpr, thresholds = roc_curve(validation_labels, prediction_probability)
+        # latest_auc = roc_auc_score(validation_labels, prediction_probability)
 
         # 2. save new values to instance variables
         self.fpr[index] = latest_fpr
