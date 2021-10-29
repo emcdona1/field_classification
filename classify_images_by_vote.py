@@ -36,10 +36,10 @@ def main():
     all_predictions = predictions
     print(all_predictions)
 
-    for x in range(row):
-        for y in range(col):
-            if (predictions[x][y] > max):
-                max = predictions[x][y]
+    # for x in range(row):
+    #     for y in range(col):
+    #         if (predictions[x][y] > max):
+    #             max = predictions[x][y]
 
 
 
