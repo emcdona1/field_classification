@@ -22,9 +22,10 @@ def main() -> None:
     architecture = SmithsonianModel(SEED, cnn_arguments.lr, cnn_arguments.image_size, cnn_arguments.color_mode)
     trainer = ModelTrainer(cnn_arguments.n_epochs, cnn_arguments.batch_size, cnn_arguments.n_folds, architecture, SEED)
     trainer.train_and_save_all_models(new_images)
-    trainer.charts.finalize()
+    # trainer.charts.finalize()
 
-    print('class 1: ' + new_images.class_labels[0] + ', class 2: ' + new_images.class_labels[1])
+    # print('class 1: ' + new_images.class_labels[0] + ', class 2: ' + new_images.class_labels[1])
+    print('class 1: ' + new_images.class_labels[0] + ', class 2: ' + new_images.class_labels[1], 'class 3: ' + new_images.class_labels[2] + ', class 4: ' + new_images.class_labels[3]+ ', class 5: ' + new_images.class_labels[4])
     timer.stop()
     timer.print_results()
 
