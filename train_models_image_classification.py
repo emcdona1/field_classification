@@ -24,11 +24,9 @@ def main() -> None:
     trainer.train_and_save_all_models(new_images)
     # trainer.charts.finalize()
 
-    # print('class 1: ' + new_images.class_labels[0] + ', class 2: ' + new_images.class_labels[1])
     classes = (len(new_images.class_labels))
     for x in range(classes):
         print('class ' + str(x) + ': ' + new_images.class_labels[x])
-        # print('class 1: ' + new_images.class_labels[0] + ', class 2: ' + new_images.class_labels[1], 'class 3: ' + new_images.class_labels[2] + ', class 4: ' + new_images.class_labels[3]+ ', class 5: ' + new_images.class_labels[4])
 
     timer.stop()
     timer.print_results()
