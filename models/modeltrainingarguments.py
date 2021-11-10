@@ -103,7 +103,7 @@ class ModelTrainingArguments:
             assert metadata.suffix == '.csv', f'{metadata} is not a CSV file.'
         return metadata
 
-    def _validate_num_output_classes(self) -> int:
-        num_output_classes = self._args.num_output_classes
-        assert num_output_classes >= 2, f'{num_output_classes} is not a valid number of classes. Must be >= 2.'
-        return num_output_classes
+    # def _validate_num_output_classes(self) -> int:
+    #     num_output_classes = self._args.num_output_classes
+    #     assert num_output_classes >= 2, f'{num_output_classes} is not a valid number of classes. Must be >= 2.'
+    #     return num_output_classes
