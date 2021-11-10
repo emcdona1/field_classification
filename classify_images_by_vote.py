@@ -26,77 +26,101 @@ def main():
     combined_results = pd.DataFrame()
 
     combined_results['filename'] = images.test_img_names
-    combined_results['actual_class'] = images.test_labels
+
     all_predictions = pd.DataFrame()
 
     predictions = []
     col = 0
     row = 0
-    predictions, col, row = classify_images_with_a_model_multiclass(images.class_labels, all_predictions, images, 'saved_models\CNN_1.model')
-    all_predictions = predictions
-    print(all_predictions)
+    for model_path in list_of_models:
+        predictions, col, row = classify_images_with_a_model_multiclass(images.class_labels, all_predictions, images, model_path)
 
-    # for x in range(row):
-    #     for y in range(col):
-    #         if (predictions[x][y] > max):
-    #             max = predictions[x][y]
+    # 'saved_models\CNN_1.model'
+    # all_predictions = predictions
+    # print(all_predictions)
 
+
+    mean = []
+    for x in range(row):
+        total = 0
+        for y in range(col):
+            total = total + predictions[x][y]
+        mean.append(total / row)
+
+    # print(mean)
+
+    combined_results['saved_models\CNN_1.model'] = mean
+    combined_results['voted_probability'] = mean
+    combined_results['actual_class'] = images.test_labels
 
 
     # all_predictions['voted_probability'] = all_predictions.mean(axis=1)
     # predictions['voted_probability'] = predictions.mean(axis=1)
 
+    # actual_predicts = []
+    # for i in range(row):
+    #     max = 0
+    #     guess = 0;
+    #     for j in range(col):
+    #         if (predictions[i][j] > max):
+    #             max = predictions[i][j]
+    #     if(max == predictions[i][0]):
+    #         guess = 0;
+    #         actual_predicts.append(guess)
+    #     elif(max == predictions[i][1]):
+    #         guess = 1;
+    #         actual_predicts.append(guess)
+    #     elif (max == predictions[i][2]):
+    #         guess = 2;
+    #         actual_predicts.append(guess)
+    #     elif (max == predictions[i][3]):
+    #         guess = 3;
+    #         actual_predicts.append(guess)
+    #     elif (max == predictions[i][4]):
+    #         guess = 4;
+    #         actual_predicts.append(guess)
+
     actual_predicts = []
+    cls = 0
     for i in range(row):
         max = 0
         guess = 0;
         for j in range(col):
             if (predictions[i][j] > max):
                 max = predictions[i][j]
-        if(max == predictions[i][0]):
-            guess = 0;
-            actual_predicts.append(guess)
-        elif(max == predictions[i][1]):
-            guess = 1;
-            actual_predicts.append(guess)
-        elif (max == predictions[i][2]):
-            guess = 2;
-            actual_predicts.append(guess)
-        elif (max == predictions[i][3]):
-            guess = 3;
-            actual_predicts.append(guess)
-        elif (max == predictions[i][4]):
-            guess = 4;
-            actual_predicts.append(guess)
-    # print(actual_predicts)
+                cls = j
+        guess = cls
+        actual_predicts.append(guess)
 
     combined_results['voted_label'] = actual_predicts
-    #combined_results = combined_results.join(all_predictions)
 
-
-    print(confusion_matrix(images.test_labels, actual_predicts, labels=[0,1,2,3,4]))
+    # print(confusion_matrix(images.test_labels, actual_predicts, labels=[0,1,2,3,4]))
     # "1_pale_dense", "2_dark_dense","3_uniform_wide","4_punctulate","5_bicolorus"
+    labels = []
+    for x in range(col):
+        labels.append(x)
 
-    matrix = confusion_matrix(images.test_labels, actual_predicts, labels=[0,1,2,3,4])
-    display_matrix = ConfusionMatrixDisplay(confusion_matrix=matrix, display_labels=[0,1,2,3,4])
+    matrix = confusion_matrix(images.test_labels, actual_predicts, labels=labels)
+    display_matrix = ConfusionMatrixDisplay(confusion_matrix=matrix, display_labels=labels)
     display_matrix.plot()
-    plt.show()
+
 
     # combined_results.columns = ['filename', 'actual_class'] + list_of_models + \
     #                            ['voted_probability', 'tp', 'fn', 'fp', 'tn', 'voted_label']
 
 
-    combined_results.columns = ['filename', 'actual_class', 'voted_label']
+    combined_results.columns = ['filename', 'saved_models\CNN_1.model','voted_probability', 'actual_class', 'voted_label']
 
-    # + \ ['voted_probability']
 
-    # if not os.path.exists('predictions'):
-    #     os.makedirs('predictions')
-    # write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
+    if not os.path.exists('predictions'):
+        os.makedirs('predictions')
+    write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
 
     # Finish execution
     timer.stop()
     timer.print_results()
+
+    plt.show()
 
 def classify_images_with_a_model_multiclass(class_labels: list, combined_results: pd.DataFrame,
                                  images: LabeledImages, model_path: str):
@@ -108,13 +132,23 @@ def classify_images_with_a_model_multiclass(class_labels: list, combined_results
 
         # Generate predictions and label results
         predictions: np.array = model.predict(images.test_image_set)
+        # print(predictions)
         # test_dataset = tf.data.Dataset.from_tensor_slices([images.test_features])
         # predictions_using_from_tensor_slices_method = model.predict(test_dataset)
 
-        headers = [images.class_labels[0] + '_prediction', images.class_labels[1] + '_prediction', images.class_labels[2] + '_prediction', images.class_labels[3] + '_prediction', images.class_labels[4] + '_prediction']
+        # print(predictions.shape[1])
+
+        clslst = []
+        for x in range(predictions.shape[1]):
+            clslst.append(images.class_labels[x] + '_prediction')
+
+        headers = clslst
+
+        # headers = [images.class_labels[0] + '_prediction', images.class_labels[1] + '_prediction', images.class_labels[2] + '_prediction', images.class_labels[3] + '_prediction', images.class_labels[4] + '_prediction']
+        # print(headers)
+
         predictions = pd.DataFrame(predictions, columns=headers)
         print('Predictions generated.')
-        # print(predictions)
 
         count_row = predictions.shape[0]
         count_col = predictions.shape[1]

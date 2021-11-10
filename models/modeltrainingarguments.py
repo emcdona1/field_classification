@@ -19,12 +19,14 @@ class ModelTrainingArguments:
         self.batch_size: int = self._validate_batch_size()
         self.metadata = self._validate_metadata_folder()
 
+        # self.num_output_classes: int = self._validate_num_output_classes()
+
     def set_up_parser_arguments(self):
-        # Change so it intakes a folder of all the images rather than 2
+
         # folder argument
         self._parser.add_argument('training_set', help='Directory containing training images.')
 
-        #Stay the same
+
         # image arguments
         self._parser.add_argument('height', type=int, default=256, help='Desired image height.')
         self._parser.add_argument('-w', '--width', type=int, help='Desired image width. (Omit for square images)')
@@ -32,7 +34,7 @@ class ModelTrainingArguments:
         color_mode_group.add_argument('-color', action='store_true', help='Images are in RGB color mode. (Default)')
         color_mode_group.add_argument('-bw', action='store_true', help='Images are in grayscale color mode.')
 
-        # Stay the same
+
         # model training arguments
         self._parser.add_argument('-lr', '--learning_rate', type=float,
                                   default=0.001, help='Learning rate for training. (Default = 0.001)')
@@ -43,18 +45,19 @@ class ModelTrainingArguments:
         self._parser.add_argument('-b', '--batch_size', type=int,
                                   default=64, help='Batch size (minimum 2) for training. (Default = 64)')
         self._parser.add_argument('-m', '--metadata', default=None, help='Path to metadata file for image labels.')
+
+        # self._parser.add_argument('-cls', '--number of classes', default=2,
+        #                           help='Class size minimum 2, no max. (Default = 2)')
+
         return self._parser.parse_args()
 
-    # edit so pathc an be multiclass
+
     def _validate_training_folder(self) -> Path:
         training_path = Path(self._args.training_set)
         assert os.path.isdir(training_path), f'{self._args.training_set} is not a valid directory path.'
         return training_path
 
     # Validate specified # of arguments
-    # To do
-
-    # Stay the same
     def _validate_image_size(self) -> (int, int):
         assert self._args.height > 0, f'Image height must be > 0. {self._args.height} is not valid.'
         width = height = self._args.height
@@ -99,3 +102,8 @@ class ModelTrainingArguments:
             assert os.path.isfile(metadata), f'{metadata} is not a valid file path.'
             assert metadata.suffix == '.csv', f'{metadata} is not a CSV file.'
         return metadata
+
+    def _validate_num_output_classes(self) -> int:
+        num_output_classes = self._args.num_output_classes
+        assert num_output_classes >= 2, f'{num_output_classes} is not a valid number of classes. Must be >= 2.'
+        return num_output_classes
