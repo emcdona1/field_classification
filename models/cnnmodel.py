@@ -6,9 +6,9 @@ from typing import Union, Tuple
 
 class CNNModel(ABC):
     def __init__(self, seed: int, learning_rate: float,
-                 img_dim: Union[Tuple[int, int], int],
+                 img_dim: Union[Tuple[int, int], int], num_output_classes: int,
                  color_mode: ColorMode = ColorMode.rgb):
-        # num_output_classes: int,
+        #
 
         """ Creates layers for model and compiles model"""
         self.seed: int = seed
@@ -16,7 +16,7 @@ class CNNModel(ABC):
         self.img_dim: Tuple[int, int] = (img_dim, img_dim) if type(img_dim) == int else img_dim
         self.model = None
         self.color = color_mode
-        # self.num_output_classes: int = num_output_classes
+        self.num_output_classes: int = num_output_classes
 
     def reset_model(self):
         self.model = None

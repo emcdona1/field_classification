@@ -9,6 +9,7 @@ from labeled_images.labeledimages import LabeledImages
 from labeled_images.colormode import ColorMode
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score
 
 THRESHOLD = 0.5
 SEED = 1
@@ -112,14 +113,16 @@ def main():
     combined_results.columns = ['filename', 'saved_models\CNN_1.model','voted_probability', 'actual_class', 'voted_label']
 
 
-    if not os.path.exists('predictions'):
-        os.makedirs('predictions')
-    write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
+    # if not os.path.exists('predictions'):
+    #     os.makedirs('predictions')
+    # write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
 
     # Finish execution
     timer.stop()
     timer.print_results()
 
+    acc = accuracy_score(images.test_labels, actual_predicts)
+    print("The final accuracy is: " , acc)
     plt.show()
 
 def classify_images_with_a_model_multiclass(class_labels: list, combined_results: pd.DataFrame,

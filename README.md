@@ -72,7 +72,7 @@ for necessary Python packages.
     - Directory `saved_models` is created in current working directory, which will contain one model file per fold (file name format: `CNN_#.model`).
     - Directory `graphs` is created in current working directory, which will contain all generated graphs/plots for each run, plus a CSV summary for each fold.
       - Note: This directory will be empty after CTC model training.
-- **Example execution (CNN)**: `python train_models_image_classification.py training_images 128 -color -lr 0.005 -f 10 -e 50 -b 64 > species_a_b_training_output.txt &`
+- **Example execution (CNN)**: `python train_models_image_classification.py training_images 128 -color -lr 0.005 -f 10 -e 50 -b 64 -cls 2 > species_a_b_training_output.txt &`
   
 - **Example execution (CTC)**: `python train_handwriting_model.py testing_image_sets\word_images\ 100 -w 400 -bw -f 1 -e 100 -b 32 -m testing_image_sets\word_images\words_metadata.csv`
 

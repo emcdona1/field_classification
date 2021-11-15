@@ -19,7 +19,7 @@ class ModelTrainingArguments:
         self.batch_size: int = self._validate_batch_size()
         self.metadata = self._validate_metadata_folder()
 
-        # self.num_output_classes: int = self._validate_num_output_classes()
+        self.num_output_classes: int = self._validate_num_output_classes()
 
     def set_up_parser_arguments(self):
 
@@ -46,8 +46,8 @@ class ModelTrainingArguments:
                                   default=64, help='Batch size (minimum 2) for training. (Default = 64)')
         self._parser.add_argument('-m', '--metadata', default=None, help='Path to metadata file for image labels.')
 
-        # self._parser.add_argument('-cls', '--number of classes', default=2,
-        #                           help='Class size minimum 2, no max. (Default = 2)')
+        self._parser.add_argument('-cls', '--num_output_classes', default=2, type=int,
+                                  help='Class size minimum 2, no max. (Default = 2)')
 
         return self._parser.parse_args()
 
@@ -103,7 +103,7 @@ class ModelTrainingArguments:
             assert metadata.suffix == '.csv', f'{metadata} is not a CSV file.'
         return metadata
 
-    # def _validate_num_output_classes(self) -> int:
-    #     num_output_classes = self._args.num_output_classes
-    #     assert num_output_classes >= 2, f'{num_output_classes} is not a valid number of classes. Must be >= 2.'
-    #     return num_output_classes
+    def _validate_num_output_classes(self) -> int:
+        num_output_classes = self._args.num_output_classes
+        assert num_output_classes >= 2, f'{num_output_classes} is not a valid number of classes. Must be >= 2.'
+        return num_output_classes
