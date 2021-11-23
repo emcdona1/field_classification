@@ -34,7 +34,9 @@ def main():
     col = 0
     row = 0
     for model_path in list_of_models:
-        predictions, col, row = classify_images_with_a_model_multiclass(images.class_labels, all_predictions, images, model_path)
+        # predictions, col, row = classify_images_with_a_model_multiclass(images.class_labels, all_predictions, images, model_path)
+        predictions, col, row = classify_images_with_a_model_multiclass(images,
+                                                                        model_path)
 
     # 'saved_models\CNN_1.model'
     # all_predictions = predictions
@@ -48,38 +50,9 @@ def main():
             total = total + predictions[x][y]
         mean.append(total / row)
 
-    # print(mean)
-
     combined_results['saved_models\CNN_1.model'] = mean
     combined_results['voted_probability'] = mean
     combined_results['actual_class'] = images.test_labels
-
-
-    # all_predictions['voted_probability'] = all_predictions.mean(axis=1)
-    # predictions['voted_probability'] = predictions.mean(axis=1)
-
-    # actual_predicts = []
-    # for i in range(row):
-    #     max = 0
-    #     guess = 0;
-    #     for j in range(col):
-    #         if (predictions[i][j] > max):
-    #             max = predictions[i][j]
-    #     if(max == predictions[i][0]):
-    #         guess = 0;
-    #         actual_predicts.append(guess)
-    #     elif(max == predictions[i][1]):
-    #         guess = 1;
-    #         actual_predicts.append(guess)
-    #     elif (max == predictions[i][2]):
-    #         guess = 2;
-    #         actual_predicts.append(guess)
-    #     elif (max == predictions[i][3]):
-    #         guess = 3;
-    #         actual_predicts.append(guess)
-    #     elif (max == predictions[i][4]):
-    #         guess = 4;
-    #         actual_predicts.append(guess)
 
     actual_predicts = []
     cls = 0
@@ -95,8 +68,7 @@ def main():
 
     combined_results['voted_label'] = actual_predicts
 
-    # print(confusion_matrix(images.test_labels, actual_predicts, labels=[0,1,2,3,4]))
-    # "1_pale_dense", "2_dark_dense","3_uniform_wide","4_punctulate","5_bicolorus"
+
     labels = []
     for x in range(col):
         labels.append(x)
@@ -105,17 +77,12 @@ def main():
     display_matrix = ConfusionMatrixDisplay(confusion_matrix=matrix, display_labels=labels)
     display_matrix.plot()
 
-
-    # combined_results.columns = ['filename', 'actual_class'] + list_of_models + \
-    #                            ['voted_probability', 'tp', 'fn', 'fp', 'tn', 'voted_label']
-
-
     combined_results.columns = ['filename', 'saved_models\CNN_1.model','voted_probability', 'actual_class', 'voted_label']
 
 
-    # if not os.path.exists('predictions'):
-    #     os.makedirs('predictions')
-    # write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
+    if not os.path.exists('predictions'):
+        os.makedirs('predictions')
+    write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
 
     # Finish execution
     timer.stop()
@@ -125,8 +92,10 @@ def main():
     print("The final accuracy is: " , acc)
     plt.show()
 
-def classify_images_with_a_model_multiclass(class_labels: list, combined_results: pd.DataFrame,
-                                 images: LabeledImages, model_path: str):
+
+# def classify_images_with_a_model_multiclass(class_labels: list, combined_results: pd.DataFrame,
+#                                  images: LabeledImages, model_path: str):
+def classify_images_with_a_model_multiclass(images: LabeledImages, model_path: str):
     model_name = os.path.basename(model_path)
     if ".model" in model_path:
         # Load model
@@ -135,20 +104,14 @@ def classify_images_with_a_model_multiclass(class_labels: list, combined_results
 
         # Generate predictions and label results
         predictions: np.array = model.predict(images.test_image_set)
-        # print(predictions)
         # test_dataset = tf.data.Dataset.from_tensor_slices([images.test_features])
         # predictions_using_from_tensor_slices_method = model.predict(test_dataset)
-
-        # print(predictions.shape[1])
 
         clslst = []
         for x in range(predictions.shape[1]):
             clslst.append(images.class_labels[x] + '_prediction')
 
         headers = clslst
-
-        # headers = [images.class_labels[0] + '_prediction', images.class_labels[1] + '_prediction', images.class_labels[2] + '_prediction', images.class_labels[3] + '_prediction', images.class_labels[4] + '_prediction']
-        # print(headers)
 
         predictions = pd.DataFrame(predictions, columns=headers)
         print('Predictions generated.')

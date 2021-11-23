@@ -20,10 +20,12 @@ def main() -> None:
                                     cnn_arguments.color_mode, shuffle=True, n_folds=cnn_arguments.n_folds)
 
     architecture = SmithsonianModel(SEED, cnn_arguments.lr, cnn_arguments.image_size, cnn_arguments.num_output_classes, cnn_arguments.color_mode)
-    # cnn_arguments.num_output_classes,
     trainer = ModelTrainer(cnn_arguments.n_epochs, cnn_arguments.batch_size, cnn_arguments.n_folds, architecture, SEED)
     trainer.train_and_save_all_models(new_images)
-    # trainer.charts.finalize()
+
+    # Only generating charts for binary models
+    if cnn_arguments.num_output_classes == 2:
+        trainer.charts.finalize()
 
     classes = (len(new_images.class_labels))
     for x in range(classes):
