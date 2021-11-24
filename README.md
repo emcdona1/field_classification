@@ -66,6 +66,7 @@ for necessary Python packages.
         - *Note*: Currently, cross-fold validation is not implemented.
     - `-e` - number of epochs per fold (*integer >= 5*, default=25)
     - `-b` - batch size for updates (*integer >= 2*, default=64)
+    - `-cls` - number of classes (*integer >= 2*, default=2)
     - `-m` - path for a metadata file containing the labels (this extracts the column named "human_transcription," 
         as created by the zooniverse analysis project)
 - **Output**:

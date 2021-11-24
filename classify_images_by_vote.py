@@ -24,25 +24,21 @@ def main():
     images.load_testing_images(image_folders, image_size, color_mode)
     print('Images imported.')
 
+    # Seu up dataframe
     combined_results = pd.DataFrame()
-
     combined_results['filename'] = images.test_img_names
-
     all_predictions = pd.DataFrame()
 
+    # Set up prediction list
     predictions = []
     col = 0
     row = 0
+
+    # Return predictions
     for model_path in list_of_models:
-        # predictions, col, row = classify_images_with_a_model_multiclass(images.class_labels, all_predictions, images, model_path)
-        predictions, col, row = classify_images_with_a_model_multiclass(images,
-                                                                        model_path)
+        predictions, col, row = classify_images_with_a_model_multiclass(images.class_labels, all_predictions, images, model_path)
 
-    # 'saved_models\CNN_1.model'
-    # all_predictions = predictions
-    # print(all_predictions)
-
-
+    # Find average of all predictions per image
     mean = []
     for x in range(row):
         total = 0
@@ -50,10 +46,12 @@ def main():
             total = total + predictions[x][y]
         mean.append(total / row)
 
+    # add to combined_results
     combined_results['saved_models\CNN_1.model'] = mean
     combined_results['voted_probability'] = mean
     combined_results['actual_class'] = images.test_labels
 
+    # Store actual prediction per image
     actual_predicts = []
     cls = 0
     for i in range(row):
@@ -68,18 +66,20 @@ def main():
 
     combined_results['voted_label'] = actual_predicts
 
-
+    # Add image labels
     labels = []
     for x in range(col):
         labels.append(x)
 
+    # Generate confusion matrix
     matrix = confusion_matrix(images.test_labels, actual_predicts, labels=labels)
     display_matrix = ConfusionMatrixDisplay(confusion_matrix=matrix, display_labels=labels)
     display_matrix.plot()
 
+    # Label combined_results
     combined_results.columns = ['filename', 'saved_models\CNN_1.model','voted_probability', 'actual_class', 'voted_label']
 
-
+    # Generate CVS file
     if not os.path.exists('predictions'):
         os.makedirs('predictions')
     write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
@@ -88,14 +88,13 @@ def main():
     timer.stop()
     timer.print_results()
 
+    # Show accuracy score and confusion matrix
     acc = accuracy_score(images.test_labels, actual_predicts)
     print("The final accuracy is: " , acc)
     plt.show()
 
-
-# def classify_images_with_a_model_multiclass(class_labels: list, combined_results: pd.DataFrame,
-#                                  images: LabeledImages, model_path: str):
-def classify_images_with_a_model_multiclass(images: LabeledImages, model_path: str):
+def classify_images_with_a_model_multiclass(class_labels: list, combined_results: pd.DataFrame,
+                                 images: LabeledImages, model_path: str):
     model_name = os.path.basename(model_path)
     if ".model" in model_path:
         # Load model
@@ -107,20 +106,22 @@ def classify_images_with_a_model_multiclass(images: LabeledImages, model_path: s
         # test_dataset = tf.data.Dataset.from_tensor_slices([images.test_features])
         # predictions_using_from_tensor_slices_method = model.predict(test_dataset)
 
+        # Store class labels
         clslst = []
         for x in range(predictions.shape[1]):
             clslst.append(images.class_labels[x] + '_prediction')
 
+        # label predictions
         headers = clslst
-
         predictions = pd.DataFrame(predictions, columns=headers)
         print('Predictions generated.')
 
+        # get prediction architecture
         count_row = predictions.shape[0]
         count_col = predictions.shape[1]
 
+        # Create prediction list
         predict_list = []
-
         for x in range(count_row):
             for y in range(0, count_col):
                 predict_list.append(predictions.at[x, images.class_labels[y] + '_prediction'])
@@ -129,12 +130,6 @@ def classify_images_with_a_model_multiclass(images: LabeledImages, model_path: s
 
         return predict_group_list, count_col, count_row
 
-        # This takes in 5 groups, move calculations to the other segment sense it outputs the 5 group predictions
-        # predictions = pd.DataFrame(predict_group_list, columns=headers)
-
-        # add newest predictions to results
-        # combined_results[model_name] = predictions[class_labels[1] + '_prediction'] # probability of class = 1
-        # combined_results[model_name] = predictions[class_labels[0] + '_prediction'] + predictions[class_labels[1] + '_prediction'] + predictions[class_labels[2] + '_prediction'] + predictions[class_labels[3] + '_prediction'] + predictions[class_labels[4] + '_prediction']
 
     else:
         print('Model file path error: "%s" is not a *.model file.' % model_path)
