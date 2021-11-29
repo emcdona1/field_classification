@@ -14,6 +14,7 @@ from sklearn.metrics import accuracy_score
 THRESHOLD = 0.5
 SEED = 1
 
+
 def main():
     # Start execution and parse arguments
     timer = Timer('Classifying a test set')
@@ -36,7 +37,8 @@ def main():
 
     # Return predictions
     for model_path in list_of_models:
-        predictions, col, row = classify_images_with_a_model_multiclass(images.class_labels, all_predictions, images, model_path)
+        predictions, col, row = classify_images_with_a_model_multiclass(images.class_labels, all_predictions, images,
+                                                                        model_path)
 
     # Find average of all predictions per image
     mean = []
@@ -47,7 +49,7 @@ def main():
         mean.append(total / row)
 
     # add to combined_results
-    combined_results['saved_models\CNN_1.model'] = mean
+    combined_results[r'saved_models\CNN_1.model'] = mean
     combined_results['voted_probability'] = mean
     combined_results['actual_class'] = images.test_labels
 
@@ -55,15 +57,13 @@ def main():
     actual_predicts = []
     cls = 0
     for i in range(row):
-        max = 0
-        guess = 0;
+        max_val = 0
         for j in range(col):
-            if (predictions[i][j] > max):
-                max = predictions[i][j]
+            if predictions[i][j] > max_val:
+                max_val = predictions[i][j]
                 cls = j
         guess = cls
         actual_predicts.append(guess)
-
     combined_results['voted_label'] = actual_predicts
 
     # Add image labels
@@ -77,7 +77,8 @@ def main():
     display_matrix.plot()
 
     # Label combined_results
-    combined_results.columns = ['filename', 'saved_models\CNN_1.model','voted_probability', 'actual_class', 'voted_label']
+    combined_results.columns = ['filename', r'saved_models\CNN_1.model', 'voted_probability', 'actual_class',
+                                'voted_label']
 
     # Generate CVS file
     if not os.path.exists('predictions'):
@@ -90,13 +91,15 @@ def main():
 
     # Show accuracy score and confusion matrix
     acc = accuracy_score(images.test_labels, actual_predicts)
-    print("The final accuracy is: " , acc)
+    print(f'The final accuracy is: {acc}')
     plt.show()
 
+
 def classify_images_with_a_model_multiclass(class_labels: list, combined_results: pd.DataFrame,
-                                 images: LabeledImages, model_path: str):
+                                            images: LabeledImages, model_path: str):
     model_name = os.path.basename(model_path)
     if ".model" in model_path:
+
         # Load model
         model = tf.keras.models.load_model(model_path)
         print('Model ' + model_name + ' loaded.')
@@ -125,12 +128,8 @@ def classify_images_with_a_model_multiclass(class_labels: list, combined_results
         for x in range(count_row):
             for y in range(0, count_col):
                 predict_list.append(predictions.at[x, images.class_labels[y] + '_prediction'])
-
         predict_group_list = [predict_list[i:i + count_col] for i in range(0, len(predict_list), count_col)]
-
         return predict_group_list, count_col, count_row
-
-
     else:
         print('Model file path error: "%s" is not a *.model file.' % model_path)
 

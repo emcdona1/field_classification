@@ -20,7 +20,8 @@ def main() -> None:
     new_images.load_training_images(cnn_arguments.training_image_folder, cnn_arguments.image_size,
                                     cnn_arguments.color_mode, shuffle=True, n_folds=cnn_arguments.n_folds)
     # Multiclass architecture
-    architecture = SmithsonianModel(SEED, cnn_arguments.lr, cnn_arguments.image_size, cnn_arguments.num_output_classes, cnn_arguments.color_mode)
+    architecture = SmithsonianModel(SEED, cnn_arguments.lr, cnn_arguments.image_size, cnn_arguments.num_output_classes,
+                                    cnn_arguments.color_mode)
     trainer = ModelTrainer(cnn_arguments.n_epochs, cnn_arguments.batch_size, cnn_arguments.n_folds, architecture, SEED)
     trainer.train_and_save_all_models(new_images)
 
@@ -38,7 +39,7 @@ def main() -> None:
 
 if __name__ == '__main__':
     # set up random seeds
-    SEED = 3
+    SEED = 1
     np.random.seed(SEED)
     tf.random.set_seed(SEED)
     random.seed(SEED)
