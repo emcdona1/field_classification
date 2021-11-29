@@ -1,7 +1,5 @@
 import os
 import argparse
-
-import numpy
 import pandas as pd
 import tensorflow as tf
 from utilities.timer import Timer
@@ -9,10 +7,12 @@ import numpy as np
 from datetime import datetime
 from labeled_images.labeledimages import LabeledImages
 from labeled_images.colormode import ColorMode
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score
 
 THRESHOLD = 0.5
 SEED = 1
-
 
 def main():
     # Start execution and parse arguments
@@ -24,33 +24,62 @@ def main():
     images.load_testing_images(image_folders, image_size, color_mode)
     print('Images imported.')
 
+    # Seu up dataframe
     combined_results = pd.DataFrame()
-
     combined_results['filename'] = images.test_img_names
-    combined_results['actual_class'] = images.test_labels
     all_predictions = pd.DataFrame()
 
+    # Set up prediction list
+    predictions = []
+    col = 0
+    row = 0
+
+    # Return predictions
     for model_path in list_of_models:
-        classify_images_with_a_model(images.class_labels, all_predictions, images, model_path)
+        predictions, col, row = classify_images_with_a_model_multiclass(images.class_labels, all_predictions, images, model_path)
 
-    all_predictions['voted_probability'] = all_predictions.mean(axis=1)
-    # calculate_confusion_matrix(combined_results)
-    combined_results = combined_results.join(all_predictions)
-    combined_results['tp'] = combined_results.eval('actual_class == 1 and voted_probability >= 0.5')
-    combined_results['fn'] = combined_results.eval('actual_class == 1 and voted_probability < 0.5')
-    combined_results['fp'] = combined_results.eval('actual_class == 0 and voted_probability >= 0.5')
-    combined_results['tn'] = combined_results.eval('actual_class == 0 and voted_probability < 0.5')
-    combined_results['voted_label'] = combined_results.eval('voted_probability >= 0.5')
+    # Find average of all predictions per image
+    mean = []
+    for x in range(row):
+        total = 0
+        for y in range(col):
+            total = total + predictions[x][y]
+        mean.append(total / row)
 
-    combined_results['tp'] = combined_results['tp'].map(lambda v: 1 if v else 0)
-    combined_results['fn'] = combined_results['fn'].map(lambda v: 1 if v else 0)
-    combined_results['fp'] = combined_results['fp'].map(lambda v: 1 if v else 0)
-    combined_results['tn'] = combined_results['tn'].map(lambda v: 1 if v else 0)
-    combined_results['voted_label'] = combined_results['voted_label'].map(lambda v: 1 if v else 0)
+    # add to combined_results
+    combined_results['saved_models\CNN_1.model'] = mean
+    combined_results['voted_probability'] = mean
+    combined_results['actual_class'] = images.test_labels
 
-    combined_results.columns = ['filename', 'actual_class'] + list_of_models + \
-                               ['voted_probability', 'tp', 'fn', 'fp', 'tn', 'voted_label']
+    # Store actual prediction per image
+    actual_predicts = []
+    cls = 0
+    for i in range(row):
+        max = 0
+        guess = 0;
+        for j in range(col):
+            if (predictions[i][j] > max):
+                max = predictions[i][j]
+                cls = j
+        guess = cls
+        actual_predicts.append(guess)
 
+    combined_results['voted_label'] = actual_predicts
+
+    # Add image labels
+    labels = []
+    for x in range(col):
+        labels.append(x)
+
+    # Generate confusion matrix
+    matrix = confusion_matrix(images.test_labels, actual_predicts, labels=labels)
+    display_matrix = ConfusionMatrixDisplay(confusion_matrix=matrix, display_labels=labels)
+    display_matrix.plot()
+
+    # Label combined_results
+    combined_results.columns = ['filename', 'saved_models\CNN_1.model','voted_probability', 'actual_class', 'voted_label']
+
+    # Generate CVS file
     if not os.path.exists('predictions'):
         os.makedirs('predictions')
     write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
@@ -59,40 +88,13 @@ def main():
     timer.stop()
     timer.print_results()
 
+    # Show accuracy score and confusion matrix
+    acc = accuracy_score(images.test_labels, actual_predicts)
+    print("The final accuracy is: " , acc)
+    plt.show()
 
-def calculate_confusion_matrix(combined_results):
-    combined_results['tp'] = 0
-    combined_results['fn'] = 0
-    combined_results['fp'] = 0
-    combined_results['tn'] = 0
-    for (idx, row) in combined_results.iterrows():
-        count = 0
-        for p in range(2, 7):
-            if float(row[p]) > THRESHOLD:
-                count = count + 1
-        prediction = 1 if count >= 3 else 0
-        combined_results.at[idx, 'label'] = prediction
-        actual = int(row['actual_class'])
-        if actual == 1:
-            if prediction == 1:
-                combined_results.at[idx, 'tp'] = 1
-            elif prediction == 0:
-                combined_results.at[idx, 'fn'] = 1
-            else:
-                print('Invalid prediction value')
-        elif actual == 0:
-            if prediction == 1:
-                combined_results.at[idx, 'fp'] = 1
-            elif prediction == 0:
-                combined_results.at[idx, 'tn'] = 1
-            else:
-                print('Invalid prediction value')
-        else:
-            print('Invalid image class value')
-
-
-def classify_images_with_a_model(class_labels: list, combined_results: pd.DataFrame,
-                                 images: LabeledImages, model_path: str) -> None:
+def classify_images_with_a_model_multiclass(class_labels: list, combined_results: pd.DataFrame,
+                                 images: LabeledImages, model_path: str):
     model_name = os.path.basename(model_path)
     if ".model" in model_path:
         # Load model
@@ -101,15 +103,34 @@ def classify_images_with_a_model(class_labels: list, combined_results: pd.DataFr
 
         # Generate predictions and label results
         predictions: np.array = model.predict(images.test_image_set)
-        test_dataset = tf.data.Dataset.from_tensor_slices([images.test_features])
-        predictions_using_from_tensor_slices_method = model.predict(test_dataset)
+        # test_dataset = tf.data.Dataset.from_tensor_slices([images.test_features])
+        # predictions_using_from_tensor_slices_method = model.predict(test_dataset)
 
-        headers = [images.class_labels[0] + '_prediction', images.class_labels[1] + '_prediction']
+        # Store class labels
+        clslst = []
+        for x in range(predictions.shape[1]):
+            clslst.append(images.class_labels[x] + '_prediction')
+
+        # label predictions
+        headers = clslst
         predictions = pd.DataFrame(predictions, columns=headers)
         print('Predictions generated.')
 
-        # add newest predictions to results
-        combined_results[model_name] = predictions[class_labels[1] + '_prediction']  # probability of class = 1
+        # get prediction architecture
+        count_row = predictions.shape[0]
+        count_col = predictions.shape[1]
+
+        # Create prediction list
+        predict_list = []
+        for x in range(count_row):
+            for y in range(0, count_col):
+                predict_list.append(predictions.at[x, images.class_labels[y] + '_prediction'])
+
+        predict_group_list = [predict_list[i:i + count_col] for i in range(0, len(predict_list), count_col)]
+
+        return predict_group_list, count_col, count_row
+
+
     else:
         print('Model file path error: "%s" is not a *.model file.' % model_path)
 
