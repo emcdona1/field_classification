@@ -31,13 +31,13 @@ def main():
     all_predictions = pd.DataFrame()
 
     # Set up prediction list
-    predictions = []
+    predicted_probabilities = []
     col = 0
     row = 0
 
     # Return predictions
     for model_path in list_of_models:
-        predictions, col, row = classify_images_with_a_model_multiclass(images.class_labels, all_predictions, images,
+        predicted_probabilities, col, row = classify_images_with_a_model_multiclass(images.class_labels, all_predictions, images,
                                                                         model_path)
 
     # Find average of all predictions per image
@@ -45,7 +45,7 @@ def main():
     for x in range(row):
         total = 0
         for y in range(col):
-            total = total + predictions[x][y]
+            total = total + predicted_probabilities[x][y]
         mean.append(total / row)
 
     # add to combined_results
@@ -54,17 +54,17 @@ def main():
     combined_results['actual_class'] = images.test_labels
 
     # Store actual prediction per image
-    actual_predicts = []
+    predicted_class = []
     cls = 0
     for i in range(row):
         max_val = 0
         for j in range(col):
-            if predictions[i][j] > max_val:
-                max_val = predictions[i][j]
+            if predicted_probabilities[i][j] > max_val:
+                max_val = predicted_probabilities[i][j]
                 cls = j
-        guess = cls
-        actual_predicts.append(guess)
-    combined_results['voted_label'] = actual_predicts
+        predicted = cls
+        predicted_class.append(predicted)
+    combined_results['voted_label'] = predicted_class
 
     # Add image labels
     labels = []
@@ -72,7 +72,7 @@ def main():
         labels.append(x)
 
     # Generate confusion matrix
-    matrix = confusion_matrix(images.test_labels, actual_predicts, labels=labels)
+    matrix = confusion_matrix(images.test_labels, predicted_class, labels=labels)
     display_matrix = ConfusionMatrixDisplay(confusion_matrix=matrix, display_labels=labels)
     display_matrix.plot()
 
@@ -90,7 +90,7 @@ def main():
     timer.print_results()
 
     # Show accuracy score and confusion matrix
-    acc = accuracy_score(images.test_labels, actual_predicts)
+    acc = accuracy_score(images.test_labels, predicted_class)
     print(f'The final accuracy is: {acc}')
     plt.show()
 
