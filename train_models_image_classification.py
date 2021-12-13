@@ -28,8 +28,7 @@ def main() -> None:
     # Only generating charts for binary models
     if cnn_arguments.num_output_classes == 2:
         trainer.charts.finalize()
-    else:
-        trainer.charts
+
 
     classes = (len(new_images.class_labels))
     for x in range(classes):
