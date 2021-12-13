@@ -49,8 +49,8 @@ class ModelTrainer:
         validation_labels = validation_labels.astype(np.int32)
 
         print(len(images.class_labels))
-        if len(images.class_labels) == 2:
-            self.charts.update(self.history[self.curr_index], self.curr_index + 1, validation_labels,
+        # if len(images.class_labels) == 2:
+        self.charts.update(self.history[self.curr_index], self.curr_index + 1, validation_labels,
                             validation_predicted_probability, images.class_labels)
 
 

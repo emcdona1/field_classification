@@ -26,9 +26,8 @@ def main() -> None:
     trainer.train_and_save_all_models(new_images)
 
     # Only generating charts for binary models
-    if cnn_arguments.num_output_classes == 2:
-        trainer.charts.finalize()
-
+    # if cnn_arguments.num_output_classes == 2:
+    trainer.charts.finalize()
 
     classes = (len(new_images.class_labels))
     for x in range(classes):

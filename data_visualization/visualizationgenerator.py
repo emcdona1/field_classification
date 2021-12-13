@@ -9,10 +9,10 @@ class VisualizationGenerator:
         if not os.path.exists(self.folder_name):
             os.makedirs(self.folder_name)
         self.all_charts = []
-        self.all_charts.append(ROCChart(self.folder_name))
+        # self.all_charts.append(ROCChart(self.folder_name))
         self.all_charts.append(AccuracyChart(self.folder_name))
         self.all_charts.append(LossChart(self.folder_name))
-        self.all_charts.append(ConfusionMatrix(self.folder_name))
+        # self.all_charts.append(ConfusionMatrix(self.folder_name))
 
         self.n_folds = n_folds
 

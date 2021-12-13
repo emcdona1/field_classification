@@ -1,5 +1,5 @@
 import os
-from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix
+from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 from abc import ABC, abstractmethod
 from sklearn.metrics._ranking import _multiclass_roc_auc_score
@@ -37,7 +37,8 @@ class ROCChart(Chart):
 
         # class_labels = ['Uniform Pale', 'Uniform Dark', 'Uniform Wide', 'Punctulate', 'Bicolorous']
         # latest_fpr, latest_tpr, thresholds = roc_curve(validation_labels, prediction_probability)
-        # latest_auc = _multiclass_roc_auc_score(validation_labels, prediction_probability)
+        # latest_auc = _multiclass_roc_auc_score(validation_labels, prediction_probability, class_labels, 'ovr', 'macro',
+        #                                        sample_weight=None)
 
         latest_fpr, latest_tpr, thresholds = roc_curve(validation_labels, prediction_probability)
         latest_auc = roc_auc_score(validation_labels, prediction_probability)
@@ -136,6 +137,9 @@ class ConfusionMatrix(Chart):
         # Determine the class of an image, if >= 0.4999 = class 0, otherwise class 1
         validation_predicted_classification = [round(a + 0.0001) for a in prediction_probability]
         cm = confusion_matrix(validation_labels, validation_predicted_classification)
+
+        # matrix = confusion_matrix(validation_labels, prediction_probability, labels=class_labels)
+        # display_matrix = ConfusionMatrixDisplay(confusion_matrix=matrix, display_labels=class_labels)
 
         new_tn, new_fp, new_fn, new_tp = cm.ravel()
         self.tp[index] = new_tp

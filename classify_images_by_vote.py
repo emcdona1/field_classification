@@ -81,9 +81,9 @@ def main():
                                 'voted_label']
 
     # Generate CVS file
-    if not os.path.exists('predictions'):
-        os.makedirs('predictions')
-    write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
+    # if not os.path.exists('predictions'):
+    #     os.makedirs('predictions')
+    # write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
 
     # Finish execution
     timer.stop()
@@ -92,8 +92,13 @@ def main():
     # Show accuracy score and confusion matrix
     acc = accuracy_score(images.test_labels, predicted_class)
     print(f'The final accuracy is: {acc}')
+
+    # Save and display test image confusion matrix
+    script_dir = os.path.dirname(__file__)
+    results_dir = os.path.join(script_dir, 'graphs/')
+    file_name = 'test_result_confusion_martix.png'
+    plt.savefig(results_dir + file_name, format='png')
     plt.show()
-    # plt.savefig('multiclassmatrix.png')
 
 
 def classify_images_with_a_model_multiclass(class_labels: list, combined_results: pd.DataFrame,
