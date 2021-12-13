@@ -93,6 +93,7 @@ def main():
     acc = accuracy_score(images.test_labels, predicted_class)
     print(f'The final accuracy is: {acc}')
     plt.show()
+    # plt.savefig('multiclassmatrix.png')
 
 
 def classify_images_with_a_model_multiclass(class_labels: list, combined_results: pd.DataFrame,
