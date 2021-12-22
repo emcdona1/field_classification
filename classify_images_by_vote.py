@@ -37,8 +37,9 @@ def main():
 
     # Return predictions
     for model_path in list_of_models:
-        predicted_probabilities, col, row = classify_images_with_a_model_multiclass(images.class_labels, all_predictions, images,
-                                                                        model_path)
+        predicted_probabilities, col, row = classify_images_with_a_model_multiclass(images.class_labels,
+                                                                                    all_predictions, images,
+                                                                                    model_path)
 
     # Find average of all predictions per image
     mean = []
@@ -47,6 +48,8 @@ def main():
         for y in range(col):
             total = total + predicted_probabilities[x][y]
         mean.append(total / row)
+
+    # print(predicted_probabilities)
 
     # add to combined_results
     combined_results[r'saved_models\CNN_1.model'] = mean

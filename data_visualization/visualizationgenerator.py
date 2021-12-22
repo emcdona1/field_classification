@@ -12,13 +12,13 @@ class VisualizationGenerator:
         # self.all_charts.append(ROCChart(self.folder_name))
         self.all_charts.append(AccuracyChart(self.folder_name))
         self.all_charts.append(LossChart(self.folder_name))
-        # self.all_charts.append(ConfusionMatrix(self.folder_name))
+        self.all_charts.append(ConfusionMatrix(self.folder_name))
 
         self.n_folds = n_folds
 
-    def update(self, history, index, validation_labels, prediction_probability, class_labels) -> None:
+    def update(self, history, index, validation_labels, prediction_probability, class_labels, predictions) -> None:
         for each in self.all_charts:
-            each.update(index, validation_labels, prediction_probability, history, class_labels)
+            each.update(index, validation_labels, prediction_probability, history, class_labels, predictions)
             each.save(index)
 
     def finalize(self) -> None:
