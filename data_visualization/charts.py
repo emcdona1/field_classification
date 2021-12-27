@@ -2,8 +2,6 @@ import os
 from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 from abc import ABC, abstractmethod
-from sklearn.metrics._ranking import _multiclass_roc_auc_score
-from sklearn.preprocessing import label_binarize
 
 
 class Chart(ABC):
@@ -12,7 +10,7 @@ class Chart(ABC):
         self.file_extension = '.png'
 
     @abstractmethod
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, count) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, count, cls) -> None:
         pass
 
     def save(self, index) -> None:
@@ -25,6 +23,7 @@ class Chart(ABC):
 
 
 class ROCChart(Chart):
+
     def __init__(self, folder_name):
         base_filename = 'mean_ROC'
         super().__init__(base_filename, folder_name)
@@ -33,36 +32,59 @@ class ROCChart(Chart):
         self.fpr = {}
         self.auc = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions) -> None:
-        # if len(class_labels) == 2:
-        latest_fpr, latest_tpr, thresholds = roc_curve(validation_labels, prediction_probability)
-        latest_auc = roc_auc_score(validation_labels, prediction_probability)
-        # else:
-        #
-        #     latest_fpr, latest_tpr, thresholds = roc_curve(validation_labels, prediction_probability)
-        #     latest_auc = _multiclass_roc_auc_score(validation_labels, prediction_probability, class_labels, 'ovr',
-        #                                            'macro', sample_weight=None)
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions, cls) -> None:
+        # cls = 1
+        # for cls in range(len(class_labels)):
+        class_predictions = []
+
+        for i in range(len(validation_labels)):
+            class_predictions.append(predictions[i][cls])
+
+            # print(predictions)
+            # print(class_predictions)
+
+            # print(validation_labels)
+
+        for x in range(len(validation_labels)):
+            if validation_labels[x] == cls:
+                validation_labels[x] = 1
+            elif validation_labels[x] != cls:
+                validation_labels[x] = 0
+
+                # print(validation_labels)
+
+            print(cls)
+
+        latest_fpr, latest_tpr, thresholds = roc_curve(validation_labels, class_predictions)
+        latest_auc = roc_auc_score(validation_labels, class_predictions)
 
         self.fpr[index] = latest_fpr
         self.tpr[index] = latest_tpr
         self.auc[index] = latest_auc
 
-        self.create_chart(index)
+            # cls = cls + 1
+        self.create_chart(index, cls)
 
-    def create_chart(self, index) -> None:
+    def create_chart(self, index, cls) -> None:
         plt.figure(3)
         plt.xlim([-0.05, 1.05])
         plt.ylim([-0.05, 1.05])
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title('ROC Curve - Fold %i' % index)
+        # plt.title('ROC Curve - Fold %i' % index)
+        plt.title('ROC Curve - Class %i' % cls)
         plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Random', alpha=0.8)
         plt.plot(self.fpr[index], self.tpr[index], color='blue',
                  label='Mean ROC (AUC = %0.2f)' % (self.auc[index]),
                  lw=2, alpha=0.8)
         plt.legend(loc="lower right")
 
+        # if cls < 4:
+        #     cls = cls + 1
+        #     self.create_chart(index, cls)
+
     def finalize(self, results) -> None:
+
         results['auc'] = self.auc.values()
 
     #     self.tpr = {}
@@ -112,7 +134,7 @@ class AccuracyChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions, cls) -> None:
         """Create plot of training/validation accuracy, and save it to the file system."""
         self.training[index] = history.history['accuracy'][-1]
         self.validation[index] = history.history['val_accuracy'][-1]
@@ -140,7 +162,7 @@ class LossChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions, cls) -> None:
         self.training[index] = history.history['loss'][-1]
         self.validation[index] = history.history['val_loss'][-1]
         self.create_chart(index, history)
@@ -167,7 +189,7 @@ class ConfusionMatrix(Chart):
         self.predicted = {}
         self.actual = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions, cls) -> None:
 
         validation_predicted_classification = []
         cls = 0
