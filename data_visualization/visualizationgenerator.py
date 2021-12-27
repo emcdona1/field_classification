@@ -16,9 +16,9 @@ class VisualizationGenerator:
 
         self.n_folds = n_folds
 
-    def update(self, history, index, validation_labels, prediction_probability, class_labels, predictions, cls) -> None:
+    def update(self, history, index, validation_labels, prediction_probability, class_labels, predictions) -> None:
         for each in self.all_charts:
-            each.update(index, validation_labels, prediction_probability, history, class_labels, predictions, cls)
+            each.update(index, validation_labels, prediction_probability, history, class_labels, predictions)
             each.save(index)
 
     def finalize(self) -> None:

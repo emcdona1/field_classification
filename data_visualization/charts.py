@@ -10,7 +10,7 @@ class Chart(ABC):
         self.file_extension = '.png'
 
     @abstractmethod
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, count, cls) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, count) -> None:
         pass
 
     def save(self, index) -> None:
@@ -23,6 +23,7 @@ class Chart(ABC):
 
 
 class ROCChart(Chart):
+    # global cls
 
     def __init__(self, folder_name):
         base_filename = 'mean_ROC'
@@ -32,9 +33,13 @@ class ROCChart(Chart):
         self.fpr = {}
         self.auc = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions, cls) -> None:
-        # cls = 1
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions) -> None:
+
+        # create function that generates all class predictions lists in one go and then loops the ROC calculations to
+        # generate independent graphs
+
         # for cls in range(len(class_labels)):
+        cls = 0
         class_predictions = []
 
         for i in range(len(validation_labels)):
@@ -62,8 +67,8 @@ class ROCChart(Chart):
         self.tpr[index] = latest_tpr
         self.auc[index] = latest_auc
 
-            # cls = cls + 1
         self.create_chart(index, cls)
+        # cls = cls + 1
 
     def create_chart(self, index, cls) -> None:
         plt.figure(3)
@@ -78,10 +83,6 @@ class ROCChart(Chart):
                  label='Mean ROC (AUC = %0.2f)' % (self.auc[index]),
                  lw=2, alpha=0.8)
         plt.legend(loc="lower right")
-
-        # if cls < 4:
-        #     cls = cls + 1
-        #     self.create_chart(index, cls)
 
     def finalize(self, results) -> None:
 
@@ -134,7 +135,7 @@ class AccuracyChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions, cls) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions) -> None:
         """Create plot of training/validation accuracy, and save it to the file system."""
         self.training[index] = history.history['accuracy'][-1]
         self.validation[index] = history.history['val_accuracy'][-1]
@@ -162,7 +163,7 @@ class LossChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions, cls) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions) -> None:
         self.training[index] = history.history['loss'][-1]
         self.validation[index] = history.history['val_loss'][-1]
         self.create_chart(index, history)
@@ -189,7 +190,7 @@ class ConfusionMatrix(Chart):
         self.predicted = {}
         self.actual = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions, cls) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions) -> None:
 
         validation_predicted_classification = []
         cls = 0
