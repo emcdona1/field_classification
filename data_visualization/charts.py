@@ -35,9 +35,6 @@ class ROCChart(Chart):
 
     def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions) -> None:
 
-        # create function that generates all class predictions lists in one go and then loops the ROC calculations to
-        # generate independent graphs
-
         # for cls in range(len(class_labels)):
         cls = 0
         class_predictions = []
