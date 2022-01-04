@@ -16,14 +16,15 @@ class VisualizationGenerator:
 
         self.n_folds = n_folds
 
-    def update(self, history, index, validation_labels, prediction_probability, class_labels, predictions) -> None:
+    def update(self, history, index, validation_labels, prediction_probability, class_labels, predictions, current_cls) -> None:
         for each in self.all_charts:
-            each.update(index, validation_labels, prediction_probability, history, class_labels, predictions)
-            each.save(index)
+            each.update(index, validation_labels, prediction_probability, history, class_labels, predictions, current_cls)
+            # each.save(index, class_labels, current_cls)
 
     def finalize(self) -> None:
         results = pd.DataFrame()
         results['Fold'] = list(range(1, self.n_folds + 1))
+
         for each in self.all_charts:
             each.finalize(results)
         results.to_csv(os.path.join(self.folder_name, 'final_data.csv'), encoding='utf-8', index=False)

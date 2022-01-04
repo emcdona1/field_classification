@@ -10,10 +10,10 @@ class Chart(ABC):
         self.file_extension = '.png'
 
     @abstractmethod
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, count) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, count, current_cls) -> None:
         pass
 
-    def save(self, index) -> None:
+    def save(self, index, class_labels, current_cls) -> None:
         plt.savefig(self.path + str(index).zfill(2) + self.file_extension)
         plt.clf()
 
@@ -23,7 +23,6 @@ class Chart(ABC):
 
 
 class ROCChart(Chart):
-    # global cls
 
     def __init__(self, folder_name):
         base_filename = 'mean_ROC'
@@ -33,42 +32,98 @@ class ROCChart(Chart):
         self.fpr = {}
         self.auc = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions, current_cls) -> None:
 
-        # for cls in range(len(class_labels)):
-        cls = 0
-        class_predictions = []
+        for cls in range(len(class_labels)):
+            current_cls = cls
+            class_predictions = []
 
-        for i in range(len(validation_labels)):
-            class_predictions.append(predictions[i][cls])
+            for i in range(len(validation_labels)):
+                class_predictions.append(predictions[i][current_cls])
 
-            # print(predictions)
-            # print(class_predictions)
+            labels = validation_labels.copy()
 
-            # print(validation_labels)
+            for x in range(len(validation_labels)):
+                if validation_labels[x] == current_cls:
+                    labels[x] = 1
+                else:
+                    labels[x] = 0
 
-        for x in range(len(validation_labels)):
-            if validation_labels[x] == cls:
-                validation_labels[x] = 1
-            elif validation_labels[x] != cls:
-                validation_labels[x] = 0
+            latest_fpr, latest_tpr, thresholds = roc_curve(labels, class_predictions)
+            latest_auc = roc_auc_score(labels, class_predictions)
 
-                # print(validation_labels)
+            self.fpr[index] = latest_fpr
+            self.tpr[index] = latest_tpr
+            self.auc[index] = latest_auc
 
-            print(cls)
+            self.create_chart(index, current_cls, class_labels)
 
-        latest_fpr, latest_tpr, thresholds = roc_curve(validation_labels, class_predictions)
-        latest_auc = roc_auc_score(validation_labels, class_predictions)
+    # override save method to loop through classes and fave files seperatly
+    def save(self, index, class_labels, current_cls) -> None:
+        # if len(class_labels) > 2:
+        #     for c in range(len(class_labels)):
+        #         print(self.path + '_Class' + str(c).zfill(2) + self.file_extension)
+        #         plt.savefig(self.path + '_Class' + str(c).zfill(2) + self.file_extension)
+        #         plt.clf()
+        # else:
+        #     print(self.path + str(current_cls).zfill(2) + self.file_extension)
+        #     plt.savefig(self.path + str(current_cls).zfill(2) + self.file_extension)
+        #     plt.clf()
+        if current_cls < len(class_labels):
+            print('save current cls: ', current_cls)
+            plt.savefig(self.path + '_Class' + str(current_cls).zfill(2) + self.file_extension)
+            plt.clf()
 
-        self.fpr[index] = latest_fpr
-        self.tpr[index] = latest_tpr
-        self.auc[index] = latest_auc
+    def create_chart(self, index, cls, class_labels) -> None:
+        # each class needs it's own figure number
+        # print("chart cls: ", cls)
 
-        self.create_chart(index, cls)
-        # cls = cls + 1
+        # num_classes = len(class_labels)
+        # row = int(num_classes/2)
+        # col = int(num_classes/2)+1
+        #
+        # fig, axs = plt.subplots(row, col)
+        #
+        # plt.figure(0 + cls)
+        # plt.xlim([-0.05, 1.05])
+        # plt.ylim([-0.05, 1.05])
+        # plt.xlabel('False Positive Rate')
+        # plt.ylabel('True Positive Rate')
+        # # plt.title('ROC Curve - Fold %i' % index)
+        # plt.title('ROC Curve - Class %i' % cls)
+        # fig.tight_layout(pad=3.0)
+        # if cls == 0:
+        #     axs[0][0].plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Random', alpha=0.8)
+        #     axs[0][0].plot(self.fpr[index], self.tpr[index], color='blue',
+        #              label='Mean ROC (AUC = %0.2f)' % (self.auc[index]),
+        #              lw=2, alpha=0.8)
+        #     axs[0][0].legend(loc="lower right")
+        # if cls == 1:
+        #     axs[0][1].plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Random', alpha=0.8)
+        #     axs[0][1].plot(self.fpr[index], self.tpr[index], color='blue',
+        #              label='Mean ROC (AUC = %0.2f)' % (self.auc[index]),
+        #              lw=2, alpha=0.8)
+        #     axs[0][1].legend(loc="lower right")
+        # if cls == 2:
+        #     axs[0][2].plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Random', alpha=0.8)
+        #     axs[0][2].plot(self.fpr[index], self.tpr[index], color='blue',
+        #              label='Mean ROC (AUC = %0.2f)' % (self.auc[index]),
+        #              lw=2, alpha=0.8)
+        #     axs[0][2].legend(loc="lower right")
+        # if cls == 3:
+        #     axs[1][0].plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Random', alpha=0.8)
+        #     axs[1][0].plot(self.fpr[index], self.tpr[index], color='blue',
+        #              label='Mean ROC (AUC = %0.2f)' % (self.auc[index]),
+        #              lw=2, alpha=0.8)
+        #     axs[1][0].legend(loc="lower right")
+        # if cls == 4:
+        #     axs[1][1].plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Random', alpha=0.8)
+        #     axs[1][1].plot(self.fpr[index], self.tpr[index], color='blue',
+        #              label='Mean ROC (AUC = %0.2f)' % (self.auc[index]),
+        #              lw=2, alpha=0.8)
+        #     axs[1][1].legend(loc="lower right")
 
-    def create_chart(self, index, cls) -> None:
-        plt.figure(3)
+        plt.figure(1 + cls)
         plt.xlim([-0.05, 1.05])
         plt.ylim([-0.05, 1.05])
         plt.xlabel('False Positive Rate')
@@ -80,9 +135,13 @@ class ROCChart(Chart):
                  label='Mean ROC (AUC = %0.2f)' % (self.auc[index]),
                  lw=2, alpha=0.8)
         plt.legend(loc="lower right")
+        print("create class: ", cls)
+        # self.save(self, index)
+
+        self.save(index, class_labels, cls)
 
     def finalize(self, results) -> None:
-
+        # auc = 'auc' + str(cls)
         results['auc'] = self.auc.values()
 
     #     self.tpr = {}
@@ -132,7 +191,7 @@ class AccuracyChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions, current_cls) -> None:
         """Create plot of training/validation accuracy, and save it to the file system."""
         self.training[index] = history.history['accuracy'][-1]
         self.validation[index] = history.history['val_accuracy'][-1]
@@ -160,7 +219,7 @@ class LossChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions, current_cls) -> None:
         self.training[index] = history.history['loss'][-1]
         self.validation[index] = history.history['val_loss'][-1]
         self.create_chart(index, history)
@@ -187,7 +246,7 @@ class ConfusionMatrix(Chart):
         self.predicted = {}
         self.actual = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions) -> None:
+    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions, current_cls) -> None:
 
         validation_predicted_classification = []
         cls = 0
