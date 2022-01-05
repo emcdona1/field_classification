@@ -48,24 +48,33 @@ class ROCChart(Chart):
             # copy image labels to be binarized
             labels = validation_labels.copy()
 
-            # binarized labels
+            # binarized labels and confirm at least one correct prediction
+            valid = False
             for x in range(len(validation_labels)):
                 if validation_labels[x] == current_class:
                     labels[x] = 1
+                    valid = True
                 else:
                     labels[x] = 0
 
-            # Compute ROC curve and AUC
-            latest_fpr, latest_tpr, thresholds = roc_curve(labels, class_predictions)
-            latest_auc = roc_auc_score(labels, class_predictions)
+            # if no correct predictions are present, error message is printed
+            if not valid:
+                print("Class ", current_class, "has no correct values, thus no ROC was generated")
+
+            # ROC calculation and chart creation only occur when the predictions are valid
+            # (has at least one positive value) and will not cause an error
+            if valid:
+                # Compute ROC curve and AUC
+                latest_fpr, latest_tpr, thresholds = roc_curve(labels, class_predictions)
+                latest_auc = roc_auc_score(labels, class_predictions)
 
             # save new values to instance variables
-            self.fpr[index] = latest_fpr
-            self.tpr[index] = latest_tpr
-            self.auc[index] = latest_auc
+                self.fpr[index] = latest_fpr
+                self.tpr[index] = latest_tpr
+                self.auc[index] = latest_auc
 
             # create ROC chart
-            self.create_chart(index, current_class, class_labels)
+                self.create_chart(index, current_class, class_labels)
 
     # override save method to save file if that file does not already exist (needed to handle runtime error)
     def save(self, index, class_labels, current_class) -> None:
