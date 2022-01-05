@@ -17,11 +17,11 @@ class VisualizationGenerator:
         self.n_folds = n_folds
 
     def update(self, history, index, validation_labels, prediction_probability, class_labels, predictions,
-               current_cls) -> None:
+               current_class) -> None:
         for each in self.all_charts:
             each.update(index, validation_labels, prediction_probability, history, class_labels, predictions,
-                        current_cls)
-            each.save(index, class_labels, current_cls)
+                        current_class)
+            each.save(index, class_labels, current_class)
 
     def finalize(self) -> None:
         results = pd.DataFrame()

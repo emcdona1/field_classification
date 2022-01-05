@@ -11,10 +11,10 @@ class Chart(ABC):
 
     @abstractmethod
     def update(self, index, validation_labels, prediction_probability, history, class_labels, count,
-               current_cls) -> None:
+               current_class) -> None:
         pass
 
-    def save(self, index, class_labels, current_cls) -> None:
+    def save(self, index, class_labels, current_class) -> None:
         plt.savefig(self.path + str(index).zfill(2) + self.file_extension)
         plt.clf()
 
@@ -29,24 +29,28 @@ class ROCChart(Chart):
         base_filename = 'mean_ROC'
         super().__init__(base_filename, folder_name)
 
+        # initialize instance variables
         self.tpr = {}
         self.fpr = {}
         self.auc = {}
 
     def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions,
-               current_cls) -> None:
-
+               current_class) -> None:
+        # assign current_class value
         for cls in range(len(class_labels)):
-            current_cls = cls
+            current_class = cls
             class_predictions = []
 
+            # fill class_predictions with the correct class predictions
             for i in range(len(validation_labels)):
-                class_predictions.append(predictions[i][current_cls])
+                class_predictions.append(predictions[i][current_class])
 
+            # copy image labels to be binarized
             labels = validation_labels.copy()
 
+            # binarized labels
             for x in range(len(validation_labels)):
-                if validation_labels[x] == current_cls:
+                if validation_labels[x] == current_class:
                     labels[x] = 1
                 else:
                     labels[x] = 0
@@ -61,53 +65,43 @@ class ROCChart(Chart):
             self.auc[index] = latest_auc
 
             # create ROC chart
-            self.create_chart(index, current_cls, class_labels)
+            self.create_chart(index, current_class, class_labels)
 
-    # override save method to loop through classes and fave files seperatly
-    def save(self, index, class_labels, current_cls) -> None:
-        # if len(class_labels) > 2:
-        #     for c in range(len(class_labels)):
-        #         print(self.path + '_Class' + str(c).zfill(2) + self.file_extension)
-        #         plt.savefig(self.path + '_Class' + str(c).zfill(2) + self.file_extension)
-        #         plt.clf()
-        # else:
-        #     print(self.path + str(current_cls).zfill(2) + self.file_extension)
-        #     plt.savefig(self.path + str(current_cls).zfill(2) + self.file_extension)
-        #     plt.clf()
-
-        # class_labels[current_cls] = str(current_cls)
-        # for c in class_labels:
-        #     if int(class_labels[c]) == current_cls:
-        #         print(class_labels[c])
-        #         pass
-
-        if current_cls < len(class_labels):
-            if os.path.exists(self.path + '_Class' + str(current_cls).zfill(2) + self.file_extension):
+    # override save method to save file if that file does not already exist (needed to handle runtime error)
+    def save(self, index, class_labels, current_class) -> None:
+        # run if the class value is valid
+        if current_class < len(class_labels):
+            # if the file exists already, pass
+            if os.path.exists(self.path + '_Class' + str(current_class).zfill(2) + self.file_extension):
                 pass
+            # if binary, generate one chart
             elif len(class_labels) == 2:
                 plt.savefig(self.path + 'Binary' + str(index).zfill(2) + self.file_extension)
+            # if multiclass, generate one graph for each class
             else:
-                print('save current cls: ', current_cls)
-                plt.savefig(self.path + '_Class' + str(current_cls).zfill(2) + self.file_extension)
+                plt.savefig(self.path + '_Class' + str(current_class).zfill(2) + self.file_extension)
                 plt.clf()
 
     def create_chart(self, index, cls, class_labels) -> None:
-        plt.figure(1 + cls)
+        plt.figure(3 + cls)
         plt.xlim([-0.05, 1.05])
         plt.ylim([-0.05, 1.05])
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
+
+        # label corresponding to binary or multiclass
         if len(class_labels) == 2:
             plt.title('ROC Curve - Fold %i' % index)
         else:
             plt.title('ROC Curve - Class %i' % cls)
+
         plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Random', alpha=0.8)
         plt.plot(self.fpr[index], self.tpr[index], color='blue',
                  label='Mean ROC (AUC = %0.2f)' % (self.auc[index]),
                  lw=2, alpha=0.8)
         plt.legend(loc="lower right")
-        print("create class: ", cls)
 
+        # save chart
         self.save(index, class_labels, cls)
 
     def finalize(self, results) -> None:
@@ -123,7 +117,7 @@ class AccuracyChart(Chart):
         self.validation = {}
 
     def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions,
-               current_cls) -> None:
+               current_class) -> None:
         """Create plot of training/validation accuracy, and save it to the file system."""
         self.training[index] = history.history['accuracy'][-1]
         self.validation[index] = history.history['val_accuracy'][-1]
@@ -152,7 +146,7 @@ class LossChart(Chart):
         self.validation = {}
 
     def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions,
-               current_cls) -> None:
+               current_class) -> None:
         self.training[index] = history.history['loss'][-1]
         self.validation[index] = history.history['val_loss'][-1]
         self.create_chart(index, history)
@@ -173,17 +167,21 @@ class LossChart(Chart):
 
 class ConfusionMatrix(Chart):
     def __init__(self, folder_name):
-        base_filename = 'confusion_matrix'
+        base_filename = 'validation_confusion_matrix'
         super().__init__(base_filename, folder_name)
 
+        # initialize instance variables
         self.predicted = {}
         self.actual = {}
 
     def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions,
-               current_cls) -> None:
-
+               current_class) -> None:
+        # initialize prediction list and class value
         validation_predicted_classification = []
         cls = 0
+
+        # find the highest prediction value and determine which class
+        # it represents, then store that predicted class
         for i in range(len(validation_labels)):
             max_val = 0
             for j in range(len(class_labels)):
@@ -193,20 +191,21 @@ class ConfusionMatrix(Chart):
             predicted = cls
             validation_predicted_classification.append(predicted)
 
+        # generate confusion matrix for validation set
         cm = confusion_matrix(validation_labels, validation_predicted_classification)
 
+        # store labels and predictions
         self.actual = validation_labels
         self.predicted = validation_predicted_classification
-        print(class_labels)
-
-        classes = []
 
         # get unique class labels and put them in order
+        classes = []
         for x in validation_labels:
             if x not in classes:
                 classes.append(x)
         classes = classes.sort()
 
+        # display confusion matrix
         display_matrix = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classes)
         display_matrix.plot()
 
@@ -214,11 +213,14 @@ class ConfusionMatrix(Chart):
         correct = 0
         incorrect = 0
 
+        # compare the labels to the predictions and find the
+        # number of correct predictions and incorrect predictions
         for x in range(len(self.actual)):
             if self.actual[x] == self.predicted[x]:
                 correct = correct + 1
             else:
                 incorrect = incorrect + 1
 
+        # store correct predictions and incorrect predictions in results
         results['correct predictions'] = correct
         results['incorrect predictions'] = incorrect

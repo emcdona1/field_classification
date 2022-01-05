@@ -48,12 +48,12 @@ class ModelTrainer:
             validation_labels = np.concatenate((validation_labels, batch[1]))
         validation_labels = validation_labels.astype(np.int32)
         predictions = self.architecture.model.predict(validation_set)
-        current_cls = 0
+        current_class = 0
 
         print('Classes: ', len(images.class_labels))
 
         self.charts.update(self.history[self.curr_index], self.curr_index + 1, validation_labels,
-                           validation_predicted_probability, images.class_labels, predictions, current_cls)
+                           validation_predicted_probability, images.class_labels, predictions, current_class)
 
 
 def decode_batch_predictions(predictions: np.ndarray):

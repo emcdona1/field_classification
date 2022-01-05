@@ -99,7 +99,7 @@ def main():
     # Save and display test image confusion matrix
     script_dir = os.path.dirname(__file__)
     results_dir = os.path.join(script_dir, 'graphs/')
-    file_name = 'test_result_confusion_martix.png'
+    file_name = 'test_confusion_martix.png'
     plt.savefig(results_dir + file_name, format='png')
     plt.show()
 
