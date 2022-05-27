@@ -67,16 +67,12 @@ for necessary Python packages.
     - `-e` - number of epochs per fold (*integer >= 5*, default=25)
     - `-b` - batch size for updates (*integer >= 2*, default=64)
     - `-cls` - number of classes (*integer >= 2*, default=2)
-    - `-m` - path for a metadata file containing the labels (this extracts the column named "human_transcription," 
-        as created by the zooniverse analysis project)
 - **Output**:
     - Directory `saved_models` is created in current working directory, which will contain one model file per fold (file name format: `CNN_#.model`).
     - Directory `graphs` is created in current working directory, which will contain all generated graphs/plots for each run, plus a CSV summary for each fold.
       - Note: This directory will be empty after CTC model training.
 - **Example execution (CNN)**: `python train_models_image_classification.py training_images 128 -color -lr 0.005 -f 10 -e 50 -b 64 -cls 2 > species_a_b_training_output.txt &`
   
-- **Example execution (CTC)**: `python train_handwriting_model.py testing_image_sets\word_images\ 100 -w 400 -bw -f 1 -e 100 -b 32 -m testing_image_sets\word_images\words_metadata.csv`
-
 
 2. After the training is finished, use the model file(s) to classify test set images.  The number of predictions generated = *# of test images * # of model files*  To run `classify_images_by_vote.py`:
 - **Arguments**: (`-h` flag for full details)
