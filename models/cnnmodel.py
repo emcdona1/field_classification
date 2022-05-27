@@ -8,8 +8,6 @@ class CNNModel(ABC):
     def __init__(self, seed: int, learning_rate: float,
                  img_dim: Union[Tuple[int, int], int], num_output_classes: int,
                  color_mode: ColorMode = ColorMode.rgb):
-        #
-
         """ Creates layers for model and compiles model"""
         self.seed: int = seed
         self.learning_rate: float = learning_rate
@@ -53,7 +51,6 @@ class CNNModel(ABC):
                                                   epsilon=0.00001,
                                                   decay=0.01,
                                                   amsgrad=False)
-        # Check loss to see if it is best
         self.model.compile(
             # optimizer='adam',
             optimizer=adam_optimizer,
