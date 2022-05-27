@@ -1,13 +1,14 @@
 import os
 import random
 import numpy as np
-import tensorflow as tf
+from pathlib import Path
 import matplotlib
 from labeled_images.labeledimages import LabeledImages
 from models.smithsonian import SmithsonianModel
 from models.model_training import ModelTrainer
 from utilities.timer import Timer
 from models.modeltrainingarguments import ModelTrainingArguments
+import tensorflow as tf
 
 matplotlib.use('Agg')  # required when running on server
 
