@@ -9,3 +9,4 @@ config.py
 /.idea/
 objectdb
 __pycache__/
+/word_image_sets/
