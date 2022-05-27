@@ -1,6 +1,6 @@
 config.py
 /saved_models/
-/graphs/
+/graphs*/
 /predictions/
 /images/
 /file_resources/
