@@ -32,7 +32,6 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    # set up random seeds
     SEED = 1
     np.random.seed(SEED)
     tf.random.set_seed(SEED)
