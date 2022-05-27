@@ -29,7 +29,7 @@ def load_file_list_from_filesystem(directory_or_file: Union[str, Path]) -> List[
     elif os.path.isfile(directory_or_file):
         results = [Path(directory_or_file)]
     else:
-        raise FileNotFoundError('Not a valid directory or file: %s' % directory_or_file)
+        raise FileNotFoundError(f'Not a valid directory or file: {directory_or_file}')
 
     return results
 
@@ -42,7 +42,7 @@ def load_pickle(pickle_file_path: str):
 
 def pickle_an_object(save_directory: str, object_id: str, obj_to_pickle) -> str:
     if not os.path.exists(save_directory):
-        os.mkdir(save_directory)
+        os.makedirs(save_directory)
     filename = object_id + '.pickle'
     file_path = os.path.join(save_directory, filename)
     with open(file_path, 'wb') as file:
@@ -62,9 +62,9 @@ def open_cv2_image(image_location: Union[str, Path, Request], rgb: bool = True) 
 
 
 def save_cv2_image(save_location: Union[Path, str], image_id: str, image_to_save: np.ndarray) -> str:
-    filename = image_id + '-annotated' + get_timestamp_for_file_saving() + '.jpg'
-    file_path = os.path.join(str(save_location), filename)
-    cv2.imwrite(file_path, image_to_save)
+    filename = f'{image_id}-annotated-{get_timestamp_for_file_saving()}.jpg'
+    file_path = Path(save_location, filename)
+    cv2.imwrite(str(file_path), image_to_save)
     return filename
 
 
@@ -82,7 +82,7 @@ def save_dataframe_as_csv(save_location: str, file_id: str, df: pd.DataFrame, ti
 def download_image(image_url: str, save_directory: str, image_id: str) -> str:
     image_save_path = os.path.join(save_directory, image_id + '.jpg')
     if os.path.exists(image_save_path):
-        image_save_path = 'EXISTS'
+        image_save_path = 'ALREADY_EXISTS'
     else:
         result = requests.get(image_url)
         if result.status_code == 200:
