@@ -1,21 +1,30 @@
 import os
+import numpy as np
+from typing import Union
+from pathlib import Path
+from abc import ABC, abstractmethod
 from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
-from abc import ABC, abstractmethod
+from tensorflow.keras.callbacks import History
 
 
 class Chart(ABC):
-    def __init__(self, base_filename, folder_name):
+    def __init__(self, base_filename, folder_name: Union[str, Path]):
         self.path = os.path.join(folder_name, base_filename)
         self.file_extension = '.png'
 
     @abstractmethod
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, count,
-               current_class) -> None:
+    def update(self, current_fold_index: int,
+               validation_labels: np.array,
+               prediction_probability: np.array,
+               history: History,
+               class_labels: list,
+               count: np.array,
+               current_class: int) -> None:
         pass
 
-    def save(self, index, class_labels, current_class) -> None:
-        plt.savefig(self.path + str(index).zfill(2) + self.file_extension)
+    def save(self, current_fold_index: int, class_labels, current_class) -> None:
+        plt.savefig(self.path + str(current_fold_index).zfill(2) + self.file_extension)
         plt.clf()
 
     @abstractmethod
@@ -34,8 +43,13 @@ class ROCChart(Chart):
         self.fpr = {}
         self.auc = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions,
-               current_class) -> None:
+    def update(self, current_fold_index: int,
+               validation_labels: np.array,
+               prediction_probability: np.array,
+               history: History,
+               class_labels: list,
+               count: np.array,
+               current_class: int) -> None:
         # assign current_class value
         for cls in range(len(class_labels)):
             current_class = cls
@@ -69,15 +83,15 @@ class ROCChart(Chart):
                 latest_auc = roc_auc_score(labels, class_predictions)
 
             # save new values to instance variables
-                self.fpr[index] = latest_fpr
-                self.tpr[index] = latest_tpr
-                self.auc[index] = latest_auc
+                self.fpr[current_fold_index] = latest_fpr
+                self.tpr[current_fold_index] = latest_tpr
+                self.auc[current_fold_index] = latest_auc
 
             # create ROC chart
-                self.create_chart(index, current_class, class_labels)
+                self.create_chart(current_fold_index, current_class, class_labels)
 
     # override save method to save file if that file does not already exist (needed to handle runtime error)
-    def save(self, index, class_labels, current_class) -> None:
+    def save(self, current_fold_index, class_labels, current_class) -> None:
         # run if the class value is valid
         if current_class < len(class_labels):
             # if the file exists already, pass
@@ -85,7 +99,7 @@ class ROCChart(Chart):
                 pass
             # if binary, generate one chart
             elif len(class_labels) == 2:
-                plt.savefig(self.path + 'Binary' + str(index).zfill(2) + self.file_extension)
+                plt.savefig(self.path + 'Binary' + str(current_fold_index).zfill(2) + self.file_extension)
             # if multiclass, generate one graph for each class
             else:
                 plt.savefig(self.path + '_Class' + str(current_class).zfill(2) + self.file_extension)
@@ -125,12 +139,17 @@ class AccuracyChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions,
-               current_class) -> None:
+    def update(self, current_fold_index: int,
+               validation_labels: np.array,
+               prediction_probability: np.array,
+               history: History,
+               class_labels: list,
+               count: np.array,
+               current_class: int) -> None:
         """Create plot of training/validation accuracy, and save it to the file system."""
-        self.training[index] = history.history['accuracy'][-1]
-        self.validation[index] = history.history['val_accuracy'][-1]
-        self.create_chart(index, history)
+        self.training[current_fold_index] = history.history['accuracy'][-1]
+        self.validation[current_fold_index] = history.history['val_accuracy'][-1]
+        self.create_chart(current_fold_index, history)
 
     def create_chart(self, index, history) -> None:
         plt.figure(1)
@@ -154,11 +173,16 @@ class LossChart(Chart):
         self.training = {}
         self.validation = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions,
-               current_class) -> None:
-        self.training[index] = history.history['loss'][-1]
-        self.validation[index] = history.history['val_loss'][-1]
-        self.create_chart(index, history)
+    def update(self, current_fold_index: int,
+               validation_labels: np.array,
+               prediction_probability: np.array,
+               history: History,
+               class_labels: list,
+               count: np.array,
+               current_class: int) -> None:
+        self.training[current_fold_index] = history.history['loss'][-1]
+        self.validation[current_fold_index] = history.history['val_loss'][-1]
+        self.create_chart(current_fold_index, history)
 
     def create_chart(self, index, history) -> None:
         plt.figure(2)
@@ -183,8 +207,13 @@ class ConfusionMatrix(Chart):
         self.predicted = {}
         self.actual = {}
 
-    def update(self, index, validation_labels, prediction_probability, history, class_labels, predictions,
-               current_class) -> None:
+    def update(self, current_fold_index: int,
+               validation_labels: np.array,
+               prediction_probability: np.array,
+               history: History,
+               class_labels: list,
+               predictions: np.array,
+               current_class: int) -> None:
         # initialize prediction list and class value
         validation_predicted_classification = []
         cls = 0
