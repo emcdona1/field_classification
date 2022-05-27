@@ -1,16 +1,16 @@
+from matplotlib import image
+import cv2
+import os
+from PIL import Image
+import csv
+import numpy as np
+from pathlib import Path
 from tkinter import filedialog
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from skimage.filters import threshold_otsu
-from skimage.segmentation import clear_border
-from skimage.measure import label, regionprops
-from skimage.morphology import closing, square
-from skimage.color import label2rgb
-from matplotlib import image
-import cv2
-from PIL import Image
-import csv
-import numpy
+from skimage import filters, segmentation, measure, morphology, color
+
+BACKGROUND_COLOR_THRESHOLD = 200
 
 # Local variables to help set the x and y axies and declare the list
 x1 = 0
@@ -157,12 +157,9 @@ def img_thresh():
     # all pixels value above 200 will be set to 255
     ret, thresh2 = cv2.threshold(image, 200, 255, cv2.THRESH_BINARY_INV)
 
-    # Split our filename to get the desired sections
-    # and exclude the .jpg or .png extension
-    fn_split = filename.split("/")
-    species = fn_split[-2]
-    file = fn_split[-1].replace('.jpg', '')
-    file = file.replace('.png', '')
+def img_thresh(image_filename: Path, image_save_path: Path) -> Path:
+    img = cv2.imread(str(image_filename), cv2.IMREAD_GRAYSCALE)
+    ret, thresh2 = cv2.threshold(img, BACKGROUND_COLOR_THRESHOLD, 255, cv2.THRESH_BINARY_INV)
 
     # Merge back together our file name excluding the
     # parts we do not want
