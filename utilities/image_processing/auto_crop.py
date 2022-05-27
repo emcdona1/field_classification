@@ -1,6 +1,7 @@
 from matplotlib import image
 import cv2
 import os
+import shutil
 from PIL import Image
 import csv
 import numpy as np
@@ -69,7 +70,7 @@ def crop(image_filename: Path, image_save_path: Path):
     runs = 0
     csv_path = Path(image_save_path, 'auto_crop_image_data.csv')
     new_csv_file = False if os.path.exists(csv_path) else True
-    csv_file = open(csv_path, 'w', newline='')
+    csv_file = open(csv_path, 'a', newline='')
     writer = csv.writer(csv_file)
     if new_csv_file:
         writer.writerow(['image_height', 'image_width', 'image_path', 'species', 'original_image_name'])
@@ -127,3 +128,4 @@ if __name__ == '__main__':
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     main(filename, save_path)
+    shutil.rmtree(Path(save_path, 'tmp'))
