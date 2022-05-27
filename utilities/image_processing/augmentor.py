@@ -1,20 +1,6 @@
 import sys
 import Augmentor
-
-
-def main(train_path, b1, val_path, b2):
-    tp = Augmentor.Pipeline(train_path)
-
-    # aug1
-    tp.rotate(probability=1.0, max_left_rotation=15, max_right_rotation=15)
-    tp.flip_random(probability=1.0)
-
-    # aug2
-    # tp.rotate(probability=.5, max_left_rotation=15, max_right_rotation=15)
-    # tp.rotate180(probability=.5)
-    # tp.flip_random(probability=.5)
-    # tp.shear(probability=.5, max_shear_left=10, max_shear_right=10)
-    # tp.skew(probability=.5)
+from pathlib import Path
 
     # aug3
     # tp.rotate(probability=.5, max_left_rotation=20, max_right_rotation=20)
@@ -59,9 +45,16 @@ def main(train_path, b1, val_path, b2):
 
 
 if __name__ == '__main__':
-    assert len(sys.argv) >= 5, 'Please specify at least one image folder.'
-    train_path = sys.argv[1]
-    b1 = sys.argv[2]
-    val_path = sys.argv[3]
-    b2 = sys.argv[4]
-    main(train_path, b1, val_path, b2)
+    assert len(sys.argv) >= 5, 'Please specify at least 4 arguments: 1) training image folder and 2) batch size' +\
+                               '3) validation image folder and 4) batch size.'
+    training_image_folder = Path(sys.argv[1])
+    assert training_image_folder.exists() and training_image_folder.is_dir(), \
+        f'Not a valid folder path: {training_image_folder}'
+    batch_size_1 = int(sys.argv[2])
+
+    validation_image_folder = Path(sys.argv[3])
+    assert validation_image_folder.exists() and validation_image_folder.is_dir(), \
+        f'Not a valid folder path: {validation_image_folder}'
+    batch_size_2 = int(sys.argv[4])
+
+    main(training_image_folder, batch_size_1, validation_image_folder, batch_size_2)
