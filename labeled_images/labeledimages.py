@@ -75,9 +75,9 @@ class LabeledTestingImages(LabeledImages):
     def __init__(self, random_seed: int):
         super().__init__(random_seed)
         self.test_image_set: tf.data.Dataset = tf.data.Dataset.from_tensor_slices([0])
-        self.test_img_names: list = list()
-        self.test_features: list = list()
-        self.test_labels: list = list()
+        self.test_image_file_paths: list = []
+        self.test_features: list = []
+        self.test_labels: list = []
 
     def load_testing_images(self, testing_image_folder: str,
                             image_size: Union[int, Tuple[int, int]],
@@ -88,7 +88,7 @@ class LabeledTestingImages(LabeledImages):
                                                                                   shuffle=False)
         self.img_dimensions = image_size if type(image_size) is tuple else (image_size, image_size)
         self.color_mode = color_mode
-        self.test_img_names = self.test_image_set.file_paths
+        self.test_image_file_paths = self.test_image_set.file_paths
         self.class_labels = self.test_image_set.class_names
         self.test_labels = list()
         self.test_features = list()

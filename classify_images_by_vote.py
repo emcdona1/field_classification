@@ -1,8 +1,8 @@
 import os
 import argparse
+from pathlib import Path
 import pandas as pd
 import numpy as np
-from datetime import datetime
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 import tensorflow as tf
@@ -15,20 +15,17 @@ SEED = 1
 
 
 def main():
-    # Start execution and parse arguments
-    timer = Timer('Classifying a test set')
+    timer = Timer('Classify test images')
     image_folders, list_of_models, color_mode, image_size = process_input_arguments()
 
-    # Import images
     images = LabeledTestingImages(SEED)
     images.load_testing_images(image_folders, image_size, color_mode)
     print('Images imported.')
 
-    # Seu up dataframe
     combined_results = pd.DataFrame()
-    combined_results['filename'] = images.test_img_names
-    all_predictions = pd.DataFrame()
+    combined_results['filename'] = images.test_image_file_paths
 
+    all_predictions = pd.DataFrame()
     # Set up prediction list
     predicted_probabilities = []
     col = 0
@@ -36,9 +33,7 @@ def main():
 
     # Return predictions
     for model_path in list_of_models:
-        predicted_probabilities, col, row = classify_images_with_a_model_multiclass(images.class_labels,
-                                                                                    all_predictions, images,
-                                                                                    model_path)
+        predicted_probabilities, col, row = classify_images_with_a_model_multiclass(images, model_path)
 
     # Find average of all predictions per image
     mean = []
@@ -51,7 +46,7 @@ def main():
     # print(predicted_probabilities)
 
     # add to combined_results
-    combined_results[r'saved_models\CNN_1.model'] = mean
+    combined_results['CNN_1.model'] = mean
     combined_results['voted_probability'] = mean
     combined_results['actual_class'] = images.test_labels
 
@@ -68,66 +63,38 @@ def main():
         predicted_class.append(predicted)
     combined_results['voted_label'] = predicted_class
 
-    # Add image labels
-    labels = []
-    for x in range(col):
-        labels.append(x)
-
-    # Generate confusion matrix
-    matrix = confusion_matrix(images.test_labels, predicted_class, labels=labels)
-    display_matrix = ConfusionMatrixDisplay(confusion_matrix=matrix, display_labels=labels)
+    matrix = confusion_matrix(images.test_labels, predicted_class, labels=list(range(col)))
+    display_matrix = ConfusionMatrixDisplay(confusion_matrix=matrix, display_labels=list(range(col)))
     display_matrix.plot()
 
-    # Label combined_results
-    combined_results.columns = ['filename', r'saved_models\CNN_1.model', 'voted_probability', 'actual_class',
-                                'voted_label']
-
-    # Generate CVS file
-    # if not os.path.exists('predictions'):
-    #     os.makedirs('predictions')
-    # write_dataframe_to_csv('predictions', 'model_vote_predict', combined_results)
-
-    # Finish execution
+    combined_results.columns = ['filename', 'CNN_1.model', 'voted_probability', 'actual_class', 'voted_label']
     timer.stop()
     timer.print_results()
 
-    # Show accuracy score and confusion matrix
-    acc = accuracy_score(images.test_labels, predicted_class)
-    print(f'The final accuracy is: {acc}')
+    prediction_accuracy = accuracy_score(images.test_labels, predicted_class)
+    print(f'The final accuracy is: {prediction_accuracy}')
 
-    # Save and display test image confusion matrix
-    script_dir = os.path.dirname(__file__)
-    results_dir = os.path.join(script_dir, 'graphs/')
-    file_name = 'test_confusion_martix.png'
-    plt.savefig(results_dir + file_name, format='png')
+    results_dir = 'graphs'
+    file_name = 'test_confusion_matrix.png'
+    plt.savefig(Path(results_dir, file_name), format='png')
     plt.show()
 
 
-def classify_images_with_a_model_multiclass(class_labels: list, combined_results: pd.DataFrame,
-                                            images: LabeledImages, model_path: str):
-    model_name = os.path.basename(model_path)
-    if ".model" in model_path:
-
-        # Load model
+def classify_images_with_a_model_multiclass(images: LabeledTestingImages, model_path: str):
+    model_name = Path(model_path).stem
+    if Path(model_path).suffix == '.model':
         model = tf.keras.models.load_model(model_path)
-        print('Model ' + model_name + ' loaded.')
+        print(f'Model {model_name} loaded.')
 
-        # Generate predictions and label results
         predictions: np.array = model.predict(images.test_image_set)
         # test_dataset = tf.data.Dataset.from_tensor_slices([images.test_features])
         # predictions_using_from_tensor_slices_method = model.predict(test_dataset)
 
-        # Store class labels
-        clslst = []
-        for x in range(predictions.shape[1]):
-            clslst.append(images.class_labels[x] + '_prediction')
-
-        # label predictions
-        headers = clslst
-        predictions = pd.DataFrame(predictions, columns=headers)
+        labels = list(range(predictions.shape[1]))
+        labels = [f'{images.class_labels[i]}_prediction' for i in labels]
+        predictions = pd.DataFrame(predictions, columns=labels)
         print('Predictions generated.')
 
-        # get prediction architecture
         count_row = predictions.shape[0]
         count_col = predictions.shape[1]
 
@@ -139,27 +106,7 @@ def classify_images_with_a_model_multiclass(class_labels: list, combined_results
         predict_group_list = [predict_list[i:i + count_col] for i in range(0, len(predict_list), count_col)]
         return predict_group_list, count_col, count_row
     else:
-        print('Model file path error: "%s" is not a *.model file.' % model_path)
-
-
-def write_dataframe_to_csv(folder, filename, data_to_write):
-    ''' Writes the given DataFrame to a file.
-    Parameters:
-    -----
-    @folder : String to designate folder in which to write file
-    @filename : String to add designation to filename -- file names are timestamp+filename
-    @dataframe_to_write : DataFrame to be written to CSV
-
-    Output:
-    -----
-    File path of the written file
-    '''
-    timestamp = datetime.strftime(datetime.now(), '%Y-%m-%d-%H-%M-%S')
-    filename = timestamp + filename + '.csv'
-    filepath = os.path.join(folder, filename)
-    data_to_write.to_csv(filepath, encoding='utf-8', index=False)
-
-    return filepath
+        print(f'Model file path error: {model_path} is not a *.model file.')
 
 
 def process_input_arguments():
