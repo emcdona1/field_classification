@@ -17,10 +17,11 @@ x1 = 0
 y1 = 0
 lst = []
 
-def main():
-    img = image.imread(img_thresh())
-    segment_image(img)
 
+def main(image_filename: Path, image_save_path: Path):
+    thresholded_image_save_location = img_thresh(image_filename, image_save_path)
+    thresholded_image = image.imread(thresholded_image_save_location)
+    segment_image(thresholded_image, image_filename, image_save_path)
 
 def segment_image(img):
 
