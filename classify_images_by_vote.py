@@ -3,9 +3,7 @@ import argparse
 import pandas as pd
 import tensorflow as tf
 from utilities.timer import Timer
-import numpy as np
-from datetime import datetime
-from labeled_images.labeledimages import LabeledImages
+from labeled_images.labeledimages import LabeledTestingImages
 from labeled_images.colormode import ColorMode
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
@@ -21,7 +19,7 @@ def main():
     image_folders, list_of_models, color_mode, image_size = process_input_arguments()
 
     # Import images
-    images = LabeledImages(SEED)
+    images = LabeledTestingImages(SEED)
     images.load_testing_images(image_folders, image_size, color_mode)
     print('Images imported.')
 

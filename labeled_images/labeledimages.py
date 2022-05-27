@@ -20,10 +20,6 @@ class LabeledImages:
         self.img_dimensions: tuple = (0, 0)
         self.class_labels: list = []
         self.n_folds: int = 1
-        self.test_image_set: tf.data.Dataset = tf.data.Dataset.from_tensor_slices([0])
-        self.test_img_names: list = list()
-        self.test_features: list = list()
-        self.test_labels: list = list()
 
     def load_training_images(self, training_images_location: Union[str, Path],
                              image_size: Union[int, Tuple[int, int]],
@@ -31,7 +27,7 @@ class LabeledImages:
                              shuffle=True,
                              n_folds=1,
                              batch_size=32) -> None:
-        """ image_size = (height, width) or """
+        """ image_size = (height, width) or single int for square images"""
         if self.n_folds > 1:
             # TODO: implement splitting by folds for cross validation
             raise NotImplementedError('K-fold cross validation has not been implemented.')
@@ -74,13 +70,24 @@ class LabeledImages:
             image_files = [i for i in files if i.suffix in ['.jpeg', '.jpg', '.gif', '.png', '.bmp']]
             self.img_count += len(image_files)
 
-    def load_testing_images(self, testing_image_folder: str, image_size: int, color_mode: ColorMode = ColorMode.rgb):
-        self.color_mode = color_mode
-        self.img_dimensions = (image_size, image_size)
+
+class LabeledTestingImages(LabeledImages):
+    def __init__(self, random_seed: int):
+        super().__init__(random_seed)
+        self.test_image_set: tf.data.Dataset = tf.data.Dataset.from_tensor_slices([0])
+        self.test_img_names: list = list()
+        self.test_features: list = list()
+        self.test_labels: list = list()
+
+    def load_testing_images(self, testing_image_folder: str,
+                            image_size: Union[int, Tuple[int, int]],
+                            color_mode: ColorMode = ColorMode.rgb):
         self.test_image_set = tf.keras.preprocessing.image_dataset_from_directory(testing_image_folder,
                                                                                   color_mode=self.color_mode.name,
                                                                                   image_size=self.img_dimensions,
                                                                                   shuffle=False)
+        self.img_dimensions = image_size if type(image_size) is tuple else (image_size, image_size)
+        self.color_mode = color_mode
         self.test_img_names = self.test_image_set.file_paths
         self.class_labels = self.test_image_set.class_names
         self.test_labels = list()
