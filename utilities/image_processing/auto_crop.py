@@ -15,8 +15,7 @@ BACKGROUND_COLOR_THRESHOLD = 200
 # Local variables to help set the x and y axies and declare the list
 x1 = 0
 y1 = 0
-list = []
-
+lst = []
 
 def main():
     img = image.imread(img_thresh())
@@ -60,11 +59,10 @@ def segment_image(img):
                                       fill=False, edgecolor='red', linewidth=2)
                 ax.add_patch(rect)
 
-                # Add values to a list
-                list.append(minc)
-                list.append(minr)
-                list.append(maxc)
-                list.append(maxr)
+                lst.append(minc)
+                lst.append(minr)
+                lst.append(maxc)
+                lst.append(maxr)
 
     # Show image with regions outlined
     ax.set_axis_off()
@@ -81,13 +79,12 @@ def crop():
     count = 0
     runs = 0
 
-    # Run through the list of stored x and y values
-    for item in list:
-        while count < (len(list) - 3):
-            x1 = list[count]
-            x2 = list[count + 1]
-            y1 = list[count + 2]
-            y2 = list[count + 3]
+    for item in lst:
+        while count < (len(lst) - 3):
+            x1 = lst[count]
+            x2 = lst[count + 1]
+            y1 = lst[count + 2]
+            y2 = lst[count + 3]
 
             # Open original image and crop using our
             # coordinates we selected with slight padding
