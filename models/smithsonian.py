@@ -1,9 +1,9 @@
-from models import CNNModel
-from tensorflow.keras import layers
 import tensorflow as tf
+from tensorflow.keras import layers
+from models import CNNModel
 from labeled_images.colormode import ColorMode
-
 from models.modeltrainingarguments import ModelTrainingArguments
+
 
 class SmithsonianModel(CNNModel):
     """ Creates the model architecture as outlined in Schuettpelz, Frandsen, Dikow, Brown, et al. (2017). """
