@@ -1,5 +1,7 @@
 import os
 import pandas as pd
+from datetime import datetime
+from pathlib import Path
 from data_visualization.charts import ROCChart, AccuracyChart, LossChart, ConfusionMatrix
 
 
@@ -7,6 +9,9 @@ class VisualizationGenerator:
     def __init__(self, n_folds: int):
         self.folder_name = 'graphs'
         if not os.path.exists(self.folder_name):
+            os.makedirs(self.folder_name)
+        else:
+            self.folder_name = f'graphs{datetime.strftime(datetime.now(), "%Y-%m-%d-%H-%M-%S")}'
             os.makedirs(self.folder_name)
         self.all_charts = []
         self.all_charts.append(ROCChart(self.folder_name))
@@ -26,7 +31,6 @@ class VisualizationGenerator:
     def finalize(self) -> None:
         results = pd.DataFrame()
         results['Fold'] = list(range(1, self.n_folds + 1))
-
         for each in self.all_charts:
             each.finalize(results)
-        results.to_csv(os.path.join(self.folder_name, 'final_data.csv'), encoding='utf-8', index=False)
+        results.to_csv(Path(self.folder_name, 'final_data.csv'), encoding='utf-8', index=False)

@@ -45,9 +45,4 @@ if __name__ == '__main__':
     tf.random.set_seed(SEED)
     random.seed(SEED)
 
-    # delete previous ROC charts to generate new ones
-    for fname in os.listdir('graphs'):
-        if fname.startswith("mean_ROC"):
-            os.remove(os.path.join('graphs', fname))
-
     main()
