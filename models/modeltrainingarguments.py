@@ -17,7 +17,6 @@ class ModelTrainingArguments:
         self.n_folds: int = self._validate_n_folds()
         self.n_epochs: int = self._validate_n_epochs()
         self.batch_size: int = self._validate_batch_size()
-        self.metadata = self._validate_metadata_folder()
 
         self.num_output_classes: int = self._validate_num_output_classes()
 
@@ -38,8 +37,6 @@ class ModelTrainingArguments:
                                   help='Number of epochs (minimum 5) per fold. (Default = 25)')
         self._parser.add_argument('-b', '--batch_size', type=int,
                                   default=64, help='Batch size (minimum 2) for training. (Default = 64)')
-        self._parser.add_argument('-m', '--metadata', default=None, help='Path to metadata file for image labels.')
-
         self._parser.add_argument('-cls', '--num_output_classes', default=2, type=int,
                                   help='Class size minimum 2, no max. (Default = 2)')
 
@@ -80,15 +77,6 @@ class ModelTrainingArguments:
         batch_size = self._args.batch_size
         assert batch_size >= 2, f'{batch_size} is not a valid batch size. Must be >= 2.'
         return batch_size
-
-    # Stay the same
-    def _validate_metadata_folder(self) -> Path:
-        metadata = None
-        if self._args.metadata:
-            metadata = Path(self._args.metadata)
-            assert os.path.isfile(metadata), f'{metadata} is not a valid file path.'
-            assert metadata.suffix == '.csv', f'{metadata} is not a CSV file.'
-        return metadata
 
     def _validate_num_output_classes(self) -> int:
         num_output_classes = self._args.num_output_classes
