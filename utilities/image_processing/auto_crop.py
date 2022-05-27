@@ -67,6 +67,12 @@ def segment_image(img, image_filename: Path, image_save_path: Path):
 def crop(image_filename: Path, image_save_path: Path):
     count = 0
     runs = 0
+    csv_path = Path(image_save_path, 'auto_crop_image_data.csv')
+    new_csv_file = False if os.path.exists(csv_path) else True
+    csv_file = open(csv_path, 'w', newline='')
+    writer = csv.writer(csv_file)
+    if new_csv_file:
+        writer.writerow(['image_height', 'image_width', 'image_path', 'species', 'original_image_name'])
 
     for item in lst:
         while count < (len(lst) - 3):
@@ -95,9 +101,8 @@ def crop(image_filename: Path, image_save_path: Path):
             width = imageinfo.shape[1]
 
             file_location = Path(image_save_path, saved_file)
-            with open(Path(image_save_path, 'auto_crop_image_data.csv'), 'a') as f:
-                writer = csv.writer(f)
-                writer.writerow(([height, width, file_location]))
+            writer.writerow([height, width, file_location, species, file])
+        csv_file.close()
 
 
 def img_thresh(image_filename: Path, image_save_path: Path) -> Path:
