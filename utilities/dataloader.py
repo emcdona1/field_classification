@@ -1,13 +1,13 @@
 import os
+from pathlib import Path
 import pickle
-import numpy as np
-from urllib.request import urlopen, Request
+import requests
 import cv2
 from datetime import datetime
-import pandas as pd
-import requests
-from pathlib import Path
 from typing import Union, List
+import numpy as np
+import pandas as pd
+from urllib.request import urlopen, Request
 
 
 def load_list_from_txt(file_path: str) -> list:
