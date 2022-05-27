@@ -65,7 +65,6 @@ def segment_image(img, image_filename: Path, image_save_path: Path):
 
 
 def crop(image_filename: Path, image_save_path: Path):
-    global count
     count = 0
     runs = 0
 
