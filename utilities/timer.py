@@ -10,17 +10,17 @@ class Timer:
     def start(self, name) -> None:
         if not self.start_time:
             self.start_time = time.time()
-            print('Timer %s started.' % self.name)
+            print(f'Timer {self.name} started.')
         else:
-            print('Timer %s already started' % self.name)
+            print(f'Timer {self.name} already started')
 
     def stop(self) -> None:
         end_time = time.time()
         self.duration = end_time - self.start_time
-        print('Timer %s stopped.' % self.name)
+        print(f'Timer {self.name} stopped.')
 
     def print_results(self) -> None:
-        print('Completed %s in %.1f seconds.' % (self.name, self.duration))
+        print(f'Completed {self.name} in {self.duration:.1f} seconds.')
 
     def clear(self) -> None:
         self.start_time = None
