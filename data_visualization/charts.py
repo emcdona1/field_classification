@@ -3,6 +3,7 @@ import numpy as np
 from typing import Union
 from pathlib import Path
 from abc import ABC, abstractmethod
+import pandas as pd
 from sklearn.metrics import roc_curve, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import History
@@ -10,11 +11,12 @@ from tensorflow.keras.callbacks import History
 
 class Chart(ABC):
     def __init__(self, base_filename, folder_name: Union[str, Path]):
-        self.path = os.path.join(folder_name, base_filename)
+        self.path: str = os.path.join(folder_name, base_filename)
         self.file_extension = '.png'
 
     @abstractmethod
-    def update(self, current_fold_index: int,
+    def update(self,
+               current_fold_index: int,
                validation_labels: np.array,
                prediction_probability: np.array,
                history: History,
@@ -23,22 +25,22 @@ class Chart(ABC):
                current_class: int) -> None:
         pass
 
-    def save(self, current_fold_index: int, class_labels, current_class) -> None:
+    def save(self,
+             current_fold_index: int,
+             class_labels: list,
+             current_class) -> None:
         plt.savefig(self.path + str(current_fold_index).zfill(2) + self.file_extension)
         plt.clf()
 
     @abstractmethod
-    def finalize(self, results) -> None:
+    def finalize(self, results: pd.DataFrame) -> None:
         pass
 
 
 class ROCChart(Chart):
-
     def __init__(self, folder_name):
         base_filename = 'mean_ROC'
         super().__init__(base_filename, folder_name)
-
-        # initialize instance variables
         self.tpr = {}
         self.fpr = {}
         self.auc = {}
@@ -48,65 +50,46 @@ class ROCChart(Chart):
                prediction_probability: np.array,
                history: History,
                class_labels: list,
-               count: np.array,
+               predictions: np.array,
                current_class: int) -> None:
-        # assign current_class value
-        for cls in range(len(class_labels)):
-            current_class = cls
-            class_predictions = []
 
+        for current_class in range(len(class_labels)):
+            class_predictions = []
             # fill class_predictions with the correct class predictions
             for i in range(len(validation_labels)):
                 class_predictions.append(predictions[i][current_class])
+            labels = [1 if curr == current_class else 0 for curr in validation_labels]
 
-            # copy image labels to be binarized
-            labels = validation_labels.copy()
-
-            # binarized labels and confirm at least one correct prediction
-            valid = False
-            for x in range(len(validation_labels)):
-                if validation_labels[x] == current_class:
-                    labels[x] = 1
-                    valid = True
-                else:
-                    labels[x] = 0
-
-            # if no correct predictions are present, error message is printed
-            if not valid:
-                print("Class ", current_class, "has no correct values, thus no ROC was generated")
-
-            # ROC calculation and chart creation only occur when the predictions are valid
-            # (has at least one positive value) and will not cause an error
+            valid = np.any(validation_labels == current_class)
             if valid:
-                # Compute ROC curve and AUC
-                latest_fpr, latest_tpr, thresholds = roc_curve(labels, class_predictions)
+                latest_fpr, latest_tpr, _ = roc_curve(labels, class_predictions)
                 latest_auc = roc_auc_score(labels, class_predictions)
-
-            # save new values to instance variables
                 self.fpr[current_fold_index] = latest_fpr
                 self.tpr[current_fold_index] = latest_tpr
                 self.auc[current_fold_index] = latest_auc
 
-            # create ROC chart
                 self.create_chart(current_fold_index, current_class, class_labels)
+            else:
+                print(f'Class {current_class} has no correct values in fold {current_fold_index}' +\
+                      ' -- ROC cannot be generated.')
+                self.fpr[current_fold_index] = -1
+                self.tpr[current_fold_index] = -1
+                self.auc[current_fold_index] = -1
 
     # override save method to save file if that file does not already exist (needed to handle runtime error)
-    def save(self, current_fold_index, class_labels, current_class) -> None:
-        # run if the class value is valid
+    def save(self, current_fold_index: int, class_labels, current_class) -> None:
         if current_class < len(class_labels):
             # if the file exists already, pass
-            if os.path.exists(self.path + '_Class' + str(current_class).zfill(2) + self.file_extension):
-                pass
-            # if binary, generate one chart
-            elif len(class_labels) == 2:
-                plt.savefig(self.path + 'Binary' + str(current_fold_index).zfill(2) + self.file_extension)
-            # if multiclass, generate one graph for each class
-            else:
-                plt.savefig(self.path + '_Class' + str(current_class).zfill(2) + self.file_extension)
-                plt.clf()
+            if not os.path.exists(self.path + '_Class' + str(current_class).zfill(2) + self.file_extension):
+                if len(class_labels) == 2:
+                    plt.savefig(self.path + 'Binary' + str(current_fold_index).zfill(2) + self.file_extension)
+                else:
+                    # todo: error test this
+                    plt.savefig(self.path + '_Class' + str(current_class).zfill(2) + self.file_extension)
+                    plt.clf()
 
-    def create_chart(self, index, cls, class_labels) -> None:
-        plt.figure(3 + cls)
+    def create_chart(self, current_fold_index, class_number: int, class_labels: list) -> None:
+        plt.figure(3 + class_number)
         plt.xlim([-0.05, 1.05])
         plt.ylim([-0.05, 1.05])
         plt.xlabel('False Positive Rate')
@@ -114,20 +97,19 @@ class ROCChart(Chart):
 
         # label corresponding to binary or multiclass
         if len(class_labels) == 2:
-            plt.title('ROC Curve - Fold %i' % index)
+            plt.title(f'ROC Curve - Fold {current_fold_index}')
         else:
-            plt.title('ROC Curve - Class %i' % cls)
+            plt.title(f'ROC Curve - Class {class_number}')
 
         plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Random', alpha=0.8)
-        plt.plot(self.fpr[index], self.tpr[index], color='blue',
-                 label='Mean ROC (AUC = %0.2f)' % (self.auc[index]),
+        plt.plot(self.fpr[current_fold_index], self.tpr[current_fold_index], color='blue',
+                 label=f'Mean ROC (AUC = {self.auc[current_fold_index]:0.2f}',
                  lw=2, alpha=0.8)
-        plt.legend(loc="lower right")
+        plt.legend(loc='lower right')
 
-        # save chart
-        self.save(index, class_labels, cls)
+        self.save(current_fold_index, class_labels, class_number)
 
-    def finalize(self, results) -> None:
+    def finalize(self, results: pd.DataFrame) -> None:
         results['auc'] = self.auc.values()
 
 
@@ -135,11 +117,11 @@ class AccuracyChart(Chart):
     def __init__(self, folder_name):
         base_filename = 'accuracy'
         super().__init__(base_filename, folder_name)
-
         self.training = {}
         self.validation = {}
 
-    def update(self, current_fold_index: int,
+    def update(self,
+               current_fold_index: int,
                validation_labels: np.array,
                prediction_probability: np.array,
                history: History,
@@ -151,16 +133,16 @@ class AccuracyChart(Chart):
         self.validation[current_fold_index] = history.history['val_accuracy'][-1]
         self.create_chart(current_fold_index, history)
 
-    def create_chart(self, index, history) -> None:
+    def create_chart(self, current_fold_index: int, history: History) -> None:
         plt.figure(1)
         plt.plot(history.history['accuracy'], label='Training Accuracy')
         plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
-        plt.title('Accuracy - Fold %i' % index)
+        plt.title('Accuracy - Fold %i' % current_fold_index)
         plt.ylabel('Accuracy (%)')
         plt.xlabel('Epoch')
         plt.legend(loc='upper left')
 
-    def finalize(self, results) -> None:
+    def finalize(self, results: pd.DataFrame) -> None:
         results['training_acc'] = self.training.values()
         results['validation_acc'] = self.validation.values()
 
@@ -184,16 +166,16 @@ class LossChart(Chart):
         self.validation[current_fold_index] = history.history['val_loss'][-1]
         self.create_chart(current_fold_index, history)
 
-    def create_chart(self, index, history) -> None:
+    def create_chart(self, current_fold_index: int, history) -> None:
         plt.figure(2)
         plt.plot(history.history['loss'], label='Training Loss')
         plt.plot(history.history['val_loss'], label='Validation Loss')
-        plt.title('Loss - Fold %i' % index)
+        plt.title('Loss - Fold %i' % current_fold_index)
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(loc='upper left')
 
-    def finalize(self, results) -> None:
+    def finalize(self, results: pd.DataFrame) -> None:
         results['training_loss'] = self.training.values()
         results['validation_loss'] = self.validation.values()
 
@@ -202,63 +184,37 @@ class ConfusionMatrix(Chart):
     def __init__(self, folder_name):
         base_filename = 'validation_confusion_matrix'
         super().__init__(base_filename, folder_name)
+        self.predicted_labels = {}
+        self.actual_labels = {}
+        self.confusion_matrix = np.ndarray([0])
 
-        # initialize instance variables
-        self.predicted = {}
-        self.actual = {}
-
-    def update(self, current_fold_index: int,
+    def update(self,
+               current_fold_index: int,
                validation_labels: np.array,
                prediction_probability: np.array,
                history: History,
                class_labels: list,
                predictions: np.array,
                current_class: int) -> None:
-        # initialize prediction list and class value
-        validation_predicted_classification = []
+        self.actual_labels = validation_labels
+        # self.predicted_labels = np.argmax(predictions, axis=1)  # todo: verify the axis, then scrap lines below
+        self.predicted_labels = []
         cls = 0
-
         # find the highest prediction value and determine which class
         # it represents, then store that predicted class
-        for i in range(len(validation_labels)):
+        for i in range(len(self.actual_labels)):
             max_val = 0
             for j in range(len(class_labels)):
                 if predictions[i][j] > max_val:
                     max_val = predictions[i][j]
                     cls = j
             predicted = cls
-            validation_predicted_classification.append(predicted)
+            self.predicted_labels.append(predicted)
 
-        # generate confusion matrix for validation set
-        cm = confusion_matrix(validation_labels, validation_predicted_classification)
+        self.confusion_matrix = confusion_matrix(self.actual_labels, self.predicted_labels)
+        classes = list(set(self.actual_labels)).sort()
+        ConfusionMatrixDisplay(confusion_matrix=self.confusion_matrix, display_labels=classes).plot()
 
-        # store labels and predictions
-        self.actual = validation_labels
-        self.predicted = validation_predicted_classification
-
-        # get unique class labels and put them in order
-        classes = []
-        for x in validation_labels:
-            if x not in classes:
-                classes.append(x)
-        classes = classes.sort()
-
-        # display confusion matrix
-        display_matrix = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classes)
-        display_matrix.plot()
-
-    def finalize(self, results) -> None:
-        correct = 0
-        incorrect = 0
-
-        # compare the labels to the predictions and find the
-        # number of correct predictions and incorrect predictions
-        for x in range(len(self.actual)):
-            if self.actual[x] == self.predicted[x]:
-                correct = correct + 1
-            else:
-                incorrect = incorrect + 1
-
-        # store correct predictions and incorrect predictions in results
-        results['correct predictions'] = correct
-        results['incorrect predictions'] = incorrect
+    def finalize(self, results: pd.DataFrame) -> None:
+        results['correct predictions'] = self.confusion_matrix.diagonal().sum()
+        results['incorrect predictions'] = self.confusion_matrix.sum() - results['correct predictions']
