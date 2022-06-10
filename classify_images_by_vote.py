@@ -66,6 +66,7 @@ def main():
         os.makedirs(results_dir)
     generate_confusion_matrix(num_classes, images, predicted_class, results_dir)
     combined_results.columns = ['filename', 'CNN_1.model', 'voted_probability', 'actual_class', 'voted_label']
+    combined_results.to_csv(str(Path(results_dir, 'combined_results.csv')))
     timer.stop()
     timer.print_results()
 
