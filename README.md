@@ -75,12 +75,14 @@ for necessary Python packages.
 2. After the training is finished, use the model file(s) to classify test set images.  The number of predictions generated = *# of test images * # of model files*  To run `classify_images_by_vote.py`:
 - **Arguments**: (`-h` flag for full details)
     - `images` (positional, required) - file path of a directory containing the test image folders
-    - `img_size` (positional, required) - image size to be used (must match how the model was trained)
-    - `models` (positional, required) - a single model file, or a folder of models (i.e. `saved_models` in working directory)
+    - `models` (positional, required) - a single model file, or a folder of models (e.g. `saved_models` in working directory)
+    - `height` (positional, required) - desired image size (if the optional `-w` argument is not provided, images
+        will be loaded as `height x height` square)
+    - `-w` - image width for non-square images
     - (`-color`, `-bw`) - boolean flag for number of color channels (RGB or K) (*default = color*)
 - **Output**:
     - Directory `predictions` is created if needed, and the predictions are saved as a CSV file (`yyyy-mm-dd-hh-mm-ssmodel_vote_predict.csv`).
-- **Example execution (CNN only)**: `python classify_images_by_vote.py test_images 128 saved_models -color`
+- **Example execution (CNN only)**: `python classify_images_by_vote.py test_images saved_models 128 -color`
 
 ---
 
