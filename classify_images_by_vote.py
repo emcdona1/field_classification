@@ -24,24 +24,23 @@ def main():
     print('Images imported.')
 
     combined_results = pd.DataFrame()
-    combined_results['filename'] = images.test_image_file_paths
+    combined_results['image filenames'] = images.test_image_file_paths
 
     all_predictions = pd.DataFrame()
     # Set up prediction list
     predicted_probabilities = []
     num_classes = 0
-    num_images = 0
 
     for model_path in list_of_models:
-        predictions, num_classes, num_images = classify_images_with_a_model_multiclass(images, model_path)
+        predictions, num_classes = classify_images_with_a_model_multiclass(images, model_path)
 
     # # Find average of all predictions per image
     # mean = []
-    # for x in range(num_images):
+    # for x in range(images.img_count):
     #     total = 0
     #     for y in range(num_classes):
     #         total = total + predicted_probabilities[x][y]
-    #     mean.append(total / num_images)
+    #     mean.append(total / images.img_count)
     #
     # # add to combined_results
     # combined_results['CNN_1.model'] = mean
@@ -51,7 +50,7 @@ def main():
     # Store actual prediction per image
     predicted_class = []
     cls = 0
-    for i in range(num_images):
+    for i in range(images.img_count):
         max_val = 0
         for j in range(num_classes):
             if predicted_probabilities[i][j] > max_val:
@@ -98,15 +97,15 @@ def classify_images_with_a_model_multiclass(images: LabeledTestingImages, model_
         predictions = pd.DataFrame(predictions, columns=labels)
         print('Predictions generated.')
 
-        count_row = predictions.shape[0]
-        count_col = predictions.shape[1]
+        class_count = predictions.shape[0]
+        img_count = predictions.shape[1]
 
         predict_list = []
-        for x in range(count_row):
-            for y in range(0, count_col):
+        for x in range(class_count):
+            for y in range(0, img_count):
                 predict_list.append(predictions.at[x, images.class_labels[y] + '_prediction'])
-        predict_group_list = [predict_list[i:i + count_col] for i in range(0, len(predict_list), count_col)]
-        return predict_group_list, count_col, count_row
+        predict_group_list = [predict_list[i:i + img_count] for i in range(0, len(predict_list), img_count)]
+        return predict_group_list, img_count
     else:
         print(f'Model file path error: {model_path} is not a *.model file.')
 
