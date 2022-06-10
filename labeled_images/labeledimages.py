@@ -54,12 +54,10 @@ class LabeledImages:
                                                                                         validation_split=VALIDATION_SPLIT,
                                                                                         subset='validation')
         self.class_labels = self.training_image_set.class_names
-        images = os.walk(training_images_location)
 
         self.img_count = 0
-        for d in images:
-            files = [Path(f) for f in d[2]]
-            image_files = [i for i in files if i.suffix in ['.jpeg', '.jpg', '.gif', '.png', '.bmp']]
+        for parent, child, files in os.walk(training_images_location):
+            image_files = [Path(i) for i in files if Path(i).suffix in ['.jpeg', '.jpg', '.gif', '.png', '.bmp']]
             self.img_count += len(image_files)
 
 
