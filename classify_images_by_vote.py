@@ -123,12 +123,12 @@ def process_input_arguments():
 
     image_folders = args.images
     if '.model' in args.models:
-        list_of_models = [args.models]
+        list_of_models = [Path(args.models)]
     else:
         list_of_models = os.listdir(args.models)
-        list_of_models = [(args.models + os.path.sep + filename) for filename in list_of_models]
+        list_of_models = [Path(args.models, filename) for filename in list_of_models]
     color_mode = ColorMode.grayscale if args.bw else ColorMode.rgb
-    image_size = args.img_size
+    image_size = (args.img_size, args.img_size)
 
     return image_folders, list_of_models, color_mode, image_size
 
