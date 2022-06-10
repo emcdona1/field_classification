@@ -62,13 +62,11 @@ for necessary Python packages.
     - `-w` - image width for non-square images
     - (`-color`, `-bw`) - boolean flag for number of color channels (RGB or K) (*default = color*)
     - `-lr` - learning rate value (*decimal number*, default = 0.001)
-    - `-f` - number of folds (1 for single-model, 2+ for cross-fold validation) (*integer <= 1*, default=1)
-        - *Note*: Currently, cross-fold validation is not implemented.
     - `-e` - number of epochs per fold (*integer >= 5*, default=25)
     - `-b` - batch size for updates (*integer >= 2*, default=64)
     - `-cls` - number of classes (*integer >= 2*, default=2)
 - **Output**:
-    - Directory `saved_models` is created in current working directory, which will contain one model file per fold (file name format: `CNN_#.model`).
+    - Directory `saved_models` is created in current working directory, which will contain one model file after training (`CNN_1.model`).
     - Directory `graphs` is created in current working directory, which will contain all generated graphs/plots for each run, plus a CSV summary for each fold.
       - Note: This directory will be empty after CTC model training.
 - **Example execution (CNN)**: `python train_models_image_classification.py training_images 128 -color -lr 0.005 -f 10 -e 50 -b 64 -cls 2 > species_a_b_training_output.txt &`

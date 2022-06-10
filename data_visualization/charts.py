@@ -10,13 +10,12 @@ from tensorflow.keras.callbacks import History
 
 
 class Chart(ABC):
-    def __init__(self, base_filename, folder_name: Union[str, Path]):
-        self.path: str = os.path.join(folder_name, base_filename)
-        self.file_extension = '.png'
+    def __init__(self, folder_name: Union[str, Path], base_filename: str):
+        self.path: Path = Path(folder_name, base_filename)
+        self.file_extension: str = '.png'
 
     @abstractmethod
     def update(self,
-               current_fold_index: int,
                validation_labels: np.array,
                prediction_probability: np.array,
                history: History,
@@ -25,11 +24,8 @@ class Chart(ABC):
                current_class: int) -> None:
         pass
 
-    def save(self,
-             current_fold_index: int,
-             class_labels: list,
-             current_class) -> None:
-        plt.savefig(self.path + str(current_fold_index).zfill(2) + self.file_extension)
+    def save(self, class_labels: list, current_class: int) -> None:
+        plt.savefig(str(self.path) + self.file_extension)
         plt.clf()
 
     @abstractmethod
@@ -40,13 +36,12 @@ class Chart(ABC):
 class ROCChart(Chart):
     def __init__(self, folder_name):
         base_filename = 'mean_ROC'
-        super().__init__(base_filename, folder_name)
+        super().__init__(folder_name, base_filename)
         self.tpr = {}
         self.fpr = {}
         self.auc = {}
 
-    def update(self, current_fold_index: int,
-               validation_labels: np.array,
+    def update(self, validation_labels: np.array,
                prediction_probability: np.array,
                history: History,
                class_labels: list,
@@ -64,31 +59,30 @@ class ROCChart(Chart):
             if valid:
                 latest_fpr, latest_tpr, _ = roc_curve(labels, class_predictions)
                 latest_auc = roc_auc_score(labels, class_predictions)
-                self.fpr[current_fold_index] = latest_fpr
-                self.tpr[current_fold_index] = latest_tpr
-                self.auc[current_fold_index] = latest_auc
+                self.fpr[1] = latest_fpr
+                self.tpr[1] = latest_tpr
+                self.auc[1] = latest_auc
 
-                self.create_chart(current_fold_index, current_class, class_labels)
+                self.create_chart(current_class, class_labels)
             else:
-                print(f'Class {current_class} has no correct values in fold {current_fold_index}' +\
-                      ' -- ROC cannot be generated.')
-                self.fpr[current_fold_index] = -1
-                self.tpr[current_fold_index] = -1
-                self.auc[current_fold_index] = -1
+                print(f'Class {current_class} has no correct values -- ROC cannot be generated.')
+                self.fpr[1] = -1
+                self.tpr[1] = -1
+                self.auc[1] = -1
 
     # override save method to save file if that file does not already exist (needed to handle runtime error)
-    def save(self, current_fold_index: int, class_labels, current_class) -> None:
+    def save(self, class_labels: list, current_class: int) -> None:
         if current_class < len(class_labels):
             # if the file exists already, pass
-            if not os.path.exists(self.path + '_Class' + str(current_class).zfill(2) + self.file_extension):
+            if not os.path.exists(str(self.path) + '_Class' + self.file_extension):
                 if len(class_labels) == 2:
-                    plt.savefig(self.path + 'Binary' + str(current_fold_index).zfill(2) + self.file_extension)
+                    plt.savefig(str(self.path) + 'Binary' + self.file_extension)
                 else:
                     # todo: error test this
-                    plt.savefig(self.path + '_Class' + str(current_class).zfill(2) + self.file_extension)
+                    plt.savefig(str(self.path) + '_Class' + self.file_extension)
                     plt.clf()
 
-    def create_chart(self, current_fold_index, class_number: int, class_labels: list) -> None:
+    def create_chart(self, class_number: int, class_labels: list) -> None:
         plt.figure(3 + class_number)
         plt.xlim([-0.05, 1.05])
         plt.ylim([-0.05, 1.05])
@@ -97,17 +91,17 @@ class ROCChart(Chart):
 
         # label corresponding to binary or multiclass
         if len(class_labels) == 2:
-            plt.title(f'ROC Curve - Fold {current_fold_index}')
+            plt.title(f'ROC Curve')
         else:
             plt.title(f'ROC Curve - Class {class_number}')
 
         plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Random', alpha=0.8)
-        plt.plot(self.fpr[current_fold_index], self.tpr[current_fold_index], color='blue',
-                 label=f'Mean ROC (AUC = {self.auc[current_fold_index]:0.2f}',
+        plt.plot(self.fpr[1], self.tpr[1], color='blue',
+                 label=f'Mean ROC (AUC = {self.auc[1]:0.2f}',
                  lw=2, alpha=0.8)
         plt.legend(loc='lower right')
 
-        self.save(current_fold_index, class_labels, class_number)
+        self.save(class_labels, class_number)
 
     def finalize(self, results: pd.DataFrame) -> None:
         results['auc'] = self.auc.values()
@@ -116,12 +110,11 @@ class ROCChart(Chart):
 class AccuracyChart(Chart):
     def __init__(self, folder_name):
         base_filename = 'accuracy'
-        super().__init__(base_filename, folder_name)
+        super().__init__(folder_name, base_filename)
         self.training = {}
         self.validation = {}
 
     def update(self,
-               current_fold_index: int,
                validation_labels: np.array,
                prediction_probability: np.array,
                history: History,
@@ -129,15 +122,15 @@ class AccuracyChart(Chart):
                count: np.array,
                current_class: int) -> None:
         """Create plot of training/validation accuracy, and save it to the file system."""
-        self.training[current_fold_index] = history.history['accuracy'][-1]
-        self.validation[current_fold_index] = history.history['val_accuracy'][-1]
-        self.create_chart(current_fold_index, history)
+        self.training[1] = history.history['accuracy'][-1]
+        self.validation[1] = history.history['val_accuracy'][-1]
+        self.create_chart(history)
 
-    def create_chart(self, current_fold_index: int, history: History) -> None:
+    def create_chart(self, history: History) -> None:
         plt.figure(1)
         plt.plot(history.history['accuracy'], label='Training Accuracy')
         plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
-        plt.title('Accuracy - Fold %i' % current_fold_index)
+        plt.title('Accuracy')
         plt.ylabel('Accuracy (%)')
         plt.xlabel('Epoch')
         plt.legend(loc='upper left')
@@ -150,27 +143,26 @@ class AccuracyChart(Chart):
 class LossChart(Chart):
     def __init__(self, folder_name):
         base_filename = 'loss'
-        super().__init__(base_filename, folder_name)
+        super().__init__(folder_name, base_filename)
 
         self.training = {}
         self.validation = {}
 
-    def update(self, current_fold_index: int,
-               validation_labels: np.array,
+    def update(self, validation_labels: np.array,
                prediction_probability: np.array,
                history: History,
                class_labels: list,
                count: np.array,
                current_class: int) -> None:
-        self.training[current_fold_index] = history.history['loss'][-1]
-        self.validation[current_fold_index] = history.history['val_loss'][-1]
-        self.create_chart(current_fold_index, history)
+        self.training[1] = history.history['loss'][-1]
+        self.validation[1] = history.history['val_loss'][-1]
+        self.create_chart(history)
 
-    def create_chart(self, current_fold_index: int, history) -> None:
+    def create_chart(self, history) -> None:
         plt.figure(2)
         plt.plot(history.history['loss'], label='Training Loss')
         plt.plot(history.history['val_loss'], label='Validation Loss')
-        plt.title('Loss - Fold %i' % current_fold_index)
+        plt.title('Loss')
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(loc='upper left')
@@ -183,13 +175,12 @@ class LossChart(Chart):
 class ConfusionMatrix(Chart):
     def __init__(self, folder_name):
         base_filename = 'validation_confusion_matrix'
-        super().__init__(base_filename, folder_name)
+        super().__init__(folder_name, base_filename)
         self.predicted_labels = {}
         self.actual_labels = {}
         self.confusion_matrix = np.ndarray([0])
 
     def update(self,
-               current_fold_index: int,
                validation_labels: np.array,
                prediction_probability: np.array,
                history: History,

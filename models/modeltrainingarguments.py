@@ -14,7 +14,6 @@ class ModelTrainingArguments:
         self.image_size: Tuple[int, int] = self._validate_image_size()
         self.color_mode: ColorMode = self._set_color_mode()
         self.lr: float = self._validate_learning_rate()
-        self.n_folds: int = self._validate_n_folds()
         self.n_epochs: int = self._validate_n_epochs()
         self.batch_size: int = self._validate_batch_size()
 
@@ -31,8 +30,6 @@ class ModelTrainingArguments:
 
         self._parser.add_argument('-lr', '--learning_rate', type=float,
                                   default=0.001, help='Learning rate for training. (Default = 0.001)')
-        self._parser.add_argument('-f', '--n_folds', type=int, default=1,
-                                  help='Number of folds (minimum 1) for cross validation. (Default = 1)')
         self._parser.add_argument('-e', '--n_epochs', type=int, default=25,
                                   help='Number of epochs (minimum 5) per fold. (Default = 25)')
         self._parser.add_argument('-b', '--batch_size', type=int,
@@ -62,11 +59,6 @@ class ModelTrainingArguments:
         lr = self._args.learning_rate
         assert 0 < lr < 1, f'Learning rate {lr:.6f} is not valid. Must be in range (0, 1).'
         return lr
-
-    def _validate_n_folds(self) -> int:
-        n_folds = self._args.n_folds
-        assert n_folds <= 1, f'Number of folds {n_folds} is not valid. Value must be >= 1.'
-        return n_folds
 
     def _validate_n_epochs(self) -> int:
         n_epochs = self._args.n_epochs
