@@ -62,8 +62,8 @@ class LabeledImages:
 
 
 class LabeledTestingImages(LabeledImages):
-    def __init__(self, random_seed: int):
-        super().__init__(random_seed)
+    def __init__(self):
+        super().__init__(1)
         self.test_image_set: tf.data.Dataset = tf.data.Dataset.from_tensor_slices([0])
         self.test_image_file_paths: list = []
         self.test_features: list = []

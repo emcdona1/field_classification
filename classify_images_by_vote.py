@@ -1,5 +1,4 @@
 import os
-import argparse
 from pathlib import Path
 from typing import Union
 import pandas as pd
@@ -11,15 +10,15 @@ from utilities.timer import Timer
 from labeled_images.labeledimages import LabeledTestingImages
 from models.modeltrainingarguments import ModelTestingArguments
 
+
 THRESHOLD = 0.5
-SEED = 1
 
 
 def main():
     timer = Timer('Classify test images')
     arguments = ModelTestingArguments()
 
-    images = LabeledTestingImages(SEED)
+    images = LabeledTestingImages()
     images.load_testing_images(arguments.image_folders, arguments.image_size, arguments.color_mode)
     print('Images imported.')
 

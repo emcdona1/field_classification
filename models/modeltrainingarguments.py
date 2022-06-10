@@ -5,6 +5,7 @@ from labeled_images.colormode import ColorMode
 from pathlib import Path
 from typing import Tuple
 
+
 class ModelArguments(ABC):
     def __init__(self):
         self._parser = argparse.ArgumentParser('Create and train NNs for image classification.')
