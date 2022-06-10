@@ -61,15 +61,10 @@ def main():
         predicted_class.append(predicted)
     combined_results['voted_label'] = predicted_class
 
-    generate_confusion_matrix(col, combined_results, images, predicted_class, timer)
-    exit(0)
-
-
-def generate_confusion_matrix(col, combined_results, images, predicted_class, timer):
-    matrix = confusion_matrix(images.test_labels, predicted_class, labels=list(range(col)))
-    display_matrix = ConfusionMatrixDisplay(confusion_matrix=matrix, display_labels=list(range(col)))
-    display_matrix.plot()
-
+    results_dir = 'test_results'
+    if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
+    generate_confusion_matrix(num_classes, images, predicted_class, results_dir)
     combined_results.columns = ['filename', 'CNN_1.model', 'voted_probability', 'actual_class', 'voted_label']
     timer.stop()
     timer.print_results()
@@ -77,9 +72,14 @@ def generate_confusion_matrix(col, combined_results, images, predicted_class, ti
     prediction_accuracy = accuracy_score(images.test_labels, predicted_class)
     print(f'The final accuracy is: {prediction_accuracy}')
 
-    results_dir = 'graphs'
-    if not os.path.exists(results_dir):
-        os.makedirs(results_dir)
+    exit(0)
+
+
+def generate_confusion_matrix(col, images, predicted_class, results_dir: str):
+    matrix = confusion_matrix(images.test_labels, predicted_class, labels=list(range(col)))
+    display_matrix = ConfusionMatrixDisplay(confusion_matrix=matrix, display_labels=list(range(col)))
+    display_matrix.plot()
+
     file_name = 'test_confusion_matrix.png'
     plt.savefig(Path(results_dir, file_name), format='png')
 
