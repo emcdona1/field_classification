@@ -85,3 +85,8 @@ class LabeledTestingImages(LabeledImages):
         for feature_class_pair in self.test_image_set.as_numpy_iterator():
             self.test_features = self.test_features + list(feature_class_pair[0])
             self.test_labels = self.test_labels + list(feature_class_pair[1])
+
+        self.img_count = 0
+        for parent, child, files in os.walk(testing_images_location):
+            image_files = [Path(i) for i in files if Path(i).suffix in ['.jpeg', '.jpg', '.gif', '.png', '.bmp']]
+            self.img_count += len(image_files)
