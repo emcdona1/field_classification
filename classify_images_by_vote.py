@@ -31,7 +31,6 @@ def main():
     col = 0
     row = 0
 
-    # Return predictions
     for model_path in list_of_models:
         predicted_probabilities, col, row = classify_images_with_a_model_multiclass(images, model_path)
 
@@ -64,6 +63,7 @@ def main():
     combined_results['voted_label'] = predicted_class
 
     generate_confusion_matrix(col, combined_results, images, predicted_class, timer)
+    exit(0)
 
 
 def generate_confusion_matrix(col, combined_results, images, predicted_class, timer):
@@ -83,7 +83,6 @@ def generate_confusion_matrix(col, combined_results, images, predicted_class, ti
         os.makedirs(results_dir)
     file_name = 'test_confusion_matrix.png'
     plt.savefig(Path(results_dir, file_name), format='png')
-    plt.show()
 
 
 def classify_images_with_a_model_multiclass(images: LabeledTestingImages, model_path: str):
