@@ -1,6 +1,7 @@
 import os
 import argparse
 from pathlib import Path
+from typing import Union
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -28,19 +29,11 @@ def main():
     all_predictions = pd.DataFrame()
     # Set up prediction list
     predicted_probabilities = []
-    col = 0
-    row = 0
+    num_classes = 0
+    num_images = 0
 
     for model_path in list_of_models:
-        predicted_probabilities, col, row = classify_images_with_a_model_multiclass(images, model_path)
-
-    # Find average of all predictions per image
-    mean = []
-    for x in range(row):
-        total = 0
-        for y in range(col):
-            total = total + predicted_probabilities[x][y]
-        mean.append(total / row)
+        predictions, num_classes, num_images = classify_images_with_a_model_multiclass(images, model_path)
 
     # print(predicted_probabilities)
 
@@ -52,9 +45,9 @@ def main():
     # Store actual prediction per image
     predicted_class = []
     cls = 0
-    for i in range(row):
+    for i in range(num_images):
         max_val = 0
-        for j in range(col):
+        for j in range(num_classes):
             if predicted_probabilities[i][j] > max_val:
                 max_val = predicted_probabilities[i][j]
                 cls = j
@@ -85,7 +78,7 @@ def generate_confusion_matrix(col, combined_results, images, predicted_class, ti
     plt.savefig(Path(results_dir, file_name), format='png')
 
 
-def classify_images_with_a_model_multiclass(images: LabeledTestingImages, model_path: str):
+def classify_images_with_a_model_multiclass(images: LabeledTestingImages, model_path: Union[str, Path]):
     model_name = Path(model_path).stem
     if Path(model_path).suffix == '.model':
         model = tf.keras.models.load_model(model_path)
