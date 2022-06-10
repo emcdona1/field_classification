@@ -35,11 +35,17 @@ def main():
     for model_path in list_of_models:
         predictions, num_classes, num_images = classify_images_with_a_model_multiclass(images, model_path)
 
-    # print(predicted_probabilities)
-
-    # add to combined_results
-    combined_results['CNN_1.model'] = mean
-    combined_results['voted_probability'] = mean
+    # # Find average of all predictions per image
+    # mean = []
+    # for x in range(num_images):
+    #     total = 0
+    #     for y in range(num_classes):
+    #         total = total + predicted_probabilities[x][y]
+    #     mean.append(total / num_images)
+    #
+    # # add to combined_results
+    # combined_results['CNN_1.model'] = mean
+    # combined_results['voted_probability'] = mean
     combined_results['actual_class'] = images.test_labels
 
     # Store actual prediction per image
