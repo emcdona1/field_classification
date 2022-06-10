@@ -63,6 +63,10 @@ def main():
         predicted_class.append(predicted)
     combined_results['voted_label'] = predicted_class
 
+    generate_confusion_matrix(col, combined_results, images, predicted_class, timer)
+
+
+def generate_confusion_matrix(col, combined_results, images, predicted_class, timer):
     matrix = confusion_matrix(images.test_labels, predicted_class, labels=list(range(col)))
     display_matrix = ConfusionMatrixDisplay(confusion_matrix=matrix, display_labels=list(range(col)))
     display_matrix.plot()
@@ -75,6 +79,8 @@ def main():
     print(f'The final accuracy is: {prediction_accuracy}')
 
     results_dir = 'graphs'
+    if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
     file_name = 'test_confusion_matrix.png'
     plt.savefig(Path(results_dir, file_name), format='png')
     plt.show()
@@ -87,8 +93,6 @@ def classify_images_with_a_model_multiclass(images: LabeledTestingImages, model_
         print(f'Model {model_name} loaded.')
 
         predictions: np.array = model.predict(images.test_image_set)
-        # test_dataset = tf.data.Dataset.from_tensor_slices([images.test_features])
-        # predictions_using_from_tensor_slices_method = model.predict(test_dataset)
 
         labels = list(range(predictions.shape[1]))
         labels = [f'{images.class_labels[i]}_prediction' for i in labels]
@@ -98,7 +102,6 @@ def classify_images_with_a_model_multiclass(images: LabeledTestingImages, model_
         count_row = predictions.shape[0]
         count_col = predictions.shape[1]
 
-        # Create prediction list
         predict_list = []
         for x in range(count_row):
             for y in range(0, count_col):
@@ -120,7 +123,7 @@ def process_input_arguments():
     args = parser.parse_args()
 
     image_folders = args.images
-    if ".model" in args.models:
+    if '.model' in args.models:
         list_of_models = [args.models]
     else:
         list_of_models = os.listdir(args.models)
