@@ -69,12 +69,12 @@ class LabeledTestingImages(LabeledImages):
         self.test_features: list = []
         self.test_labels: list = []
 
-    def load_testing_images(self, testing_image_folder: Union[str, Path],
-                            image_size: Union[int, Tuple[int, int]],
+    def load_testing_images(self, testing_images_location: Union[str, Path],
+                            image_size: Tuple[int, int],
                             color_mode: ColorMode = ColorMode.rgb):
-        self.img_dimensions = image_size if type(image_size) is tuple else (image_size, image_size)
+        self.img_dimensions = image_size
         self.color_mode = color_mode
-        self.test_image_set = tf.keras.preprocessing.image_dataset_from_directory(testing_image_folder,
+        self.test_image_set = tf.keras.preprocessing.image_dataset_from_directory(testing_images_location,
                                                                                   color_mode=self.color_mode.name,
                                                                                   image_size=self.img_dimensions,
                                                                                   shuffle=False)
