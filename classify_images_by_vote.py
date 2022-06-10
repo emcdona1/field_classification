@@ -23,48 +23,30 @@ def main():
     images.load_testing_images(image_folders, image_size, color_mode)
     print('Images imported.')
 
-    combined_results = pd.DataFrame()
-    combined_results['image filenames'] = images.test_image_file_paths
-
-    all_predictions = pd.DataFrame()
-    # Set up prediction list
-    predicted_probabilities = []
-    num_classes = 0
-
-    for model_path in list_of_models:
-        predictions, num_classes = classify_images_with_a_model_multiclass(images, model_path)
-
-    # # Find average of all predictions per image
-    # mean = []
-    # for x in range(images.img_count):
-    #     total = 0
-    #     for y in range(num_classes):
-    #         total = total + predicted_probabilities[x][y]
-    #     mean.append(total / images.img_count)
-    #
-    # # add to combined_results
-    # combined_results['CNN_1.model'] = mean
-    # combined_results['voted_probability'] = mean
-    combined_results['actual_class'] = images.test_labels
-
-    # Store actual prediction per image
-    predicted_class = []
-    cls = 0
-    for i in range(images.img_count):
-        max_val = 0
-        for j in range(num_classes):
-            if predicted_probabilities[i][j] > max_val:
-                max_val = predicted_probabilities[i][j]
-                cls = j
-        predicted = cls
-        predicted_class.append(predicted)
-    combined_results['voted_label'] = predicted_class
-
     results_dir = 'test_results'
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
-    generate_confusion_matrix(num_classes, images, predicted_class, results_dir)
-    combined_results.columns = ['filename', 'CNN_1.model', 'voted_probability', 'actual_class', 'voted_label']
+
+    if len(list_of_models) == 1:
+        predictions = predict_test_images(images, list_of_models[0])
+        predicted_class = np.argmax(np.array(predictions), axis=1)
+
+        combined_results = pd.DataFrame()
+        combined_results['image filenames'] = images.test_image_file_paths
+        combined_results['actual_class'] = images.test_labels
+        combined_results['voted_label'] = predicted_class
+        combined_results[(predictions.columns)] = predictions
+        generate_confusion_matrix(len(images.class_labels), images, predicted_class, results_dir)
+    else:
+        predictions = list()
+        predicted_class = list()
+        for model_path in list_of_models:
+            next_predictions, num_classes = predict_test_images(images, model_path)
+            predictions.append(next_predictions)
+            predicted_class.append(np.argmax(np.array(predictions), axis=1))
+            # todo: vote
+        combined_results = pd.DataFrame()
+
     combined_results.to_csv(str(Path(results_dir, 'combined_results.csv')))
     timer.stop()
     timer.print_results()
@@ -84,7 +66,7 @@ def generate_confusion_matrix(col, images, predicted_class, results_dir: str):
     plt.savefig(Path(results_dir, file_name), format='png')
 
 
-def classify_images_with_a_model_multiclass(images: LabeledTestingImages, model_path: Union[str, Path]):
+def predict_test_images(images: LabeledTestingImages, model_path: Union[str, Path]) -> pd.DataFrame:
     model_name = Path(model_path).stem
     if Path(model_path).suffix == '.model':
         model = tf.keras.models.load_model(model_path)
@@ -92,22 +74,13 @@ def classify_images_with_a_model_multiclass(images: LabeledTestingImages, model_
 
         predictions: np.array = model.predict(images.test_image_set)
 
-        labels = list(range(predictions.shape[1]))
-        labels = [f'{images.class_labels[i]}_prediction' for i in labels]
-        predictions = pd.DataFrame(predictions, columns=labels)
+        labels = [f'{i}_prediction' for i in images.class_labels]
         print('Predictions generated.')
 
-        class_count = predictions.shape[0]
-        img_count = predictions.shape[1]
-
-        predict_list = []
-        for x in range(class_count):
-            for y in range(0, img_count):
-                predict_list.append(predictions.at[x, images.class_labels[y] + '_prediction'])
-        predict_group_list = [predict_list[i:i + img_count] for i in range(0, len(predict_list), img_count)]
-        return predict_group_list, img_count
+        predictions = pd.DataFrame(predictions, columns=labels)
+        return predictions
     else:
-        print(f'Model file path error: {model_path} is not a *.model file.')
+        print(f'Model file path error: {model_path} is not a *.model file.')  # todo move this to argument processing
 
 
 def process_input_arguments():
