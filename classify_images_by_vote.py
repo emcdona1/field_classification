@@ -1,12 +1,12 @@
 import os
 from pathlib import Path
-from typing import Union
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 import tensorflow as tf
 from utilities.timer import Timer
+from utilities.dataloader import save_dataframe_as_csv
 from labeled_images.labeledimages import LabeledTestingImages
 from models.modeltrainingarguments import ModelTestingArguments
 
@@ -22,7 +22,7 @@ def main():
     images.load_testing_images(arguments.image_folders, arguments.image_size, arguments.color_mode)
     print('Images imported.')
 
-    results_dir = 'test_results'
+    results_dir = Path('test_results')
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
 
@@ -46,7 +46,7 @@ def main():
             # todo: vote
         combined_results = pd.DataFrame()
 
-    combined_results.to_csv(str(Path(results_dir, 'combined_results.csv')))
+    save_dataframe_as_csv(results_dir, 'results', combined_results, timestamp=False)
     timer.stop()
     timer.print_results()
 
