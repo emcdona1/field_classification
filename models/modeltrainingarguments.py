@@ -104,4 +104,8 @@ class ModelTestingArguments(ModelArguments):
         else:
             list_of_models = os.listdir(self._args.models)
             list_of_models = [Path(self._args.models, filename) for filename in list_of_models]
+            list_of_models = [filename for filename in list_of_models if '.model' in str(filename)]
+        assert len(list_of_models) >= 1, 'No .model files found.'
+        for model_path in list_of_models:
+            assert os.path.exists(model_path), f'{model_path} does not exist.'
         return list_of_models
