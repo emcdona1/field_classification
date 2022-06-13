@@ -26,18 +26,14 @@ def main():
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
 
+    combined_results = pd.DataFrame()
+    combined_results['image filenames'] = images.test_image_file_paths
+    for model_path in arguments.list_of_models:
+        predicted_class = make_and_save_predictions(model_path, combined_results, images)
+        generate_confusion_matrix(len(images.class_labels), images, predicted_class, model_path, results_dir)
     if len(arguments.list_of_models) == 1:
-        combined_results = pd.DataFrame()
-        combined_results['image filenames'] = images.test_image_file_paths
-        predicted_class = make_and_save_predictions(arguments.list_of_models[0], combined_results, images)
-        generate_confusion_matrix(len(images.class_labels), images, predicted_class, arguments.list_of_models[0], results_dir)
-    else:
-        combined_results = pd.DataFrame()
-        combined_results['image filenames'] = images.test_image_file_paths
-        for model_path in arguments.list_of_models:
-            predicted_class = make_and_save_predictions(model_path, combined_results, images)
-            generate_confusion_matrix(len(images.class_labels), images, predicted_class, model_path, results_dir)
         # todo: vote
+        pass
 
     save_dataframe_as_csv(results_dir, 'results', combined_results, timestamp=False)
     timer.stop()
