@@ -33,6 +33,8 @@ def main():
         predicted_class, current_predictions = make_and_save_predictions(model_path, combined_results, images)
         generate_confusion_matrix(len(images.class_labels), images, predicted_class, model_path.stem, results_dir)
         sum_of_predictions = sum_of_predictions + current_predictions
+        prediction_accuracy = accuracy_score(images.test_labels, predicted_class)
+        print(f'### The accuracy of model {model_path.stem} is: {prediction_accuracy*100:0.2f}%. ###')
     if len(arguments.list_of_models) > 1:
         votes = np.argmax(np.array(sum_of_predictions), axis=1)
         generate_confusion_matrix(len(images.class_labels), images, votes, 'vote', results_dir)
@@ -41,14 +43,13 @@ def main():
         voted_labels = voted_labels.apply(lambda a: images.class_labels[int(a)], axis=1)
         combined_results['voted_class'] = voted_labels
 
+        prediction_accuracy = accuracy_score(images.test_labels, votes)
+        print(f'### The voted classification accuracy is: {prediction_accuracy*100:0.2f}%. ###')
+
     save_dataframe_as_csv(results_dir, 'results', combined_results, timestamp=False)
     timer.stop()
     timer.print_results()
 
-    prediction_accuracy = accuracy_score(images.test_labels, predicted_class)
-    print(f'The final accuracy is: {prediction_accuracy}')
-
-    exit(0)
 
 def make_and_save_predictions(model_path: Path,
                               combined_results: pd.DataFrame,
