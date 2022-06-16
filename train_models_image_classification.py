@@ -25,8 +25,8 @@ def main() -> None:
     trainer.train_and_save_all_models(new_images)
     trainer.charts.finalize()
 
-    for x in range(len(new_images.class_labels)):
-        print(f'Class {x}: {new_images.class_labels[x]}')
+    for idx, class_label in enumerate(new_images.class_labels):
+        print(f'Class {idx}: {class_label}')
     timer.stop()
     timer.print_results()
 
