@@ -64,7 +64,7 @@ def make_and_save_predictions(model_path: Path,
     labels = [f'{i} prediction' for i in images.class_labels]
     labeled_predictions = pd.DataFrame(predictions, columns=labels)
 
-    prediction_column_names = [f'{model_name} {i}' for i in list(labeled_predictions.columns)]
+    prediction_column_names = [f'{model_name} {i}' for i in labels]
     combined_results[prediction_column_names] = labeled_predictions
     combined_results[f'{model_name} - actual class'] = images.test_labels
     combined_results[f'{model_name} - voted label'] = predicted_class
