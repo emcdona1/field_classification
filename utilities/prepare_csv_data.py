@@ -16,12 +16,9 @@ def main(given_file: Path):
     assert os.path.isfile(given_file), f'Invalid 1st argument: {given_file} is not a file.'
     given_data = pd.read_csv(given_file, dtype={"user_id": pd.Int64Dtype()})
     given_data = given_data.drop(columns=[
-        'user_name', 'user_ip',
-        'created_at', 'gold_standard', 'expert',
-        'metadata'
+        'user_name', 'user_ip','created_at', 'gold_standard', 'expert', 'metadata'
     ])
     given_data = _filter_workflow_versions(given_data)
-    # given_data = given_data.reset_index(drop=True)
     given_data = _expand_dict_columns(given_data)
     given_data = given_data.rename(columns={'annotations': 'user_answer', 'subject_data': 'image_file'})
     results_dir = Path('utilities/saved_csvs')
@@ -45,6 +42,9 @@ def _expand_dict_columns(given_df: pd.DataFrame) -> pd.DataFrame:
         for val in curr:
             if val['task'] == 'T0':
                 ann_out = val['value']
+                if type(ann_out) == str:
+                    ann_out = ann_out.replace("Both Female and Male", "Both")
+                    ann_out = ann_out.replace(" ", "")
             elif val['task'] != 'T1':
                 rect_out = True
         return ann_out, rect_out
@@ -61,6 +61,7 @@ def _expand_dict_columns(given_df: pd.DataFrame) -> pd.DataFrame:
     given_df['annotations'] = given_df.apply(lambda x: clean_ann(x.annotations, x.asked_for_rectangle), axis=1)
     given_df[['annotations', 'asked_for_rectangle']] = pd.DataFrame(given_df.annotations.tolist(), index=given_df.index)
     given_df['subject_data'] = given_df.apply(lambda x: clean_sub(x.subject_data), axis=1)
+    given_df = given_df[given_df['annotations'].isin(["Male", "Female", "Sterile", "Both"])]
     return given_df
 
 if __name__ == '__main__':
