@@ -5,6 +5,7 @@ import pandas as pd
 from pathlib import Path
 from timer import Timer
 from dataloader import save_dataframe_as_csv
+from vote_csv_data import vote_on_results
 
 WORKFLOW_NAME = 'Determining the Reproductive Structure of a Liverwort'
 MINIMUM_WORKFLOW_VERSION = 80.124
@@ -23,10 +24,28 @@ def main(given_file: Path):
     given_data = _filter_workflow_versions(given_data)
 
     given_data = _expand_dict_columns(given_data)
+
+    voted_data = given_data.sort_values(by=['subject_ids'])
+    voted_data = voted_data.rename(columns={
+        'annotations': 'sex_determined_by_user',
+        'ann_temp': 'annotations',
+        'subject_data': 'image_file'
+    })
+    voted_data = voted_data[voted_data['sex_determined_by_user'].isin(['Male', 'Female', 'Both', 'Sterile'])]
+    voted_data['voted_sex'] = ''
+
+    voted_data = vote_on_results(voted_data)
+
+    voted_data = voted_data.rename(columns={
+        'T3_male': 'Please draw a rectangle around all male  reproductive identifiers you see in the image ',
+        'T4_mf': 'Please draw a rectangle around all male and female reproductive identifiers you see in the image',
+        'T5_female': 'Please draw a rectangle around all female reproductive identifiers and determine where they are located in the image '
+    })
+
     given_data = given_data.rename(columns={
         'annotations': 'Please identify if the image of the microplant shown best corresponds to a female, male, sterile, or both a female and a male structure.',
         'T3_male': 'Please draw a rectangle around all male  reproductive identifiers you see in the image ',
-        'T4_m_and_f': 'Please draw a rectangle around all male and female reproductive identifiers you see in the image',
+        'T4_mf': 'Please draw a rectangle around all male and female reproductive identifiers you see in the image',
         'T5_female': 'Please draw a rectangle around all female reproductive identifiers and determine where they are located in the image ',
         'subject_data': 'image_file',
         'ann_temp': 'annotations'
@@ -36,6 +55,7 @@ def main(given_file: Path):
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
     save_dataframe_as_csv(results_dir, f'{root}-cleaned', given_data)
+    save_dataframe_as_csv(results_dir, f'{root}-voted', voted_data)
 
     timer.stop()
     timer.print_results()
@@ -75,11 +95,11 @@ def _expand_dict_columns(given_df: pd.DataFrame) -> pd.DataFrame:
 
     make_column('asked_for_rectangle', False)
     make_column('T3_male', '')
-    make_column('T4_m_and_f', '')
+    make_column('T4_mf', '')
     make_column('T5_female', '')
 
     given_df['annotations'] = given_df.apply(lambda x: clean_annotation(x.annotations, x.asked_for_rectangle), axis=1)
-    given_df[['annotations', 'asked_for_rectangle', 'T3_male', 'T4_m_and_f', 'T5_female']] = pd.DataFrame(
+    given_df[['annotations', 'asked_for_rectangle', 'T3_male', 'T4_mf', 'T5_female']] = pd.DataFrame(
         given_df.annotations.tolist(), index=given_df.index)
     given_df['subject_data'] = given_df.apply(lambda x: clean_subject_data(x.subject_data), axis=1)
     return given_df
