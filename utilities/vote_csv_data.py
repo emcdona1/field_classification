@@ -40,9 +40,9 @@ def _filter_duplicates_after_voting(voted: list) -> list:
 
 def vote_on_results(voted_df: pd.DataFrame) -> pd.DataFrame:
     c = Timer('voting')
-    all_unique_ids = set(voted_df['subject_ids'])
+    all_unique_ids = set(voted_df['image_file'])
     for image_id in all_unique_ids:
-        subset = voted_df[voted_df['subject_ids'] == image_id]
+        subset = voted_df[voted_df['image_file'] == image_id]
         consolidated_row = subset.loc[subset.index[0], :]
         # print('===')
         # print(consolidated_row['subject_ids'])
