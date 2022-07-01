@@ -25,22 +25,19 @@ def main(given_file: Path):
 
     given_data = _expand_dict_columns(given_data)
 
-    voted_data = given_data.sort_values(by=['subject_ids'])
-    voted_data = voted_data.rename(columns={
+    # voted_data = given_data.sort_values(by=['subject_ids'])
+    voted_data = given_data.rename(columns={
         'annotations': 'sex_determined_by_user',
-        'ann_temp': 'annotations',
         'subject_data': 'image_file'
     })
-    voted_data = voted_data[voted_data['sex_determined_by_user'].isin(['Male', 'Female', 'Both', 'Sterile'])]
-    voted_data['voted_sex'] = ''
+    voted_data = voted_data.drop(columns={'ann_temp', 'asked_for_rectangle', 'T3_male', 'T4_mf', 'T5_female'})
+    voted_data = voted_data[voted_data['sex_determined_by_user'].isin(['Male', 'Female', 'Both', 'Sterile', 'NotSure'])]
+    # voted_data['voted_sex', 'confidence', 'percent_not_sure', 'num_of_votes'] = ''
 
     voted_data = vote_on_results(voted_data)
 
-    voted_data = voted_data.rename(columns={
-        'T3_male': 'Please draw a rectangle around all male  reproductive identifiers you see in the image ',
-        'T4_mf': 'Please draw a rectangle around all male and female reproductive identifiers you see in the image',
-        'T5_female': 'Please draw a rectangle around all female reproductive identifiers and determine where they are located in the image '
-    })
+    voted_data = voted_data.drop(columns={'sex_determined_by_user'})
+    voted_data = voted_data.sort_values(by=['subject_ids'])
 
     given_data = given_data.rename(columns={
         'annotations': 'Please identify if the image of the microplant shown best corresponds to a female, male, sterile, or both a female and a male structure.',
