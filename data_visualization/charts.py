@@ -63,27 +63,26 @@ class ROCChart(Chart):
                 self.tpr[1] = latest_tpr
                 self.auc[1] = latest_auc
 
-                self.create_chart(current_class, class_labels)
+                self.create_chart(class_labels, current_class)
             else:
                 print(f'Class {current_class} has no correct values -- ROC cannot be generated.')
                 self.fpr[1] = -1
                 self.tpr[1] = -1
                 self.auc[1] = -1
 
-    # override save method to save file if that file does not already exist (needed to handle runtime error)
     def save(self, class_labels: list, current_class: int) -> None:
+        # if in bounds
         if current_class < len(class_labels):
-            # if the file exists already, pass
-            if not os.path.exists(str(self.path) + '_Class' + self.file_extension):
+            # if the file does not exist already
+            if not os.path.exists(f'{self.path}-Class_{current_class}{self.file_extension}'):
                 if len(class_labels) == 2:
-                    plt.savefig(str(self.path) + 'Binary' + self.file_extension)
+                    plt.savefig(f'{self.path}-Binary{self.file_extension}')
                 else:
-                    # todo: error test this
-                    plt.savefig(str(self.path) + '_Class' + self.file_extension)
+                    plt.savefig(f'{self.path}-Class_{current_class}{self.file_extension}')
                     plt.clf()
 
-    def create_chart(self, class_number: int, class_labels: list) -> None:
-        plt.figure(3 + class_number)
+    def create_chart(self, class_labels: list, current_class_number: int) -> None:
+        plt.figure(3 + current_class_number)
         plt.xlim([-0.05, 1.05])
         plt.ylim([-0.05, 1.05])
         plt.xlabel('False Positive Rate')
@@ -93,7 +92,7 @@ class ROCChart(Chart):
         if len(class_labels) == 2:
             plt.title(f'ROC Curve')
         else:
-            plt.title(f'ROC Curve - Class {class_number}')
+            plt.title(f'ROC Curve - Class {class_labels[current_class_number]}')
 
         plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Random', alpha=0.8)
         plt.plot(self.fpr[1], self.tpr[1], color='blue',
@@ -101,7 +100,7 @@ class ROCChart(Chart):
                  lw=2, alpha=0.8)
         plt.legend(loc='lower right')
 
-        self.save(class_labels, class_number)
+        self.save(class_labels, current_class_number)
 
     def finalize(self, results: pd.DataFrame) -> None:
         results['auc'] = self.auc.values()
