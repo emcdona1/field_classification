@@ -56,9 +56,14 @@ class LabeledImages:
         self.class_labels = self.training_image_set.class_names
 
         self.img_count = 0
+        self.count_per_class = {}
+        count = 0
         for parent, child, files in os.walk(training_images_location):
             image_files = [Path(i) for i in files if Path(i).suffix in ['.jpeg', '.jpg', '.gif', '.png', '.bmp']]
-            self.img_count += len(image_files)
+            if len(image_files) > 0:
+                self.count_per_class[count] = len(image_files)
+                count += 1
+                self.img_count += len(image_files)
 
 
 class LabeledTestingImages(LabeledImages):

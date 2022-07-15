@@ -19,6 +19,7 @@ class ModelTrainer:
         self.history = list()
         self.seed: int = seed
         self.charts = VisualizationGenerator()
+        self.class_weight = {}
 
     def train_and_save_all_models(self, images: LabeledImages):
         self.train_model(images)
@@ -27,13 +28,18 @@ class ModelTrainer:
         self.validate_model_at_epoch_end(images, images.validation_image_set)
 
     def train_model(self, images: LabeledImages) -> None:
+        self.class_weight = dict.fromkeys(range(0, len(images.class_labels)))
+        for curr_ind in images.count_per_class:
+            curr_count = images.count_per_class[curr_ind]
+            self.class_weight[curr_ind] = (1.0/curr_count) * (images.img_count/2.0)
         self.architecture.reset_model()
         print(f'Training model .')
         new_history = self.architecture.model.fit(images.training_image_set,
                                                   validation_data=images.validation_image_set,
                                                   batch_size=self.batch_size,
                                                   epochs=self.epochs,
-                                                  verbose=2)
+                                                  verbose=2,
+                                                  class_weight=self.class_weight)
         self.history.append(new_history)
 
     def validate_model_at_epoch_end(self, images: LabeledImages, validation_set: tf.data.Dataset) -> None:
