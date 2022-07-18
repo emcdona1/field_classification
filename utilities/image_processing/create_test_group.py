@@ -16,7 +16,7 @@ def process_input_arguments():
     OUTPUT:
     -----
     @directory - file folder in working directory containing the image folders
-    
+
     @categories - list of size 2, containing the image folder names (separated by species)
 
     @image_groups - dictionary with 4 keys, which contain the new folder names
@@ -27,12 +27,20 @@ def process_input_arguments():
     parser.add_argument('-d', '--directory', default='', help='Folder holding category folders')
     parser.add_argument('-c1', '--category1', default='', help='1st folder')
     parser.add_argument('-c2', '--category2', default='', help='2nd folder')
+    parser.add_argument('-c3', '--category3', default='', help='3rd folder')
+    parser.add_argument('-c4', '--category4', default='', help='4th folder')
     parser.add_argument('-v', '--verbose', default='0', help='Verbose mode on (1) or off (0)')
     args = parser.parse_args()
     categories = [args.category1.replace('\\', '').replace('/', '').replace('.', ''),
-                  args.category2.replace('\\', '').replace('/', '').replace('.', '')]
+                  args.category2.replace('\\', '').replace('/', '').replace('.', ''),
+                  args.category3.replace('\\', '').replace('/', '').replace('.', ''),
+                  args.category4.replace('\\', '').replace('/', '').replace('.', '')
+                  ]
     image_groups = {categories[0] + 'train': [], categories[0] + 'test': [],
-                    categories[1] + 'train': [], categories[1] + 'test': []}
+                    categories[1] + 'train': [], categories[1] + 'test': [],
+                    categories[2] + 'train': [], categories[2] + 'test': [],
+                    categories[3] + 'train': [], categories[3] + 'test': []
+                    }
     global VERBOSE
     VERBOSE = (True if args.verbose == '1' else False)
     return args.directory, categories, image_groups
@@ -66,6 +74,10 @@ def split_images(directory, categories, image_groups):
           str(len(image_groups[categories[0] + 'test'])) + ' testing images.')
     print('Category 1 split into ' + str(len(image_groups[categories[1] + 'train'])) + ' training images and ' + \
           str(len(image_groups[categories[1] + 'test'])) + ' testing images.\n')
+    print('Category 2 split into ' + str(len(image_groups[categories[2] + 'train'])) + ' training images and ' + \
+          str(len(image_groups[categories[2] + 'test'])) + ' testing images.')
+    print('Category 3 split into ' + str(len(image_groups[categories[3] + 'train'])) + ' training images and ' + \
+          str(len(image_groups[categories[3] + 'test'])) + ' testing images.\n')
 
     return image_groups
 
