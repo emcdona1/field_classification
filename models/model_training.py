@@ -1,3 +1,4 @@
+import math
 import os
 from models import CNNModel
 from labeled_images.labeledimages import LabeledImages
@@ -30,8 +31,14 @@ class ModelTrainer:
     def train_model(self, images: LabeledImages) -> None:
         self.class_weight = dict.fromkeys(range(0, len(images.class_labels)))
         for curr_ind in images.count_per_class:
-            curr_count = images.count_per_class[curr_ind]
-            self.class_weight[curr_ind] = (1.0/curr_count) * (images.img_count/2.0)
+            curr_count = float(images.count_per_class[curr_ind])
+            print(f'Items in class {curr_ind}: {(int)(curr_count)}')
+            weight = images.img_count / (10 * math.log(curr_count, 2))                  # total/[10*log2(class)]
+            # weight = images.img_count / (4 * curr_count)                                # total/[4*class]
+            # weight = (10 * images.img_count) / (math.log(curr_count, 2) * curr_count)   # [total * 10]/[(class)*log2(class)]
+            # weight = (images.img_count/4.0 - curr_count) / (math.log(curr_count, 2))    # [total/4 - class]/[log2(class)]
+            self.class_weight[curr_ind] = weight
+        print(f'Weights: {self.class_weight}')
         self.architecture.reset_model()
         print(f'Training model .')
         new_history = self.architecture.model.fit(images.training_image_set,
