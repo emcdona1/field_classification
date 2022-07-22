@@ -34,13 +34,13 @@ def main(images_folder, voted_csv):
                 path_to = os.path.join(sorted_images_subfolders[sex_vote], image_name)
                 try:
                     path_from = os.path.join(root, image_name)
-                    shutil.copyfile(path_from, path_to)
+                    shutil.move(path_from, path_to)
                 except FileNotFoundError:
                     pass
                 for dir in dirs:
                     try:
                         path_from = os.path.join(root, dir, image_name)
-                        shutil.copyfile(path_from, path_to)
+                        shutil.move(path_from, path_to)
                     except FileNotFoundError:
                         pass
 
