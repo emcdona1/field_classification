@@ -1,3 +1,4 @@
+import math
 import os
 from models import CNNModel
 from labeled_images.labeledimages import LabeledImages
@@ -19,6 +20,7 @@ class ModelTrainer:
         self.history = list()
         self.seed: int = seed
         self.charts = VisualizationGenerator()
+        self.class_weight = {}
 
     def train_and_save_all_models(self, images: LabeledImages):
         self.train_model(images)
@@ -27,13 +29,24 @@ class ModelTrainer:
         self.validate_model_at_epoch_end(images, images.validation_image_set)
 
     def train_model(self, images: LabeledImages) -> None:
+        self.class_weight = dict.fromkeys(range(0, len(images.class_labels)))
+        for curr_ind in images.count_per_class:
+            curr_count = float(images.count_per_class[curr_ind])
+            print(f'Items in class {curr_ind}: {(int)(curr_count)}')
+            weight = images.img_count / (10 * math.log(curr_count, 2))                  # total/[10*log2(class)]
+            # weight = images.img_count / (4 * curr_count)                                # total/[4*class]
+            # weight = (10 * images.img_count) / (math.log(curr_count, 2) * curr_count)   # [total * 10]/[(class)*log2(class)]
+            # weight = (images.img_count/4.0 - curr_count) / (math.log(curr_count, 2))    # [total/4 - class]/[log2(class)]
+            self.class_weight[curr_ind] = weight
+        print(f'Weights: {self.class_weight}')
         self.architecture.reset_model()
         print(f'Training model .')
         new_history = self.architecture.model.fit(images.training_image_set,
                                                   validation_data=images.validation_image_set,
                                                   batch_size=self.batch_size,
                                                   epochs=self.epochs,
-                                                  verbose=2)
+                                                  verbose=2,
+                                                  class_weight=self.class_weight)
         self.history.append(new_history)
 
     def validate_model_at_epoch_end(self, images: LabeledImages, validation_set: tf.data.Dataset) -> None:

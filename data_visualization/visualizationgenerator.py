@@ -10,6 +10,7 @@ from tensorflow.keras.callbacks import History
 class VisualizationGenerator:
     def __init__(self):
         self.folder_name = f'graphs{datetime.strftime(datetime.now(), "%Y-%m-%d-%H-%M-%S")}'
+        self.folder_name = os.path.join('graphs', self.folder_name)
         assert not os.path.exists(self.folder_name), f'Error, the graph folder {self.folder_name} already exists!'
         os.makedirs(self.folder_name)
         self.all_charts = []

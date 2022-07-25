@@ -178,6 +178,7 @@ class ConfusionMatrix(Chart):
         self.predicted_labels = {}
         self.actual_labels = {}
         self.confusion_matrix = np.ndarray([0])
+        self.class_labels = {}
 
     def update(self,
                validation_labels: np.array,
@@ -189,6 +190,7 @@ class ConfusionMatrix(Chart):
         self.actual_labels = validation_labels
         # self.predicted_labels = np.argmax(predictions, axis=1)  # todo: verify the axis, then scrap lines below
         self.predicted_labels = []
+        self.class_labels = class_labels
         cls = 0
         # find the highest prediction value and determine which class
         # it represents, then store that predicted class
@@ -203,8 +205,28 @@ class ConfusionMatrix(Chart):
 
         self.confusion_matrix = confusion_matrix(self.actual_labels, self.predicted_labels)
         classes = list(set(self.actual_labels)).sort()
-        ConfusionMatrixDisplay(confusion_matrix=self.confusion_matrix, display_labels=classes).plot()
+        ConfusionMatrixDisplay(confusion_matrix=self.confusion_matrix, display_labels=self.class_labels).plot()
 
     def finalize(self, results: pd.DataFrame) -> None:
         results['correct predictions'] = self.confusion_matrix.diagonal().sum()
         results['incorrect predictions'] = self.confusion_matrix.sum() - results['correct predictions']
+        for i in range(len(self.class_labels)):
+            true_pos = 0
+            false_pos = 0
+            false_neg = 0
+            for j in range(len(self.class_labels)):
+                if i == j:
+                    true_pos += self.confusion_matrix[i][j]
+                else:
+                    false_neg += self.confusion_matrix[i][j]
+                    false_pos += self.confusion_matrix[j][i]
+            precision = true_pos/(true_pos+false_pos)
+            recall = true_pos/(true_pos+false_neg)
+            if np.isnan(precision):
+                precision = 0
+            if np.isnan(recall):
+                recall = 0
+            results[f'precision_{self.class_labels[i]}'] = precision
+            results[f'recall_{self.class_labels[i]}'] = recall
+            print(f'precision_{self.class_labels[i]}: {precision} /// recall_{self.class_labels[i]}: {recall}')
+
