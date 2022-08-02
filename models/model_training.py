@@ -35,9 +35,11 @@ class ModelTrainer:
             print(f'Items in class {curr_ind}: {(int)(curr_count)}')
             weight = images.img_count / (10 * math.log(curr_count, 2))                  # total/[10*log2(class)]
             # weight = images.img_count / (4 * curr_count)                                # total/[4*class]
+            # weight = images.img_count / (2 * curr_count)                                # total/[2*class]
             # weight = (10 * images.img_count) / (math.log(curr_count, 2) * curr_count)   # [total * 10]/[(class)*log2(class)]
             # weight = (images.img_count/4.0 - curr_count) / (math.log(curr_count, 2))    # [total/4 - class]/[log2(class)]
             self.class_weight[curr_ind] = weight
+        # self.class_weight = {0: 1, 1: 1}      # manual weights
         print(f'Weights: {self.class_weight}')
         self.architecture.reset_model()
         print(f'Training model .')
@@ -46,7 +48,8 @@ class ModelTrainer:
                                                   batch_size=self.batch_size,
                                                   epochs=self.epochs,
                                                   verbose=2,
-                                                  class_weight=self.class_weight)
+                                                  class_weight=self.class_weight        # comment this line if no weights
+                                                  )
         self.history.append(new_history)
 
     def validate_model_at_epoch_end(self, images: LabeledImages, validation_set: tf.data.Dataset) -> None:

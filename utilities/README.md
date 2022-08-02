@@ -18,9 +18,9 @@ This directory contains image preprocessing scripts (resize, reshape, downloadin
   - Simple helper script to time and output execution of programs.
 - **dataloader.py**
   - Set of functions to load/save files on the local file system.
-- **click_crop.py**
-  - A way to select an image file and crop it automatically by selecting the upper left and lower right bounds of the desired portion
-- **crop_resize.py**
-  - Take the cropped images, find the largest width and height value between all cropped photos and resize each image to be the same size
-- **cropped_image_data.csv**
-  - Stores the height, width, and path of each cropped image
+- **prepare_csv_data.py**
+  - Creates cleaned and voted csvs from given csv (made for Zooniverse)
+- **vote_csv_data.py**
+  - Helper functions for prepare_csv_data.py
+- **sort_images_with_voted.py**
+  - Sorts given images into categories based on voted csv
