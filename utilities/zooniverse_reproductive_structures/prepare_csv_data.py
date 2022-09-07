@@ -3,9 +3,9 @@ import sys
 import json
 import pandas as pd
 from pathlib import Path
-from timer import Timer
-from dataloader import save_dataframe_as_csv
-from vote_csv_data import vote_on_results
+from statistics import multimode
+from ..timer import Timer
+from ..dataloader import save_dataframe_as_csv
 
 WORKFLOW_NAME = 'Determining the Reproductive Structure of a Liverwort'
 MINIMUM_WORKFLOW_VERSION = 80.124
@@ -32,7 +32,6 @@ def main(given_file: Path):
     })
     voted_data = voted_data.drop(columns={'classification_id', 'user_id', 'ann_temp', 'subject_ids', 'asked_for_rectangle', 'T3_male', 'T4_mf', 'T5_female'})
     voted_data = voted_data[voted_data['sex_determined_by_user'].isin(['Male', 'Female', 'Both', 'Sterile', 'NotSure'])]
-    # voted_data['voted_sex', 'confidence', 'percent_not_sure', 'num_of_votes'] = ''
 
     voted_data = vote_on_results(voted_data)
 
@@ -100,6 +99,44 @@ def _expand_dict_columns(given_df: pd.DataFrame) -> pd.DataFrame:
         given_df.annotations.tolist(), index=given_df.index)
     given_df['subject_data'] = given_df.apply(lambda x: clean_subject_data(x.subject_data), axis=1)
     return given_df
+
+
+def vote(df: pd.DataFrame, col_name: str) -> (list, int, int, int):
+    total = df.shape[0]
+    not_sure = df[df[col_name] == 'NotSure'].shape[0]
+
+    voted = multimode(list(df[df[col_name].isin(['Male', 'Female', 'Both', 'Sterile'])].loc[:, col_name]))
+
+    if type(voted) is not list:
+        voted = [voted]
+    voted_count = df[df[col_name] == voted[0]].shape[0]
+    return voted, voted_count, total, not_sure
+
+
+def _vote_on_sex(subset, consolidated_row):
+    sex_vote, correct_votes, total_votes, not_sure_votes = vote(subset, 'sex_determined_by_user')
+    consolidated_row.at['voted_sex'] = sex_vote[0]
+    consolidated_row.at['confidence'] = float(correct_votes/total_votes)
+    consolidated_row.at['percent_not_sure'] = float(not_sure_votes/total_votes)
+    consolidated_row.at['num_of_votes'] = total_votes
+
+
+def _filter_duplicates_after_voting(voted: list) -> list:
+    counts = {a: voted.count(a) for a in voted}
+    max_count = max(counts.values())
+    voted = [a for a in voted if voted.count(a) == max_count]
+    return list(set(voted))
+
+
+def vote_on_results(voted_df: pd.DataFrame) -> pd.DataFrame:
+    all_unique_ids = set(voted_df['image_file'])
+    for image_id in all_unique_ids:
+        subset = voted_df[voted_df['image_file'] == image_id]
+        consolidated_row = subset.loc[subset.index[0], :]
+        _vote_on_sex(subset, consolidated_row)
+        voted_df = voted_df.drop(index=subset.index)
+        voted_df = voted_df.append(consolidated_row)
+    return voted_df
 
 
 if __name__ == '__main__':
