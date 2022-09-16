@@ -1,5 +1,5 @@
 tensorflow==2.5.0
-matplotlib==3.4.2
+matplotlib==3.4.3
 numpy==1.19.5
 opencv-python==4.5.2.52
 pandas==1.2.4
