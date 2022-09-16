@@ -1,18 +1,17 @@
-from matplotlib import image
 import cv2
 import os
 import shutil
-from PIL import Image
-import csv
-import numpy as np
 from pathlib import Path
+import csv
+from PIL import Image
+import numpy as np
 from tkinter import filedialog
+from matplotlib import image
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from skimage import filters, segmentation, measure, morphology, color
 
 BACKGROUND_COLOR_THRESHOLD = 200
-
 # Local variables to help set the x and y axies and declare the list
 x1 = 0
 y1 = 0
