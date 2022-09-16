@@ -8,3 +8,5 @@ scipy==1.6.2
 requests==2.25.1
 scikit-image==0.18.1
 augmentor==0.2.8
+numpy==1.19.5
+future==0.18.2
