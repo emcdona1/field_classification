@@ -1,6 +1,6 @@
 import csv
 import pandas as pd
-import requests  # must do 'pip install requests' in terminal
+import requests
 import argparse
 import os
 

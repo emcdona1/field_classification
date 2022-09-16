@@ -65,6 +65,12 @@ for necessary Python packages.
     - `-e` - number of epochs per fold (*integer >= 5*, default=25)
     - `-b` - batch size for updates (*integer >= 2*, default=64)
     - `-cls` - number of classes (*integer >= 2*, default=2)
+- **Weights**:
+    - Determined in model_training.py lines 33-43, 51
+    - Uncomment line with desired weights
+    - To use no weighting, comment:
+        - Lines 33-43 (Optional)
+        - Line 51 (class_weight=self.class_weight)
 - **Output**:
     - Directory `saved_models` is created in current working directory, which will contain one model file after training (`CNN_1.model`).
     - Directory `graphs` is created in current working directory, which will contain all generated graphs/plots for each run, plus a CSV summary for each fold.
