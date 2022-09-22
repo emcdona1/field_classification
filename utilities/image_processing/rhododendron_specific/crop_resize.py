@@ -1,20 +1,50 @@
-import sys
-from pathlib import Path
-import numpy as np
 import cv2
+import numpy as np
 import csv
 
 
-def pad_based_on_csv(csv_filename: Path):
-    count = 0
-    with open(csv_filename, 'r') as file:
-        height, width = find_new_dimensions(file)
+# Function to find the largest dimensions stored in the CSV file
+def find_new_dimensions():
+    # Instance variables to store max values
+    max_height = 0
+    max_width = 0
 
+    # Open CSV file and read stored value to find the largest values
+    with open('cropped_image_data.csv', 'r') as file:
         reader = csv.reader(file)
         for row in reader:
+            # Ensure row is not null
             if row:
+                height = int(row[0])
+                width = int(row[1])
+                if height > max_height:
+                    max_height = height
+                if width > max_width:
+                    max_width = width
+
+    return max_height, max_width
+
+
+# Function to resize all the images in the CSV file to the desired canvas size
+def main():
+    # Call find_new_dimensions and store the new canvas width and height
+    height, width = find_new_dimensions()
+
+    # Counter to save images
+    count = 0
+
+    # Open and read CSV file
+    with open('auto_crop_image_data.csv', 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            # Ensure row is not null
+            if row != []:
                 path = str(row[2])
+
+                # read image
                 img = cv2.imread(path)
+
+                # Store img height, width, and color
                 ht, wd, cc = img.shape
 
                 # create new image of desired size and color for padding
@@ -29,52 +59,28 @@ def pad_based_on_csv(csv_filename: Path):
 
                 # copy image into center of canvas
                 result[yy:yy + ht, xx:xx + wd] = img
+
+                # Increment count
                 count += 1
 
-                # Split our filename to get the desired sections and exclude the .jpg or .png extension
+                # Split our filename to get the desired sections
+                # and exclude the .jpg or .png extension
                 path_split = path.split("/")
                 file = path_split[-1].replace('.jpg', '')
                 file = file.replace('.png', '')
 
-                # Merge back together our file name excluding the parts we do not want
+                # Merge back together our file name excluding the
+                # parts we do not want
+                a = '/'
                 path = path_split[:-1]
-                path = '/'.join(path)
+                path = a.join(path)
                 print(path)
+
+                # save result
                 cv2.imwrite(path + '/' + "Autopadded_" + file + ".jpg", result)
-                print(f'Saved {count}')
+                print('saved ' + str(count))
 
 
-def pad_based_on_folder(folder: Path):
-    pass
-
-
-def find_new_dimensions(file):
-    # Function to find the largest dimensions stored in the CSV file
-    max_height = 0
-    max_width = 0
-
-    reader = csv.reader(file)
-    for row in reader:
-        # Ensure row is not null
-        if row:
-            height = int(row[0])
-            width = int(row[1])
-            if height > max_height:
-                max_height = height
-            if width > max_width:
-                max_width = width
-
-    return max_height, max_width
-
-
-if __name__ == '__main__':
-    """ Given either a CSV or a folder of images, pad all images with whitespace, so that they're all the same 
-    size/dimensions in pixels."""
-    if len(sys.argv) == 1:  #todo: remove this
-        sys.argv[1] = 'auto_crop_image_data.csv'
-    assert len(sys.argv) == 2, 'Please provide 1 argument (either a CSV file, or a folder).'
-    argument = Path(sys.argv[1])
-    if 'csv' in argument.suffix:
-        pad_based_on_csv(argument)
-    else:
-        pad_based_on_folder(argument)
+# Call main function
+if __name__ == "__main__":
+    main()
