@@ -11,6 +11,7 @@ def main(folder_path: Path):
         new_files = pd.DataFrame({'folder': parents, 'filename': files})
         file_list = file_list.append(new_files, ignore_index=True)
     file_list.to_csv(Path(folder_path, 'voucher_list.csv'), index=False)
+    print(f'Voucher list saved to: {os.path.join(folder_path, "voucher_list.csv")}')
 
 
 if __name__ == '__main__':
