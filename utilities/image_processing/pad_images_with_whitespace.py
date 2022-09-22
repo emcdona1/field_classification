@@ -1,7 +1,6 @@
 import os
 import cv2
 import numpy as np
-import csv
 import sys
 from pathlib import Path
 from typing import List
