@@ -5,8 +5,61 @@ The code here creates and tests a CNN model using Tensorflow and Keras that take
 similar plant families (*Lycopodieaceae* and *Selaginellaceae*) and trains the model to identify which is which. 
 
 ---
+## Image conversions
+All scripts are non-destructive to the original files, unless otherwise noted.
 
-## Using image_download.py
+### `convert_png_to_jpg.py`
+Given any number of image folders as arguments (1+ folders), converts any PNGs in those folders
+to JPGs, and deletes the original PNGs.  (This script **is destructive**.)
+
+### `convert_tif_to_jpg.py`
+Given any number of image folders as arguments (1+ folders), converts any TIFFs
+to JPGs, and moves the original TIFFs to a subfolder `tifs`.
+
+### `generate_augmented_images.py`
+Given a folder of training set images (no test images), it generates a new training set of images
+with augmentation as specified in the `main()` method.
+
+### `pad_images_with_whitespace.py`
+Given a folder that contains class folders (which contain only images), a new folder is
+generated (named _original_folder__padded) where all images are made to be the same size by padding with
+white space.  The original image is placed in the center of the whitespace.
+
+### `image_resize_and_reshape.py`
+(Old, with TF 2.x this is now implemented within the model pipeline.)  Given a source folder,
+destination folder, and one image dimension, all images in the source folder are resized to
+(new_dim, new_dim, 3) and saved in the destination folder.
+
+---
+
+## Dividing up image folders
+All scripts are non-destructive to the original files, unless otherwise noted.
+
+### `create_test_group.py`
+Given 3 input args, generates a train/test split of the images of 90%/10%.  This can be 
+changed by adjusting the `SPLIT` variable.  The new images are saved into the folder
+specified by the `-d` argument.
+
+Arguments:
+- `-d` The base directory of images.
+- `-c1` and `-c2` The two subfolders in the directory.
+- (optional) `-v` specify 1 for verbose mode.
+
+### `create_test_group_4class.py`
+The same as `create_test_group.py` but for four subfolders of classes.
+
+---
+
+## Creating documentation
+
+### `generate_voucher_list.py`
+Given a folder of images, the program outputs a CSV of all the files in this
+folder.  The CSV (saved as `voucher_list.csv`) has two columns: folder and filename.
+
+---
+
+## Using Pteridoportal images
+### Using `image_download.py` and `Download_Image_Files_from_Pteridoportal.ipynb`
 **Note**: The file `Download_Image_Files_from_Pteridoportal.ipynb` is a standalone version 
 of this program which is designed to be run in the browser by non-developers.
 
@@ -53,7 +106,7 @@ core id numbers.
 
 ---
 
-## Using image_resize.py
+## image_resize_and_reshape.py
 
 The purpose of this file is to take the raw downloaded files and convert them into squares of the same size using an image processing package called OpenCV for Python. To install the package, check out [this website](https://pypi.org/project/opencv-python/) 
 
@@ -65,5 +118,3 @@ To use the file, follow this format in the command line terminal:
 
 For example:
 `python image_resize.py -sf orig_images -df smaller_images -s 256`
-
----
