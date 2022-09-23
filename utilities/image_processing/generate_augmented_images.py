@@ -1,3 +1,5 @@
+# available layers: https://keras.io/api/layers/preprocessing_layers/image_augmentation/
+
 import os
 import sys
 import shutil
