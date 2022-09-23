@@ -1,39 +1,72 @@
 import os
 import sys
-import Augmentor
+import shutil
 from pathlib import Path
+import tensorflow as tf
+from tensorflow.python.ops.numpy_ops import np_config
+np_config.enable_numpy_behavior()
+import cv2
+import random
+import numpy as np
+
+
+SEED = 1
 
 
 def main(image_source_folder: Path):
+    base_save_folder = Path(f'{str(image_source_folder)}_augmented')
+    save_folders = [Path(base_save_folder, str(f)) for f in os.listdir(image_source_folder)]
+    if not os.path.exists(base_save_folder):
+        os.makedirs(base_save_folder)
+    for folder in save_folders:
+        if not os.path.exists(folder):
+            os.makedirs(folder)
 
-    image_folders = [Path(image_source_folder, f) for f in os.listdir(image_source_folder)]
-    for folder, batch_size in image_folders:
-        augmentation_pipeline = Augmentor.Pipeline(source_directory=folder)  #, output_directory=)
+    training_images = tf.keras.preprocessing.image_dataset_from_directory(image_source_folder, batch_size=32)
 
-        # Augmentation option #1
-        augmentation_pipeline.rotate(probability=1.0, max_left_rotation=15, max_right_rotation=15)
-        augmentation_pipeline.flip_random(probability=1.0)
+    data_augmentation_0 = tf.keras.Sequential([
+        tf.keras.layers.experimental.preprocessing.RandomFlip('horizontal_and_vertical', seed=SEED),
+        tf.keras.layers.experimental.preprocessing.RandomRotation((-0.25, 0.25), seed=SEED)
+        # rotation is randomly between +/-0.25 * 2pi, e.g. this is +/- 90°
+    ])
+    data_augmentation_1 = tf.keras.Sequential([
+        tf.keras.layers.experimental.preprocessing.RandomRotation((-1/12, 1/12), seed=SEED),
+        tf.keras.layers.experimental.preprocessing.RandomFlip('horizontal_and_vertical', seed=SEED),
+    ])
+    data_augmentation_2 = tf.keras.Sequential([
+        tf.keras.layers.experimental.preprocessing.RandomRotation((-1/12, 1/12), seed=SEED),
+        tf.keras.layers.experimental.preprocessing.RandomFlip('horizontal_and_vertical', seed=SEED),
+        tf.keras.layers.experimental.preprocessing.RandomRotation((-0.5, -0.5), seed=SEED),
+    ])
+    data_augmentation_3 = tf.keras.Sequential([
+        tf.keras.layers.experimental.preprocessing.RandomFlip('vertical', seed=SEED),
+        tf.keras.layers.experimental.preprocessing.RandomRotation((-0.5, 0.5), seed=SEED),
+        tf.keras.layers.experimental.preprocessing.RandomZoom(height_factor=(-0.1, 0.1),
+                                                              width_factor=(-0.1, 0.1), seed=SEED)
+    ])
 
-        # Augmentation option #2
-        # augmentation_pipeline.rotate(probability=.5, max_left_rotation=15, max_right_rotation=15)
-        # augmentation_pipeline.rotate180(probability=.5)
-        # augmentation_pipeline.flip_random(probability=.5)
-        # augmentation_pipeline.shear(probability=.5, max_shear_left=10, max_shear_right=10)
-        # augmentation_pipeline.skew(probability=.5)
+    process_augmentation(base_save_folder, training_images, data_augmentation_0)
+    process_augmentation(base_save_folder, training_images, data_augmentation_3)
+    copy_original_images(image_source_folder, save_folders)
 
-        # Augmentation option #3
-        # augmentation_pipeline.rotate(probability=.5, max_left_rotation=20, max_right_rotation=20)
-        # augmentation_pipeline.rotate180(probability=.5)
-        # augmentation_pipeline.flip_random(probability=1)
 
-        # Augmentation option #4
-        # augmentation_pipeline.rotate(probability=1, max_right_rotation=20, max_left_rotation=20)
-        # augmentation_pipeline.flip_random(probability=1)
-        # augmentation_pipeline.crop_random(probability=1, percentage_area=.9)
-        # augmentation_pipeline.shear(probability=1, max_shear_left=20, max_shear_right=20)
-        # augmentation_pipeline.skew(probability=1)
+def process_augmentation(base_save_folder, training_images, data_augmentation):
+    for batch_images, batch_labels in training_images.as_numpy_iterator():
+        augmented_images = data_augmentation(batch_images)
+        for idx in range(augmented_images.shape[0]):
+            image = np.array(augmented_images[idx])
+            label = batch_labels[idx]
+            save_loc = Path(base_save_folder, training_images.class_names[label],
+                            f'{random.randint(10000, 999999)}.jpg')
+            cv2.imwrite(str(save_loc), cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
 
-        augmentation_pipeline.sample(batch_size)
+
+def copy_original_images(image_source_folder, save_folders):
+    image_folders = [Path(image_source_folder, str(f)) for f in os.listdir(image_source_folder)]
+    image_names = [(str(s) for s in os.listdir(f)) for f in image_folders]
+    for idx, folder in enumerate(image_folders):
+        for img in image_names[idx]:
+            shutil.copy2(Path(folder, img), Path(save_folders[idx], img))
 
 
 if __name__ == '__main__':
@@ -41,12 +74,7 @@ if __name__ == '__main__':
                                '(Note: you should not augment testing images).'
     training_image_folder = Path(sys.argv[1])
     assert training_image_folder.exists() and training_image_folder.is_dir(), \
-        f'Not a valid folder path: {training_image_folder}'
-    batch_size_1 = 64  # int(sys.argv[2])
+        f'Not a valid folder path: {training_image_folder.absolute()}'
+    batch_size_1 = 64
 
-    validation_image_folder = Path(sys.argv[3])
-    assert validation_image_folder.exists() and validation_image_folder.is_dir(), \
-        f'Not a valid folder path: {validation_image_folder}'
-    batch_size_2 = int(sys.argv[4])
-
-    main(training_image_folder, batch_size_1, validation_image_folder, batch_size_2)
+    main(training_image_folder)
