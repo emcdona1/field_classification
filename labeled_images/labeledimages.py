@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 import tensorflow as tf
 import random
-from typing import List, Union, Tuple
+from typing import Union, Tuple
 from labeled_images.colormode import ColorMode
 
 VALIDATION_SPLIT = 0.1
