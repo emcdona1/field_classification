@@ -7,7 +7,8 @@ from typing import List
 
 
 def main(base_folder: Path):
-    image_folders = [Path(base_folder, str(f)) for f in os.listdir(base_folder) if Path(f).is_dir()]
+    image_folders = [Path(base_folder, str(f)) for f in os.listdir(base_folder)]
+    image_folders = [f for f in image_folders if f.is_dir()]
     image_names = [os.listdir(f) for f in image_folders]
     max_height, max_width = find_new_dimensions(image_folders, image_names)
 
