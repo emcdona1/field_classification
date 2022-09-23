@@ -29,6 +29,7 @@ def main(base_folder: Path):
             yy = (max_height - height) // 2
             result[yy:yy + height, xx:xx + width] = current_image
             cv2.imwrite(os.path.join(save_folders[idx], image), result)
+            print(f'Saved {image}.')
     print(f'Padded images saved to: {base_save_folder}.')
 
 
