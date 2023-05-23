@@ -5,7 +5,7 @@ pandas==1.2.4
 scikit-learn==0.24.2
 pillow==8.2.0
 scipy==1.6.2
-requests==2.25.1
+requests==2.31.0
 scikit-image==0.18.1
 augmentor==0.2.8
 numpy==1.19.5
